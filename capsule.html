@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Achraf and Eleni's Time Capsule</title>
+
 <style>
 body {
   margin: 0;
@@ -20,10 +21,12 @@ body {
   width: 100%;
   height: 100vh;
 }
+
 #container.visible {
   opacity: 1;
 }
 
+/* Draggables */
 .draggable {
   position: absolute;
   cursor: grab;
@@ -40,28 +43,26 @@ body {
 .draggable img {
   width: 100%;
   display: block;
-  border-radius: 0;
 }
 
 .draggable.pure-item {
-  background: transparent !important;
-  padding: 0 !important;
-  min-width: 0 !important;
-  max-width: none !important;
-  box-shadow: none !important;
+  background: transparent;
+  padding: 0;
+  min-width: 0;
+  max-width: none;
+  box-shadow: none;
 }
 
 .draggable img.pure {
   width: 150px;
-  display: block;
-  border-radius: 0;
 }
 
 .draggable p {
-  margin: 5px 0 0 0;
+  margin: 5px 0 0;
   font-size: 14px;
 }
 
+/* Mute */
 #muteBtn {
   position: fixed;
   top: 10px;
@@ -76,6 +77,7 @@ body {
   box-shadow: 2px 2px 6px rgba(0,0,0,0.5);
 }
 
+/* Tray */
 #tray {
   position: fixed;
   bottom: 0;
@@ -89,11 +91,7 @@ body {
   box-shadow: 0 -3px 10px rgba(0,0,0,0.3);
   transition: transform 0.5s ease;
   z-index: 500;
-  display: flex;
-  justify-content: flex-start;
-  align-items: flex-start;
   padding: 10px;
-  overflow: visible;
 }
 
 #tray.open {
@@ -125,21 +123,18 @@ body {
   height: 100%;
 }
 
-/* Dark Mode Overlay */
+/* Dark mode */
 #darkModeOverlay {
   position: fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background-color: rgba(0,0,0,0.55);
-  pointer-events:none;
-  opacity:0;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  pointer-events: none;
+  opacity: 0;
   transition: opacity 0.3s ease;
   z-index: 2005;
 }
 
-/* Burger Menu */
+/* Burger menu */
 #burgerMenu {
   position: fixed;
   top: 50%;
@@ -158,29 +153,28 @@ body {
 
 #burgerMenuContent {
   position: fixed;
-  top:0;
-  left:-200px;
-  width:200px;
-  height:100%;
+  top: 0;
+  left: -200px;
+  width: 200px;
+  height: 100%;
   background: rgba(255,255,255,0.95);
   transition: left 0.3s ease;
-  display:flex;
-  flex-direction:column;
+  display: flex;
+  flex-direction: column;
   padding: 20px;
-  box-sizing:border-box;
   z-index: 2002;
 }
 
 #burgerMenuContent button {
   margin: 10px 0;
   padding: 8px;
-  cursor:pointer;
-  background:white;
-  border:none;
-  box-shadow:0 0 5px rgba(0,0,0,0.3);
+  cursor: pointer;
+  background: white;
+  border: none;
+  box-shadow: 0 0 5px rgba(0,0,0,0.3);
 }
 
-/* Trash bin */
+/* Trash */
 #trashBin {
   position: fixed;
   bottom: 5%;
@@ -188,7 +182,6 @@ body {
   font-size: 48px;
   cursor: pointer;
   z-index: 2000;
-  transition: transform 0.2s ease;
 }
 
 /* Table */
@@ -196,18 +189,16 @@ body {
   position: fixed;
   bottom: 10%;
   right: 12%;
-  width: 198px; /* increased 10% more */
-  cursor: default;
+  width: 198px;
   z-index: 450;
 }
 
-/* Envelope */
+/* Envelope – moved left + slightly up */
 #envelope {
   position: fixed;
-  bottom: 18%; /* raised 50% */
-  right: 12%;
+  bottom: 20%;
+  right: 14%;
   width: 70px;
-  cursor: default;
   z-index: 460;
 }
 
@@ -218,16 +209,18 @@ body {
   background: rgba(0,0,0,0.6);
   color: white;
   font-size: 14px;
-  pointer-events: none;
   border-radius: 4px;
+  pointer-events: none;
   opacity: 0;
   transition: opacity 0.2s ease;
   z-index: 2100;
 }
 </style>
 </head>
+
 <body>
 <div id="container">
+
   <!-- Audio -->
   <audio id="background" src="sounds/background.mp3" loop></audio>
   <audio id="background2" src="sounds/background2.mp3" loop></audio>
@@ -238,10 +231,10 @@ body {
 
   <button id="muteBtn">Mute</button>
 
-  <!-- Original memory tabs -->
   <div class="draggable" style="top:20px; left:20px;">
     <p>This is our time capsule. It reminds us of what is and has been.</p>
   </div>
+
   <div class="draggable" style="top:100px; left:20px;">
     <p>Created on the 12th December, 2025.</p>
   </div>
@@ -249,7 +242,7 @@ body {
   <div id="tray">
     <div id="trayItems">
       <div class="draggable pure-item" style="top:20px; left:20px;">
-        <img src="images/peachtea.webp" alt="Peach Tea" class="pure" id="peachTea">
+        <img src="images/peachtea.webp" class="pure" id="peachTea">
       </div>
     </div>
   </div>
@@ -260,8 +253,8 @@ body {
 
   <div id="burgerMenu">☰</div>
   <div id="burgerMenuContent">
-    <button id="darkModeBtn">🌙 Dark Mode</button>
-    <div style="display:flex; justify-content:center; gap:4px;">
+    <button id="darkModeBtn">Dark Mode</button>
+    <div style="display:flex; justify-content:center; gap:6px;">
       <button id="prevTrack">⏮</button>
       <button id="nextTrack">⏭</button>
     </div>
@@ -269,196 +262,127 @@ body {
 
   <div id="trashBin">🗑️</div>
 
-  <!-- Table -->
   <img src="images/table.webp" id="table">
-
-  <!-- Envelope -->
   <img src="images/envelope.webp" id="envelope">
 
-  <!-- Tooltip -->
   <div id="tooltip"></div>
 </div>
 
 <script>
-window.addEventListener('DOMContentLoaded', () => {
-  const pickupSound = document.getElementById('pickup');
-  const muteBtn = document.getElementById('muteBtn');
-  const container = document.getElementById('container');
-  const tray = document.getElementById('tray');
-  const trayItems = document.getElementById('trayItems');
-  const trayTab = document.getElementById('trayTab');
-  const darkOverlay = document.getElementById('darkModeOverlay');
-  const burgerMenu = document.getElementById('burgerMenu');
-  const burgerContent = document.getElementById('burgerMenuContent');
-  const darkModeBtn = document.getElementById('darkModeBtn');
-  const trashBin = document.getElementById('trashBin');
-  const tooltip = document.getElementById('tooltip');
-  const table = document.getElementById('table');
-  const envelope = document.getElementById('envelope');
-  const binSound = document.getElementById('binSound');
-  const traySound = document.getElementById('traySound');
+document.addEventListener('DOMContentLoaded', () => {
 
-  let darkModeActive = false;
+  const container = document.getElementById('container');
+  requestAnimationFrame(() => container.classList.add('visible'));
 
   const musicTracks = [
     document.getElementById('background'),
     document.getElementById('background2'),
     document.getElementById('background3')
   ];
+
   let currentTrackIndex = 0;
+  let musicStarted = false;
 
-  // Show container
-  requestAnimationFrame(()=>container.classList.add('visible'));
-
-  // Start first track
-  musicTracks.forEach(track=>{ track.loop=true; track.volume=0.6; });
-  musicTracks[0].play().catch(()=>{});
-
-  // Mute music
-  muteBtn.addEventListener('click', ()=>{
-    musicTracks.forEach(track=>track.muted=!track.muted);
-    muteBtn.textContent = musicTracks[0].muted ? 'Unmute':'Mute';
+  musicTracks.forEach(t => {
+    t.volume = 0.6;
+    t.loop = true;
   });
 
-  // Tray tab toggle
-  trayTab.addEventListener('click', ()=>{
-    const isOpen = tray.classList.toggle('open');
-    trayTab.textContent = isOpen ? '▼':'▲';
-    traySound.currentTime=0;
-    traySound.play();
-  });
+  function startMusicOnce() {
+    if (musicStarted) return;
+    musicStarted = true;
+    musicTracks[0].play().catch(console.log);
+    document.removeEventListener('click', startMusicOnce);
+  }
 
-  // Burger menu toggle
-  burgerMenu.addEventListener('click', ()=>{
-    burgerContent.style.left = burgerContent.style.left==='0px'?'-200px':'0px';
-  });
+  document.addEventListener('click', startMusicOnce);
 
-  // Dark mode
-  darkModeBtn.addEventListener('click', ()=>{
-    darkModeActive=!darkModeActive;
-    darkOverlay.style.opacity = darkModeActive?1:0;
-  });
-
-  // Music controls with fade
-  function fadeOutIn(outTrack, inTrack, callback){
+  function fadeSwitch(from, to) {
     const step = 0.05;
-    const interval = setInterval(()=>{
-      if(outTrack.volume>0){
-        outTrack.volume -= step;
+    const out = setInterval(() => {
+      if (from.volume > 0) {
+        from.volume -= step;
       } else {
-        clearInterval(interval);
-        outTrack.pause();
-        outTrack.currentTime=0;
-        inTrack.volume=0;
-        inTrack.currentTime=0;
-        inTrack.play().then(()=>{
-          const fadeIn = setInterval(()=>{
-            if(inTrack.volume<0.6) inTrack.volume+=step;
+        clearInterval(out);
+        from.pause();
+        from.currentTime = 0;
+        to.volume = 0;
+        to.play().then(() => {
+          const fadeIn = setInterval(() => {
+            if (to.volume < 0.6) to.volume += step;
             else clearInterval(fadeIn);
-          },50);
+          }, 50);
         });
       }
-    },50);
+    }, 50);
   }
 
-  document.getElementById('nextTrack').addEventListener('click', ()=>{
-    const nextIndex=(currentTrackIndex+1)%musicTracks.length;
-    fadeOutIn(musicTracks[currentTrackIndex], musicTracks[nextIndex]);
-    currentTrackIndex=nextIndex;
-  });
+  document.getElementById('nextTrack').onclick = () => {
+    const next = (currentTrackIndex + 1) % musicTracks.length;
+    fadeSwitch(musicTracks[currentTrackIndex], musicTracks[next]);
+    currentTrackIndex = next;
+  };
 
-  document.getElementById('prevTrack').addEventListener('click', ()=>{
-    const prevIndex=(currentTrackIndex-1+musicTracks.length)%musicTracks.length;
-    fadeOutIn(musicTracks[currentTrackIndex], musicTracks[prevIndex]);
-    currentTrackIndex=prevIndex;
-  });
+  document.getElementById('prevTrack').onclick = () => {
+    const prev = (currentTrackIndex - 1 + musicTracks.length) % musicTracks.length;
+    fadeSwitch(musicTracks[currentTrackIndex], musicTracks[prev]);
+    currentTrackIndex = prev;
+  };
 
-  // Draggable function
-  function makeDraggable(item){
-    let offsetX, offsetY, lastX, lastY;
-    item.addEventListener('mousedown', e=>{
-      e.preventDefault();
-      pickupSound.currentTime=0;
-      pickupSound.play();
-      const rect=item.getBoundingClientRect();
-      offsetX=e.clientX-rect.left;
-      offsetY=e.clientY-rect.top;
-      lastX=e.clientX;
-      lastY=e.clientY;
-      item.style.zIndex=1000;
-      item.style.transition='transform 0s';
-      document.body.appendChild(item);
+  document.getElementById('muteBtn').onclick = () => {
+    const muted = !musicTracks[0].muted;
+    musicTracks.forEach(t => t.muted = muted);
+  };
 
-      function onMouseMove(e){
-        const dx=e.clientX-lastX;
-        const dy=e.clientY-lastY;
-        const swing=Math.min(Math.sqrt(dx*dx+dy*dy)*0.2,5);
-        item.style.transform=`rotate(${swing}deg) scale(1.05)`;
-        item.style.left=(e.clientX-offsetX)+'px';
-        item.style.top=(e.clientY-offsetY)+'px';
-        lastX=e.clientX;
-        lastY=e.clientY;
+  const tray = document.getElementById('tray');
+  const trayTab = document.getElementById('trayTab');
+  const traySound = document.getElementById('traySound');
 
-        const binRect=trashBin.getBoundingClientRect();
-        if(e.clientX>=binRect.left && e.clientX<=binRect.right &&
-           e.clientY>=binRect.top && e.clientY<=binRect.bottom){
-          item.style.transform=`rotate(${swing}deg) scale(0.85)`;
-        }
-      }
+  trayTab.onclick = () => {
+    const open = tray.classList.toggle('open');
+    trayTab.textContent = open ? '▼' : '▲';
+    traySound.currentTime = 0;
+    traySound.play();
+  };
 
-      function onMouseUp(e){
-        document.removeEventListener('mousemove', onMouseMove);
-        item.style.transition='transform 0.2s ease';
-        item.style.transform='scale(1) rotate(0deg)';
+  const burgerMenu = document.getElementById('burgerMenu');
+  const burgerContent = document.getElementById('burgerMenuContent');
 
-        const trayRect=tray.getBoundingClientRect();
-        if(e.clientY>trayRect.top){
-          trayItems.appendChild(item);
-          const trayRectNew=trayItems.getBoundingClientRect();
-          const itemRect=item.getBoundingClientRect();
-          item.style.left=(itemRect.left-trayRectNew.left)+'px';
-          item.style.top=(itemRect.top-trayRectNew.top)+'px';
-        }
+  burgerMenu.onclick = () => {
+    burgerContent.style.left = burgerContent.style.left === '0px' ? '-200px' : '0px';
+  };
 
-        const binRect=trashBin.getBoundingClientRect();
-        if(e.clientX>=binRect.left && e.clientX<=binRect.right &&
-           e.clientY>=binRect.top && e.clientY<=binRect.bottom){
-          binSound.currentTime=0;
-          binSound.play();
-          item.remove();
-        }
-      }
+  const darkOverlay = document.getElementById('darkModeOverlay');
+  let dark = false;
 
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', onMouseUp, {once:true});
+  document.getElementById('darkModeBtn').onclick = () => {
+    dark = !dark;
+    darkOverlay.style.opacity = dark ? 1 : 0;
+  };
+
+  const tooltip = document.getElementById('tooltip');
+
+  function setupTooltip(el, text) {
+    let t;
+    el.addEventListener('mouseenter', () => {
+      t = setTimeout(() => {
+        tooltip.textContent = text;
+        tooltip.style.opacity = 1;
+      }, 50);
     });
-    item.ondragstart=()=>false;
-  }
-
-  document.querySelectorAll('.draggable').forEach(makeDraggable);
-
-  // Tooltip function
-  function setupTooltip(element, text){
-    let timeout;
-    element.addEventListener('mouseenter', ()=>{
-      timeout=setTimeout(()=>{
-        tooltip.textContent=text;
-        tooltip.style.opacity=1;
-      },50);
+    el.addEventListener('mouseleave', () => {
+      clearTimeout(t);
+      tooltip.style.opacity = 0;
     });
-    element.addEventListener('mouseleave', ()=>{
-      clearTimeout(timeout);
-      tooltip.style.opacity=0;
-    });
-    element.addEventListener('mousemove', e=>{
-      tooltip.style.left=(e.clientX+15)+'px';
-      tooltip.style.top=(e.clientY+15)+'px';
+    el.addEventListener('mousemove', e => {
+      tooltip.style.left = e.clientX + 15 + 'px';
+      tooltip.style.top = e.clientY + 15 + 'px';
     });
   }
 
-  setupTooltip(document.getElementById('peachTea'),'I love peach tea');
-  setupTooltip(table,'a sturdy wooden table');
-  setupTooltip(envelope,'an envelope full of texts');
+  setupTooltip(document.getElementById('peachTea'), 'I love peach tea');
+  setupTooltip(document.getElementById('table'), 'a sturdy wooden table');
+  setupTooltip(document.getElementById('envelope'), 'an envelope full of texts');
 
 });
 </script>
