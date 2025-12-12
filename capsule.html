@@ -196,15 +196,15 @@ body {
   position: fixed;
   bottom: 10%;
   right: 12%;
-  width: 180px; /* increased 10% */
+  width: 198px; /* increased 10% more */
   cursor: default;
-  z-index: 450; /* below tray */
+  z-index: 450;
 }
 
 /* Envelope */
 #envelope {
   position: fixed;
-  bottom: 18%; /* raised 50% from previous */
+  bottom: 18%; /* raised 50% */
   right: 12%;
   width: 70px;
   cursor: default;
@@ -228,6 +228,7 @@ body {
 </head>
 <body>
 <div id="container">
+  <!-- Audio -->
   <audio id="background" src="sounds/background.mp3" loop></audio>
   <audio id="background2" src="sounds/background2.mp3" loop></audio>
   <audio id="background3" src="sounds/background3.mp3" loop></audio>
@@ -279,210 +280,186 @@ body {
 </div>
 
 <script>
-const pickupSound = document.getElementById('pickup');
-const muteBtn = document.getElementById('muteBtn');
-const container = document.getElementById('container');
-const tray = document.getElementById('tray');
-const trayItems = document.getElementById('trayItems');
-const trayTab = document.getElementById('trayTab');
-const darkOverlay = document.getElementById('darkModeOverlay');
-const burgerMenu = document.getElementById('burgerMenu');
-const burgerContent = document.getElementById('burgerMenuContent');
-const darkModeBtn = document.getElementById('darkModeBtn');
-const trashBin = document.getElementById('trashBin');
-const tooltip = document.getElementById('tooltip');
-const table = document.getElementById('table');
-const envelope = document.getElementById('envelope');
-const binSound = document.getElementById('binSound');
-const traySound = document.getElementById('traySound');
+window.addEventListener('DOMContentLoaded', () => {
+  const pickupSound = document.getElementById('pickup');
+  const muteBtn = document.getElementById('muteBtn');
+  const container = document.getElementById('container');
+  const tray = document.getElementById('tray');
+  const trayItems = document.getElementById('trayItems');
+  const trayTab = document.getElementById('trayTab');
+  const darkOverlay = document.getElementById('darkModeOverlay');
+  const burgerMenu = document.getElementById('burgerMenu');
+  const burgerContent = document.getElementById('burgerMenuContent');
+  const darkModeBtn = document.getElementById('darkModeBtn');
+  const trashBin = document.getElementById('trashBin');
+  const tooltip = document.getElementById('tooltip');
+  const table = document.getElementById('table');
+  const envelope = document.getElementById('envelope');
+  const binSound = document.getElementById('binSound');
+  const traySound = document.getElementById('traySound');
 
-let darkModeActive = false;
+  let darkModeActive = false;
 
-const musicTracks = [
-  document.getElementById('background'),
-  document.getElementById('background2'),
-  document.getElementById('background3')
-];
-let currentTrackIndex = 0;
+  const musicTracks = [
+    document.getElementById('background'),
+    document.getElementById('background2'),
+    document.getElementById('background3')
+  ];
+  let currentTrackIndex = 0;
 
-// Start music after user interaction
-function startMusic() {
+  // Show container
+  requestAnimationFrame(()=>container.classList.add('visible'));
+
+  // Start first track
   musicTracks.forEach(track=>{ track.loop=true; track.volume=0.6; });
   musicTracks[0].play().catch(()=>{});
-  document.removeEventListener('click', startMusic);
-}
 
-document.addEventListener('click', startMusic);
-
-muteBtn.addEventListener('click', ()=>{
-  musicTracks.forEach(track=>track.muted = !track.muted);
-  muteBtn.textContent = musicTracks[0].muted ? 'Unmute' : 'Mute';
-});
-
-// Tray tab
-trayTab.addEventListener('click', ()=>{
-  const isOpen = tray.classList.toggle('open');
-  trayTab.textContent = isOpen ? '▼' : '▲';
-  traySound.currentTime = 0;
-  traySound.play();
-});
-
-// Burger menu
-burgerMenu.addEventListener('click', ()=>{
-  burgerContent.style.left = burgerContent.style.left==='0px'?'-200px':'0px';
-});
-
-// Dark mode
-darkModeBtn.addEventListener('click', ()=>{
-  darkModeActive = !darkModeActive;
-  darkOverlay.style.opacity = darkModeActive ? 1 : 0;
-});
-
-// Music controls
-function playTrack(index){
-  musicTracks.forEach((t,i)=>{
-    if(i!==index){ t.pause(); t.currentTime=0; }
+  // Mute music
+  muteBtn.addEventListener('click', ()=>{
+    musicTracks.forEach(track=>track.muted=!track.muted);
+    muteBtn.textContent = musicTracks[0].muted ? 'Unmute':'Mute';
   });
-  musicTracks[index].volume=0;
-  musicTracks[index].currentTime=0;
-  musicTracks[index].play().then(()=>fadeIn(musicTracks[index]));
-}
 
-function fadeIn(track){
-  let vol=0.6;
-  const interval = setInterval(()=>{
-    if(track.volume<vol){ track.volume+=0.05; }
-    else clearInterval(interval);
-  },50);
-}
-
-function fadeOut(track, callback){
-  const interval = setInterval(()=>{
-    if(track.volume>0){ track.volume-=0.05; }
-    else{ track.pause(); clearInterval(interval); callback(); }
-  },50);
-}
-
-document.getElementById('nextTrack').addEventListener('click', ()=>{
-  const nextIndex=(currentTrackIndex+1)%musicTracks.length;
-  fadeOut(musicTracks[currentTrackIndex], ()=>{ currentTrackIndex=nextIndex; playTrack(currentTrackIndex); });
-});
-
-document.getElementById('prevTrack').addEventListener('click', ()=>{
-  const prevIndex=(currentTrackIndex-1+musicTracks.length)%musicTracks.length;
-  fadeOut(musicTracks[currentTrackIndex], ()=>{ currentTrackIndex=prevIndex; playTrack(currentTrackIndex); });
-});
-
-// Draggable
-function makeDraggable(item){
-  let offsetX, offsetY, lastX, lastY;
-  item.addEventListener('mousedown', e=>{
-    e.preventDefault();
-    pickupSound.currentTime=0; pickupSound.play();
-    const rect=item.getBoundingClientRect();
-    offsetX=e.clientX-rect.left;
-    offsetY=e.clientY-rect.top;
-    lastX=e.clientX; lastY=e.clientY;
-    item.style.zIndex=1000;
-    item.style.transition='transform 0s';
-    document.body.appendChild(item);
-
-    function onMouseMove(e){
-      const dx=e.clientX-lastX;
-      const dy=e.clientY-lastY;
-      const swing=Math.min(Math.sqrt(dx*dx+dy*dy)*0.2,5);
-      item.style.transform=`rotate(${swing}deg) scale(1.05)`;
-      item.style.left=(e.clientX-offsetX)+'px';
-      item.style.top=(e.clientY-offsetY)+'px';
-      lastX=e.clientX; lastY=e.clientY;
-
-      // shrink over bin
-      const binRect=trashBin.getBoundingClientRect();
-      if(e.clientX>=binRect.left && e.clientX<=binRect.right &&
-         e.clientY>=binRect.top && e.clientY<=binRect.bottom){
-        item.style.transform=`rotate(${swing}deg) scale(0.85)`;
-      }
-    }
-
-    function onMouseUp(e){
-      document.removeEventListener('mousemove', onMouseMove);
-      item.style.transition='transform 0.2s ease';
-      item.style.transform='scale(1) rotate(0deg)';
-
-      // tray drop
-      const trayRect=tray.getBoundingClientRect();
-      if(e.clientY>trayRect.top){
-        trayItems.appendChild(item);
-        const trayRectNew=trayItems.getBoundingClientRect();
-        item.style.left=(e.clientX-trayRectNew.left-offsetX)+'px';
-        item.style.top=(e.clientY-trayRectNew.top-offsetY)+'px';
-      }
-
-      // trash drop
-      const binRect=trashBin.getBoundingClientRect();
-      if(e.clientX>=binRect.left && e.clientX<=binRect.right &&
-         e.clientY>=binRect.top && e.clientY<=binRect.bottom){
-        binSound.currentTime=0; binSound.play();
-        item.remove();
-      }
-    }
-
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp, {once:true});
+  // Tray tab toggle
+  trayTab.addEventListener('click', ()=>{
+    const isOpen = tray.classList.toggle('open');
+    trayTab.textContent = isOpen ? '▼':'▲';
+    traySound.currentTime=0;
+    traySound.play();
   });
-  item.ondragstart=()=>false;
-}
 
-document.querySelectorAll('.draggable').forEach(makeDraggable);
+  // Burger menu toggle
+  burgerMenu.addEventListener('click', ()=>{
+    burgerContent.style.left = burgerContent.style.left==='0px'?'-200px':'0px';
+  });
 
-// Tooltip Peach Tea
-const peachTea=document.getElementById('peachTea');
-let tooltipTimeout;
-peachTea.addEventListener('mouseenter', e=>{
-  tooltipTimeout=setTimeout(()=>{
-    tooltip.textContent='I love peach tea';
-    tooltip.style.opacity=1;
-  },50);
-});
-peachTea.addEventListener('mouseleave', e=>{
-  clearTimeout(tooltipTimeout);
-  tooltip.style.opacity=0;
-});
-peachTea.addEventListener('mousemove', e=>{
-  tooltip.style.left=(e.clientX+15)+'px';
-  tooltip.style.top=(e.clientY+15)+'px';
-});
+  // Dark mode
+  darkModeBtn.addEventListener('click', ()=>{
+    darkModeActive=!darkModeActive;
+    darkOverlay.style.opacity = darkModeActive?1:0;
+  });
 
-// Tooltip Table
-table.addEventListener('mouseenter', e=>{
-  tooltipTimeout=setTimeout(()=>{
-    tooltip.textContent='a sturdy wooden table';
-    tooltip.style.opacity=1;
-  },50);
-});
-table.addEventListener('mouseleave', e=>{
-  clearTimeout(tooltipTimeout);
-  tooltip.style.opacity=0;
-});
-table.addEventListener('mousemove', e=>{
-  tooltip.style.left=(e.clientX+15)+'px';
-  tooltip.style.top=(e.clientY+15)+'px';
-});
+  // Music controls with fade
+  function fadeOutIn(outTrack, inTrack, callback){
+    const step = 0.05;
+    const interval = setInterval(()=>{
+      if(outTrack.volume>0){
+        outTrack.volume -= step;
+      } else {
+        clearInterval(interval);
+        outTrack.pause();
+        outTrack.currentTime=0;
+        inTrack.volume=0;
+        inTrack.currentTime=0;
+        inTrack.play().then(()=>{
+          const fadeIn = setInterval(()=>{
+            if(inTrack.volume<0.6) inTrack.volume+=step;
+            else clearInterval(fadeIn);
+          },50);
+        });
+      }
+    },50);
+  }
 
-// Tooltip Envelope
-envelope.addEventListener('mouseenter', e=>{
-  tooltipTimeout=setTimeout(()=>{
-    tooltip.textContent='an envelope full of texts';
-    tooltip.style.opacity=1;
-  },50);
-});
-envelope.addEventListener('mouseleave', e=>{
-  clearTimeout(tooltipTimeout);
-  tooltip.style.opacity=0;
-});
-envelope.addEventListener('mousemove', e=>{
-  tooltip.style.left=(e.clientX+15)+'px';
-  tooltip.style.top=(e.clientY+15)+'px';
+  document.getElementById('nextTrack').addEventListener('click', ()=>{
+    const nextIndex=(currentTrackIndex+1)%musicTracks.length;
+    fadeOutIn(musicTracks[currentTrackIndex], musicTracks[nextIndex]);
+    currentTrackIndex=nextIndex;
+  });
+
+  document.getElementById('prevTrack').addEventListener('click', ()=>{
+    const prevIndex=(currentTrackIndex-1+musicTracks.length)%musicTracks.length;
+    fadeOutIn(musicTracks[currentTrackIndex], musicTracks[prevIndex]);
+    currentTrackIndex=prevIndex;
+  });
+
+  // Draggable function
+  function makeDraggable(item){
+    let offsetX, offsetY, lastX, lastY;
+    item.addEventListener('mousedown', e=>{
+      e.preventDefault();
+      pickupSound.currentTime=0;
+      pickupSound.play();
+      const rect=item.getBoundingClientRect();
+      offsetX=e.clientX-rect.left;
+      offsetY=e.clientY-rect.top;
+      lastX=e.clientX;
+      lastY=e.clientY;
+      item.style.zIndex=1000;
+      item.style.transition='transform 0s';
+      document.body.appendChild(item);
+
+      function onMouseMove(e){
+        const dx=e.clientX-lastX;
+        const dy=e.clientY-lastY;
+        const swing=Math.min(Math.sqrt(dx*dx+dy*dy)*0.2,5);
+        item.style.transform=`rotate(${swing}deg) scale(1.05)`;
+        item.style.left=(e.clientX-offsetX)+'px';
+        item.style.top=(e.clientY-offsetY)+'px';
+        lastX=e.clientX;
+        lastY=e.clientY;
+
+        const binRect=trashBin.getBoundingClientRect();
+        if(e.clientX>=binRect.left && e.clientX<=binRect.right &&
+           e.clientY>=binRect.top && e.clientY<=binRect.bottom){
+          item.style.transform=`rotate(${swing}deg) scale(0.85)`;
+        }
+      }
+
+      function onMouseUp(e){
+        document.removeEventListener('mousemove', onMouseMove);
+        item.style.transition='transform 0.2s ease';
+        item.style.transform='scale(1) rotate(0deg)';
+
+        const trayRect=tray.getBoundingClientRect();
+        if(e.clientY>trayRect.top){
+          trayItems.appendChild(item);
+          const trayRectNew=trayItems.getBoundingClientRect();
+          const itemRect=item.getBoundingClientRect();
+          item.style.left=(itemRect.left-trayRectNew.left)+'px';
+          item.style.top=(itemRect.top-trayRectNew.top)+'px';
+        }
+
+        const binRect=trashBin.getBoundingClientRect();
+        if(e.clientX>=binRect.left && e.clientX<=binRect.right &&
+           e.clientY>=binRect.top && e.clientY<=binRect.bottom){
+          binSound.currentTime=0;
+          binSound.play();
+          item.remove();
+        }
+      }
+
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp, {once:true});
+    });
+    item.ondragstart=()=>false;
+  }
+
+  document.querySelectorAll('.draggable').forEach(makeDraggable);
+
+  // Tooltip function
+  function setupTooltip(element, text){
+    let timeout;
+    element.addEventListener('mouseenter', ()=>{
+      timeout=setTimeout(()=>{
+        tooltip.textContent=text;
+        tooltip.style.opacity=1;
+      },50);
+    });
+    element.addEventListener('mouseleave', ()=>{
+      clearTimeout(timeout);
+      tooltip.style.opacity=0;
+    });
+    element.addEventListener('mousemove', e=>{
+      tooltip.style.left=(e.clientX+15)+'px';
+      tooltip.style.top=(e.clientY+15)+'px';
+    });
+  }
+
+  setupTooltip(document.getElementById('peachTea'),'I love peach tea');
+  setupTooltip(table,'a sturdy wooden table');
+  setupTooltip(envelope,'an envelope full of texts');
+
 });
 </script>
 </body>
