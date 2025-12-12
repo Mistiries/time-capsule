@@ -22,7 +22,8 @@
     box-shadow: 3px 3px 10px rgba(0,0,0,0.5);
     min-width:120px;
     max-width:200px;
-    touch-action: none; /* important for mobile drag */
+    touch-action: none; /* needed for mobile dragging */
+    transform: rotate(0deg); /* optional, you can randomize for messy look */
   }
 
   .draggable img {
@@ -71,5 +72,35 @@ draggables.forEach(item => {
 
   const drag = (x, y) => {
     item.style.left = (x - offsetX) + 'px';
-    item
+    item.style.top = (y - offsetY) + 'px';
+  };
 
+  // Desktop dragging
+  item.addEventListener('mousedown', e => {
+    startDrag(e.clientX, e.clientY);
+
+    const onMouseMove = e => drag(e.clientX, e.clientY);
+    document.addEventListener('mousemove', onMouseMove);
+
+    document.addEventListener('mouseup', () => {
+      document.removeEventListener('mousemove', onMouseMove);
+    }, { once: true });
+  });
+
+  // Mobile dragging
+  item.addEventListener('touchstart', e => {
+    e.preventDefault(); // stop scrolling
+    const touch = e.touches[0];
+    startDrag(touch.clientX, touch.clientY);
+  }, { passive: false });
+
+  item.addEventListener('touchmove', e => {
+    e.preventDefault(); // stop scrolling
+    const touch = e.touches[0];
+    drag(touch.clientX, touch.clientY);
+  }, { passive: false });
+});
+</script>
+
+</body>
+</html>
