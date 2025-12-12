@@ -15,15 +15,13 @@ body {
 }
 
 #container {
-  opacity: 0;
-  transition: opacity 1s ease-in;
   position: relative;
   width: 100%;
   height: 100vh;
+  opacity: 0;
+  transition: opacity 1s ease;
 }
-#container.visible {
-  opacity: 1;
-}
+#container.visible { opacity: 1; }
 
 /* Draggables */
 .draggable {
@@ -36,18 +34,12 @@ body {
   box-shadow: 3px 3px 10px rgba(0,0,0,0.5);
   min-width: 120px;
   max-width: 200px;
-}
-
-.draggable img {
-  width: 100%;
-  display: block;
+  transition: transform 0.15s ease;
 }
 
 .draggable.pure-item {
   background: transparent;
   padding: 0;
-  min-width: 0;
-  max-width: none;
   box-shadow: none;
 }
 
@@ -72,7 +64,6 @@ body {
   border-radius: 6px;
   cursor: pointer;
   font-weight: bold;
-  box-shadow: 2px 2px 6px rgba(0,0,0,0.5);
 }
 
 /* Tray */
@@ -86,15 +77,11 @@ body {
   background: rgba(240,240,240,0.9);
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
-  box-shadow: 0 -3px 10px rgba(0,0,0,0.3);
   transition: transform 0.5s ease;
   z-index: 500;
   padding: 10px;
 }
-
-#tray.open {
-  transform: translateY(0);
-}
+#tray.open { transform: translateY(0); }
 
 #trayTab {
   position: fixed;
@@ -110,8 +97,6 @@ body {
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  font-weight: bold;
-  box-shadow: 0 -2px 5px rgba(0,0,0,0.3);
   z-index: 1001;
 }
 
@@ -120,13 +105,13 @@ body {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.55);
-  pointer-events: none;
   opacity: 0;
+  pointer-events: none;
   transition: opacity 0.3s ease;
   z-index: 2005;
 }
 
-/* Burger menu */
+/* Burger */
 #burgerMenu {
   position: fixed;
   top: 50%;
@@ -151,8 +136,6 @@ body {
   height: 100%;
   background: rgba(255,255,255,0.95);
   transition: left 0.3s ease;
-  display: flex;
-  flex-direction: column;
   padding: 20px;
   z-index: 2002;
 }
@@ -160,10 +143,7 @@ body {
 #burgerMenuContent button {
   margin: 10px 0;
   padding: 8px;
-  cursor: pointer;
-  background: white;
-  border: none;
-  box-shadow: 0 0 5px rgba(0,0,0,0.3);
+  width: 100%;
 }
 
 /* Trash */
@@ -176,7 +156,7 @@ body {
   z-index: 2000;
 }
 
-/* Table + envelope */
+/* Table & envelope */
 #table {
   position: fixed;
   bottom: 10%;
@@ -201,8 +181,8 @@ body {
   color: white;
   font-size: 14px;
   border-radius: 4px;
-  pointer-events: none;
   opacity: 0;
+  pointer-events: none;
   transition: opacity 0.2s ease;
   z-index: 2100;
 }
@@ -212,128 +192,188 @@ body {
 <body>
 <div id="container">
 
-  <!-- SINGLE WORKING MUSIC PLAYER -->
-  <audio id="musicPlayer" autoplay loop></audio>
+<!-- Audio -->
+<audio id="background" src="sounds/background.mp3" loop></audio>
+<audio id="background2" src="sounds/background2.mp3" loop></audio>
+<audio id="background3" src="sounds/background3.mp3" loop></audio>
+<audio id="pickupSound" src="sounds/pickup.mp3"></audio>
+<audio id="binSound" src="sounds/bin.mp3"></audio>
+<audio id="traySound" src="sounds/tray.mp3"></audio>
 
-  <!-- Sound effects -->
-  <audio id="traySound" src="sounds/tray.mp3"></audio>
+<button id="muteBtn">Mute</button>
 
-  <button id="muteBtn">Mute</button>
+<div class="draggable" style="top:20px; left:20px;">
+  <p>This is our time capsule. It reminds us of what is and has been.</p>
+</div>
 
-  <div class="draggable" style="top:20px; left:20px;">
-    <p>This is our time capsule. It reminds us of what is and has been.</p>
+<div class="draggable" style="top:100px; left:20px;">
+  <p>Created on the 12th December, 2025.</p>
+</div>
+
+<div id="tray">
+  <div class="draggable pure-item" style="top:20px; left:20px;">
+    <img src="images/peachtea.webp" class="pure" id="peachTea">
   </div>
+</div>
 
-  <div class="draggable" style="top:100px; left:20px;">
-    <p>Created on the 12th December, 2025.</p>
-  </div>
+<div id="trayTab">▲</div>
+<div id="darkModeOverlay"></div>
 
-  <div id="tray">
-    <div class="draggable pure-item" style="top:20px; left:20px;">
-      <img src="images/peachtea.webp" class="pure" id="peachTea">
-    </div>
-  </div>
+<div id="burgerMenu">☰</div>
+<div id="burgerMenuContent">
+  <button id="darkModeBtn">Dark Mode</button>
+  <button id="prevTrack">⏮</button>
+  <button id="nextTrack">⏭</button>
+</div>
 
-  <div id="trayTab">▲</div>
-  <div id="darkModeOverlay"></div>
+<div id="trashBin">🗑️</div>
 
-  <div id="burgerMenu">☰</div>
-  <div id="burgerMenuContent">
-    <button id="darkModeBtn">Dark Mode</button>
-    <div style="display:flex; justify-content:center; gap:6px;">
-      <button id="prevTrack">⏮</button>
-      <button id="nextTrack">⏭</button>
-    </div>
-  </div>
-
-  <div id="trashBin">🗑️</div>
-  <img src="images/table.webp" id="table">
-  <img src="images/envelope.webp" id="envelope">
-  <div id="tooltip"></div>
+<img src="images/table.webp" id="table">
+<img src="images/envelope.webp" id="envelope">
+<div id="tooltip"></div>
 
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
-  requestAnimationFrame(() =>
-    document.getElementById('container').classList.add('visible')
-  );
+const container = document.getElementById('container');
+requestAnimationFrame(() => container.classList.add('visible'));
 
-  /* MUSIC SYSTEM */
-  const tracks = [
-    'sounds/background.mp3',
-    'sounds/background2.mp3',
-    'sounds/background3.mp3'
-  ];
+/* MUSIC */
+const tracks = [
+  document.getElementById('background'),
+  document.getElementById('background2'),
+  document.getElementById('background3')
+];
+let current = 0;
 
-  let currentTrack = 0;
-  const player = document.getElementById('musicPlayer');
-  player.src = tracks[currentTrack];
-  player.volume = 0.6;
-  player.play();
+tracks.forEach(t => { t.volume = 0.6; t.loop = true; });
+tracks[0].play().catch(() => {});
 
-  document.getElementById('nextTrack').onclick = () => {
-    currentTrack = (currentTrack + 1) % tracks.length;
-    player.src = tracks[currentTrack];
-    player.play();
-  };
+function fadeSwitch(to) {
+  const from = tracks[current];
+  const target = tracks[to];
+  const step = 0.05;
 
-  document.getElementById('prevTrack').onclick = () => {
-    currentTrack = (currentTrack - 1 + tracks.length) % tracks.length;
-    player.src = tracks[currentTrack];
-    player.play();
-  };
+  const out = setInterval(() => {
+    if (from.volume > 0) from.volume -= step;
+    else {
+      clearInterval(out);
+      from.pause();
+      from.currentTime = 0;
+      target.volume = 0;
+      target.play();
+      const fade = setInterval(() => {
+        if (target.volume < 0.6) target.volume += step;
+        else clearInterval(fade);
+      }, 50);
+    }
+  }, 50);
 
-  document.getElementById('muteBtn').onclick = () => {
-    player.muted = !player.muted;
-  };
+  current = to;
+}
 
-  /* TRAY */
-  const tray = document.getElementById('tray');
-  const trayTab = document.getElementById('trayTab');
-  const traySound = document.getElementById('traySound');
+document.getElementById('nextTrack').onclick = () =>
+  fadeSwitch((current + 1) % tracks.length);
 
-  trayTab.onclick = () => {
-    tray.classList.toggle('open');
-    trayTab.textContent = tray.classList.contains('open') ? '▼' : '▲';
-    traySound.currentTime = 0;
-    traySound.play();
-  };
+document.getElementById('prevTrack').onclick = () =>
+  fadeSwitch((current - 1 + tracks.length) % tracks.length);
 
-  /* BURGER */
-  const burger = document.getElementById('burgerMenu');
-  const panel = document.getElementById('burgerMenuContent');
+document.getElementById('muteBtn').onclick = () => {
+  const muted = !tracks[0].muted;
+  tracks.forEach(t => t.muted = muted);
+};
 
-  burger.onclick = () => {
-    panel.style.left = panel.style.left === '0px' ? '-220px' : '0px';
-  };
+/* Tray */
+const tray = document.getElementById('tray');
+const trayTab = document.getElementById('trayTab');
+const traySound = document.getElementById('traySound');
 
-  /* DARK MODE */
-  const overlay = document.getElementById('darkModeOverlay');
-  let dark = false;
-  document.getElementById('darkModeBtn').onclick = () => {
-    dark = !dark;
-    overlay.style.opacity = dark ? 1 : 0;
-  };
+trayTab.onclick = () => {
+  tray.classList.toggle('open');
+  trayTab.textContent = tray.classList.contains('open') ? '▼' : '▲';
+  traySound.currentTime = 0;
+  traySound.play();
+};
 
-  /* TOOLTIP */
-  const tooltip = document.getElementById('tooltip');
-  function tip(el, text) {
-    el.onmouseenter = () => {
-      tooltip.textContent = text;
-      tooltip.style.opacity = 1;
-    };
-    el.onmouseleave = () => tooltip.style.opacity = 0;
-    el.onmousemove = e => {
-      tooltip.style.left = e.clientX + 15 + 'px';
-      tooltip.style.top = e.clientY + 15 + 'px';
-    };
+/* Burger */
+const burgerMenu = document.getElementById('burgerMenu');
+const burgerContent = document.getElementById('burgerMenuContent');
+burgerMenu.onclick = () => {
+  burgerContent.style.left =
+    burgerContent.style.left === '0px' ? '-220px' : '0px';
+};
+
+/* Dark mode */
+const darkOverlay = document.getElementById('darkModeOverlay');
+let dark = false;
+document.getElementById('darkModeBtn').onclick = () => {
+  dark = !dark;
+  darkOverlay.style.opacity = dark ? 1 : 0;
+};
+
+/* Dragging */
+const trashBin = document.getElementById('trashBin');
+const pickupSound = document.getElementById('pickupSound');
+const binSound = document.getElementById('binSound');
+
+let active = null, offX = 0, offY = 0;
+
+document.querySelectorAll('.draggable').forEach(el => {
+  el.addEventListener('mousedown', e => {
+    active = el;
+    const r = el.getBoundingClientRect();
+    offX = e.clientX - r.left;
+    offY = e.clientY - r.top;
+    el.style.zIndex = 3000;
+    pickupSound.currentTime = 0;
+    pickupSound.play();
+    document.addEventListener('mousemove', drag);
+    document.addEventListener('mouseup', drop);
+  });
+});
+
+function drag(e) {
+  if (!active) return;
+  active.style.left = e.clientX - offX + 'px';
+  active.style.top = e.clientY - offY + 'px';
+  active.style.transform = `rotate(${Math.sin(Date.now()/80)*2}deg)`;
+}
+
+function drop() {
+  if (!active) return;
+  active.style.transform = 'rotate(0deg)';
+  const a = active.getBoundingClientRect();
+  const b = trashBin.getBoundingClientRect();
+  if (a.right > b.left && a.left < b.right && a.bottom > b.top && a.top < b.bottom) {
+    binSound.currentTime = 0;
+    binSound.play();
+    active.remove();
   }
+  active.style.zIndex = '';
+  active = null;
+  document.removeEventListener('mousemove', drag);
+  document.removeEventListener('mouseup', drop);
+}
 
-  tip(document.getElementById('peachTea'), 'I love peach tea');
-  tip(document.getElementById('table'), 'a sturdy wooden table');
-  tip(document.getElementById('envelope'), 'an envelope full of texts');
+/* Tooltips */
+const tooltip = document.getElementById('tooltip');
+function tip(el, text) {
+  el.addEventListener('mouseenter', () => {
+    tooltip.textContent = text;
+    tooltip.style.opacity = 1;
+  });
+  el.addEventListener('mouseleave', () => tooltip.style.opacity = 0);
+  el.addEventListener('mousemove', e => {
+    tooltip.style.left = e.clientX + 15 + 'px';
+    tooltip.style.top = e.clientY + 15 + 'px';
+  });
+}
+
+tip(document.getElementById('peachTea'), 'I love peach tea');
+tip(document.getElementById('table'), 'a sturdy wooden table');
+tip(document.getElementById('envelope'), 'an envelope full of texts');
 
 });
 </script>
