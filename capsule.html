@@ -20,7 +20,9 @@ body {
   width: 100%;
   height: 100vh;
 }
-#container.visible { opacity: 1; }
+#container.visible {
+  opacity: 1;
+}
 
 .draggable {
   position: absolute;
@@ -35,7 +37,11 @@ body {
   transition: transform 0.2s ease;
 }
 
-.draggable img { width: 100%; display: block; border-radius: 0; }
+.draggable img {
+  width: 100%;
+  display: block;
+  border-radius: 0;
+}
 
 .draggable.pure-item {
   background: transparent !important;
@@ -45,9 +51,16 @@ body {
   box-shadow: none !important;
 }
 
-.draggable img.pure { width: 150px; display: block; border-radius: 0; }
+.draggable img.pure {
+  width: 150px;
+  display: block;
+  border-radius: 0;
+}
 
-.draggable p { margin: 5px 0 0 0; font-size: 14px; }
+.draggable p {
+  margin: 5px 0 0 0;
+  font-size: 14px;
+}
 
 #muteBtn {
   position: fixed;
@@ -60,7 +73,7 @@ body {
   border-radius: 6px;
   cursor: pointer;
   font-weight: bold;
-  box-shadow: 0 0 5px rgba(0,0,0,0.3);
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.5);
 }
 
 #tray {
@@ -83,7 +96,9 @@ body {
   overflow: visible;
 }
 
-#tray.open { transform: translateY(0); }
+#tray.open {
+  transform: translateY(0);
+}
 
 #trayTab {
   position: fixed;
@@ -130,8 +145,8 @@ body {
   top: 50%;
   left: 0;
   transform: translateY(-50%);
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   background: white;
   border-radius: 5px;
   display: flex;
@@ -160,9 +175,9 @@ body {
   margin: 10px 0;
   padding: 8px;
   cursor:pointer;
-  border:none;
   background:white;
-  box-shadow:0 0 5px rgba(0,0,0,0.2);
+  border:none;
+  box-shadow: 0 0 5px rgba(0,0,0,0.3);
 }
 
 /* Trash bin */
@@ -173,21 +188,21 @@ body {
   font-size: 48px;
   cursor: pointer;
   z-index: 2000;
-  transition: transform 0.2s ease;
+  transition: transform 0.3s ease;
 }
 
-/* Tooltip */
+/* Tooltip for peach tea */
 #tooltip {
   position: fixed;
-  padding: 4px 8px;
+  pointer-events: none;
+  padding: 3px 6px;
+  font-size: 16px;
   background: rgba(0,0,0,0.6);
   color: white;
-  font-size: 16px;
-  pointer-events: none;
+  border-radius: 4px;
   opacity: 0;
   transition: opacity 0.2s ease;
-  z-index: 3000;
-  border-radius: 4px;
+  z-index: 2010;
 }
 </style>
 </head>
@@ -202,7 +217,7 @@ body {
 
   <button id="muteBtn">Mute</button>
 
-  <!-- Original memory tabs -->
+  <!-- Memory tabs -->
   <div class="draggable" style="top:20px; left:20px;">
     <p>This is our time capsule. It reminds us of what is and has been.</p>
   </div>
@@ -212,7 +227,7 @@ body {
 
   <div id="tray">
     <div id="trayItems">
-      <div class="draggable pure-item" style="top:20px; left:20px;" id="peachTea">
+      <div class="draggable pure-item" style="top:20px; left:20px;">
         <img src="images/peachtea.webp" alt="Peach Tea" class="pure">
       </div>
     </div>
@@ -225,14 +240,15 @@ body {
   <div id="burgerMenu">☰</div>
   <div id="burgerMenuContent">
     <button id="darkModeBtn">🌙 Dark Mode</button>
-    <div style="display:flex; justify-content:center; gap:4px; margin-top:10px;">
-      <button id="prevTrack">⏮️</button>
-      <button id="nextTrack">⏭️</button>
+    <div id="musicControls" style="display:flex;justify-content:center;margin-top:10px;">
+      <button id="prevTrack">⏮</button>
+      <button id="nextTrack">⏭</button>
     </div>
   </div>
 
   <div id="trashBin">🗑️</div>
-  <div id="tooltip"></div>
+
+  <div id="tooltip">I love peach tea</div>
 </div>
 
 <script>
@@ -251,152 +267,152 @@ const binSound = document.getElementById('binSound');
 const traySound = document.getElementById('traySound');
 const tooltip = document.getElementById('tooltip');
 
-const backgroundTracks = [
-  document.getElementById('background'),
-  document.getElementById('background2'),
-  document.getElementById('background3')
-];
+// Music
+const musicTracks = [document.getElementById('background'), document.getElementById('background2'), document.getElementById('background3')];
 let currentTrack = 0;
-let darkModeActive = false;
+musicTracks.forEach(track => { track.volume=0.6; });
+musicTracks[currentTrack].play();
 
+document.getElementById('nextTrack').addEventListener('click', ()=>{
+  fadeOutInTrack(1);
+});
+document.getElementById('prevTrack').addEventListener('click', ()=>{
+  fadeOutInTrack(-1);
+});
+
+function fadeOutInTrack(direction){
+  let current = musicTracks[currentTrack];
+  let nextIndex = (currentTrack + direction + musicTracks.length) % musicTracks.length;
+  let next = musicTracks[nextIndex];
+  let vol = 0.6;
+  let fadeOut = setInterval(()=>{
+    if(current.volume>0.05){ current.volume -=0.05; } else { clearInterval(fadeOut); current.pause(); current.currentTime=0; next.volume=0; next.play(); fadeIn(next); currentTrack=nextIndex; }
+  },50);
+}
+
+function fadeIn(track){
+  let fadeIn = setInterval(()=>{
+    if(track.volume<0.6){ track.volume +=0.05; } else { clearInterval(fadeIn); }
+  },50);
+}
+
+// Delay for tooltip
+let tooltipTimeout;
+
+// Event listeners
 window.addEventListener('DOMContentLoaded', () => {
-  requestAnimationFrame(() => container.classList.add('visible'));
-  backgroundTracks[0].volume = 0.6;
-  backgroundTracks[0].play().catch(()=>{});
+  requestAnimationFrame(()=>container.classList.add('visible'));
 });
 
 muteBtn.addEventListener('click', () => {
-  backgroundTracks.forEach(track => track.muted = !track.muted);
-  muteBtn.textContent = backgroundTracks[0].muted ? 'Unmute' : 'Mute';
+  musicTracks.forEach(track => track.muted = !track.muted);
+  muteBtn.textContent = musicTracks[0].muted ? 'Unmute' : 'Mute';
 });
 
 trayTab.addEventListener('click', () => {
-  const isOpening = !tray.classList.contains('open');
   tray.classList.toggle('open');
   trayTab.textContent = tray.classList.contains('open') ? '▼' : '▲';
-  traySound.currentTime = 0;
+  traySound.currentTime=0;
   traySound.play();
 });
 
 burgerMenu.addEventListener('click', () => {
-  burgerContent.style.left = burgerContent.style.left === '0px' ? '-200px' : '0px';
+  burgerContent.style.left = burgerContent.style.left==='0px'?'-200px':'0px';
 });
 
 darkModeBtn.addEventListener('click', () => {
-  darkModeActive = !darkModeActive;
-  darkOverlay.style.opacity = darkModeActive ? 1 : 0;
+  darkOverlay.style.opacity = darkOverlay.style.opacity==='1'?0:1;
 });
 
-document.getElementById('nextTrack').addEventListener('click', () => changeTrack(1));
-document.getElementById('prevTrack').addEventListener('click', () => changeTrack(-1));
-
-function changeTrack(dir){
-  let oldTrack = backgroundTracks[currentTrack];
-  currentTrack += dir;
-  if(currentTrack < 0) currentTrack = backgroundTracks.length-1;
-  if(currentTrack >= backgroundTracks.length) currentTrack = 0;
-  let newTrack = backgroundTracks[currentTrack];
-  
-  oldTrack.pause();
-  oldTrack.currentTime = 0;
-  
-  newTrack.volume = 0;
-  newTrack.currentTime = 0;
-  newTrack.play();
-  let fadeIn = setInterval(()=>{
-    newTrack.volume += 0.05;
-    if(newTrack.volume >= 0.6) clearInterval(fadeIn);
-  },50);
-}
-
-function makeDraggable(item){
-  let offsetX, offsetY, lastX=0,lastY=0;
-  item.addEventListener('mousedown', e=>{
-    e.preventDefault();
-    pickupSound.currentTime=0;
-    pickupSound.play();
-    
-    const rect = item.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
-    lastX = e.clientX;
-    lastY = e.clientY;
-    
-    item.style.left = rect.left+'px';
-    item.style.top = rect.top+'px';
-    document.body.appendChild(item);
-    item.style.zIndex = 1000;
-    item.style.transition = "transform 0s";
-
-    function onMouseMove(e){
-      const dx=e.clientX-lastX;
-      const dy=e.clientY-lastY;
-      const swing=Math.min(Math.sqrt(dx*dx+dy*dy)*0.2,5);
-      let scale = 1.05;
-      const binRect = trashBin.getBoundingClientRect();
-      if(e.clientX>=binRect.left && e.clientX<=binRect.right && e.clientY>=binRect.top && e.clientY<=binRect.bottom){
-        scale = 0.85;
-      }
-      item.style.transform = `rotate(${swing}deg) scale(${scale})`;
-      item.style.left = (e.clientX-offsetX)+'px';
-      item.style.top = (e.clientY-offsetY)+'px';
-      lastX = e.clientX;
-      lastY = e.clientY;
-    }
-
-    function onMouseUp(e){
-      document.removeEventListener('mousemove',onMouseMove);
-      item.style.transition = "transform 0.2s ease";
-      item.style.transform = "scale(1) rotate(0deg)";
-
-      const trayRect = tray.getBoundingClientRect();
-      if(e.clientY>trayRect.top){
-        trayItems.appendChild(item);
-        const trayRectNew = trayItems.getBoundingClientRect();
-        item.style.left = (e.clientX-trayRectNew.left-offsetX)+'px';
-        item.style.top = (e.clientY-trayRectNew.top-offsetY)+'px';
-      }
-
-      const binRect = trashBin.getBoundingClientRect();
-      if(e.clientX>=binRect.left && e.clientX<=binRect.right && e.clientY>=binRect.top && e.clientY<=binRect.bottom){
-        binSound.currentTime=0;
-        binSound.play();
-        item.remove();
-      }
-    }
-
-    document.addEventListener('mousemove',onMouseMove);
-    document.addEventListener('mouseup',onMouseUp,{once:true});
-  });
-  item.ondragstart = ()=>false;
-}
-
-// Make all draggables
-document.querySelectorAll('.draggable').forEach(makeDraggable);
-
 // Tooltip for peach tea
-const peach = document.getElementById('peachTea');
-let tooltipTimeout;
-peach.addEventListener('mousemove', e=>{
-  const rect = peach.getBoundingClientRect();
+const peachTea = document.querySelector('.pure-item img.pure');
+peachTea.addEventListener('mouseenter', e=>{
+  tooltipTimeout=setTimeout(()=>{
+    tooltip.style.opacity=1;
+  },250); // slightly shorter delay
+});
+peachTea.addEventListener('mouseleave', e=>{
+  clearTimeout(tooltipTimeout);
+  tooltip.style.opacity=0;
+});
+peachTea.addEventListener('mousemove', e=>{
+  const rect = peachTea.getBoundingClientRect();
   const centerX = rect.left + rect.width/2;
   const centerY = rect.top + rect.height/2;
   const distX = e.clientX - centerX;
   const distY = e.clientY - centerY;
   if(Math.abs(distX)<rect.width/2 && Math.abs(distY)<rect.height/2){
-    clearTimeout(tooltipTimeout);
-    tooltipTimeout = setTimeout(()=>{
-      tooltip.textContent="I love peach tea";
-      tooltip.style.opacity=1;
-    },200);
     tooltip.style.left = (e.clientX+15)+'px';
     tooltip.style.top = (e.clientY+15)+'px';
-  }else{
-    tooltip.style.opacity=0;
   }
 });
-peach.addEventListener('mouseleave',()=>{ tooltip.style.opacity=0; });
 
+// Drag and drop
+function makeDraggable(item){
+  let offsetX, offsetY,lastX=0,lastY=0;
+  item.addEventListener('mousedown', e=>{
+    e.preventDefault();
+    pickupSound.currentTime=0;
+    pickupSound.play();
+
+    const rect = item.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+    lastX = e.clientX; lastY = e.clientY;
+
+    const bodyRect = document.body.getBoundingClientRect();
+    item.style.left = (rect.left - bodyRect.left)+'px';
+    item.style.top = (rect.top - bodyRect.top)+'px';
+    item.style.position = 'absolute';
+    item.style.zIndex=1000;
+    item.style.transition="transform 0s";
+
+    if(item.parentElement!==document.body) document.body.appendChild(item);
+
+    function onMouseMove(e){
+      const dx = e.clientX - lastX;
+      const dy = e.clientY - lastY;
+      const swing = Math.min(Math.sqrt(dx*dx+dy*dy)*0.2,5);
+      let scale=1.05;
+
+      const binRect = trashBin.getBoundingClientRect();
+      if(e.clientX>=binRect.left && e.clientX<=binRect.right && e.clientY>=binRect.top && e.clientY<=binRect.bottom){
+        scale=0.85;
+      }
+
+      item.style.transform=`rotate(${swing}deg) scale(${scale})`;
+      item.style.left=(e.clientX - offsetX)+'px';
+      item.style.top=(e.clientY - offsetY)+'px';
+      lastX = e.clientX; lastY = e.clientY;
+    }
+
+    function onMouseUp(e){
+      document.removeEventListener('mousemove',onMouseMove);
+      item.style.transition="transform 0.2s ease";
+      item.style.transform="scale(1) rotate(0deg)";
+
+      const trayRect = tray.getBoundingClientRect();
+      if(e.clientY>trayRect.top){
+        trayItems.appendChild(item);
+        const trayRectNew = trayItems.getBoundingClientRect();
+        item.style.left=(e.clientX - trayRectNew.left - offsetX)+'px';
+        item.style.top=(e.clientY - trayRectNew.top - offsetY)+'px';
+      }
+
+      const binRect = trashBin.getBoundingClientRect();
+      if(e.clientX>=binRect.left && e.clientX<=binRect.right && e.clientY>=binRect.top && e.clientY<=binRect.bottom){
+        binSound.currentTime=0; binSound.play();
+        item.remove();
+      }
+    }
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp,{once:true});
+  });
+  item.ondragstart=()=>false;
+}
+
+document.querySelectorAll('.draggable').forEach(makeDraggable);
 </script>
 </body>
 </html>
