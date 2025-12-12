@@ -85,14 +85,14 @@ const pickupSound = document.getElementById('pickup');
 const backgroundSound = document.getElementById('background');
 const muteBtn = document.getElementById('muteBtn');
 
-// Background music fade-in
+// Background music fade-in to 50%
 window.addEventListener('DOMContentLoaded', () => {
   backgroundSound.volume = 0;  // start silent
   backgroundSound.play().catch(()=>{});  // user already interacted via index.html
   let vol = 0;
   const fadeInterval = setInterval(() => {
-    vol += 0.01; // slower, smoother fade
-    if(vol >= 0.5){ 
+    vol += 0.01; // fade speed
+    if(vol >= 0.5){   // target volume 50%
       vol = 0.5;
       clearInterval(fadeInterval);
     }
