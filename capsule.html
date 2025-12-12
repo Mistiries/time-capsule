@@ -74,6 +74,54 @@
     font-weight: bold;
     box-shadow: 2px 2px 6px rgba(0,0,0,0.5);
   }
+
+  /* Tray styling */
+  #tray {
+    position: fixed;
+    bottom: -25%;
+    left: 0;
+    width: 100%;
+    height: 25%;
+    background: rgba(240,240,240,0.9);
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    box-shadow: 0 -3px 10px rgba(0,0,0,0.3);
+    transition: bottom 0.5s ease;
+    z-index: 500;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding: 10px;
+    overflow: hidden;
+  }
+
+  #tray.open {
+    bottom: 0;
+  }
+
+  #trayTab {
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 25px;
+    background: rgba(200,200,200,0.9);
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.3);
+  }
+
+  #trayItems {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
 </style>
 </head>
 <body>
@@ -87,7 +135,7 @@
   <!-- Mute / Unmute Button -->
   <button id="muteBtn">Mute</button>
 
-  <!-- Draggable Notes / Images -->
+  <!-- Draggable Notes / Images on desk -->
   <div class="draggable" style="top:50px; left:50px;">
     <p>Memory note 1</p>
   </div>
@@ -106,9 +154,15 @@
     <p>Another memory</p>
   </div>
 
-  <!-- Peach Tea Image (pure, no background/padding/box) -->
-  <div class="draggable pure-item" style="top:200px; left:60%;">
-    <img src="images/peachtea.webp" alt="Peach Tea" class="pure">
+  <!-- Tray -->
+  <div id="tray">
+    <div id="trayTab">▲</div>
+    <div id="trayItems">
+      <!-- Peach Tea inside tray -->
+      <div class="draggable pure-item" style="top:20px; left:20px;">
+        <img src="images/peachtea.webp" alt="Peach Tea" class="pure">
+      </div>
+    </div>
   </div>
 
 </div>
@@ -135,6 +189,15 @@ window.addEventListener('DOMContentLoaded', () => {
 muteBtn.addEventListener('click', () => {
   backgroundSound.muted = !backgroundSound.muted;
   muteBtn.textContent = backgroundSound.muted ? 'Unmute' : 'Mute';
+});
+
+// Tray toggle
+const tray = document.getElementById('tray');
+const trayTab = document.getElementById('trayTab');
+
+trayTab.addEventListener('click', () => {
+  tray.classList.toggle('open');
+  trayTab.textContent = tray.classList.contains('open') ? '▼' : '▲';
 });
 
 // Draggable functionality with swing and shrink
