@@ -30,8 +30,8 @@
     background:rgba(255,255,255,0.85);
     border-radius:10px;
     box-shadow: 3px 3px 10px rgba(0,0,0,0.5);
-    min-width:108px; /* 120px * 0.9 */
-    max-width:180px; /* 200px * 0.9 */
+    min-width:108px;
+    max-width:180px;
     transform: rotate(0deg) scale(0.9);
     transition: transform 0.2s ease;
   }
@@ -93,8 +93,8 @@
     <p>Another memory</p>
   </div>
 
-  <!-- New Peach Tea Image (5% smaller than normal) -->
-  <div class="draggable" style="top:250px; left:350px; transform: rotate(0deg) scale(0.855);">
+  <!-- Peach Tea Image, centered slightly to the right -->
+  <div class="draggable" style="top:50%; left:60%; width:150px; transform: translate(-50%, -50%) scale(0.855);">
     <img src="images/peachtea.webp" alt="Peach Tea">
   </div>
 
@@ -160,15 +160,13 @@ draggables.forEach(item => {
       document.removeEventListener('mousemove', onMouseMove);
 
       item.style.transition = "transform 0.2s ease";
-      item.style.transform = "rotate(0deg) scale(0.9)"; // normal scale after drop
-      setTimeout(() => {
-        // for Peach Tea, keep its smaller scale
-        if(item.querySelector('img') && item.querySelector('img').alt === "Peach Tea"){
-          item.style.transform = "rotate(0deg) scale(0.855)";
-        } else {
-          item.style.transform = "rotate(0deg) scale(0.9)";
-        }
-      }, 200);
+
+      // Keep Peach Tea scale smaller after drop
+      if(item.querySelector('img') && item.querySelector('img').alt === "Peach Tea"){
+        item.style.transform = "translate(-50%, -50%) scale(0.855)";
+      } else {
+        item.style.transform = "rotate(0deg) scale(0.9)";
+      }
     };
 
     document.addEventListener('mousemove', onMouseMove);
