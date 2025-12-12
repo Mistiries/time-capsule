@@ -52,7 +52,7 @@ body {
 }
 
 .draggable img.pure {
-  width: 150px;
+  width: 135px; /* slightly smaller memory tabs */
   display: block;
   border-radius: 0;
 }
@@ -123,6 +123,9 @@ body {
   position: relative;
   width: 100%;
   height: 100%;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
 }
 
 /* Dark Mode Overlay */
@@ -175,6 +178,8 @@ body {
   margin: 10px 0;
   padding: 8px;
   cursor:pointer;
+  font-size: 14px;
+  border-radius: 5px;
 }
 
 /* Trash bin */
@@ -185,36 +190,36 @@ body {
   font-size: 48px;
   cursor: pointer;
   z-index: 2000;
-  transition: transform 0.2s ease;
+  transition: transform 0.3s ease;
 }
 
-/* Tooltip for hover */
-.tooltip {
+/* Tooltip */
+#tooltip {
   position: fixed;
-  padding: 4px 6px;
-  font-size: 14px;
-  background: rgba(0,0,0,0.6);
+  padding: 4px 8px;
+  background: rgba(0,0,0,0.7);
   color: white;
-  border-radius: 4px;
+  font-size: 14px;
   pointer-events: none;
+  border-radius: 4px;
   opacity: 0;
-  transition: opacity 0.3s;
-  z-index: 3000;
+  transition: opacity 0.2s ease;
+  z-index: 2100;
 }
 </style>
 </head>
 <body>
 <div id="container">
-  <!-- Audio files -->
+  <audio id="pickup" src="sounds/pickup.mp3"></audio>
   <audio id="background" src="sounds/background.mp3" loop></audio>
   <audio id="background2" src="sounds/background2.mp3" loop></audio>
   <audio id="background3" src="sounds/background3.mp3" loop></audio>
-  <audio id="pickup" src="sounds/pickup.mp3"></audio>
   <audio id="binSound" src="sounds/bin.mp3"></audio>
+  <audio id="traySound" src="sounds/tray.mp3"></audio>
 
   <button id="muteBtn">Mute</button>
 
-  <!-- Memory tabs -->
+  <!-- Original memory tabs only -->
   <div class="draggable" style="top:20px; left:20px;">
     <p>This is our time capsule. It reminds us of what is and has been.</p>
   </div>
@@ -224,7 +229,7 @@ body {
 
   <div id="tray">
     <div id="trayItems">
-      <div class="draggable pure-item" style="top:20px; left:20px;">
+      <div class="draggable pure-item" style="top:0; left:0;">
         <img src="images/peachtea.webp" alt="Peach Tea" class="pure" data-tooltip="I love peach tea">
       </div>
     </div>
@@ -238,24 +243,31 @@ body {
   <div id="burgerMenuContent">
     <button id="darkModeBtn">🌙 Dark Mode</button>
     <!-- Music controls -->
-    <div id="musicControls" style="display:flex; justify-content:space-around; margin-top:10px;">
-      <button id="prevTrack" style="flex:1; margin-right:5px; padding:8px;">⏮️</button>
-      <button id="nextTrack" style="flex:1; margin-left:5px; padding:8px;">⏭️</button>
+    <div id="musicControls" style="display:flex; justify-content: space-between; margin-top: 10px;">
+      <button id="prevTrack">⏮️</button>
+      <button id="nextTrack">⏭️</button>
     </div>
   </div>
 
   <div id="trashBin">🗑️</div>
-  <div class="tooltip" id="tooltip"></div>
+  <div id="tooltip"></div>
 </div>
 
 <script>
 const pickupSound = document.getElementById('pickup');
+const backgroundTracks = [
+  document.getElementById('background'),
+  document.getElementById('background2'),
+  document.getElementById('background3')
+];
 const binSound = document.getElementById('binSound');
+const traySound = document.getElementById('traySound');
 const muteBtn = document.getElementById('muteBtn');
 const container = document.getElementById('container');
 const tray = document.getElementById('tray');
 const trayItems = document.getElementById('trayItems');
 const trayTab = document.getElementById('trayTab');
+
 const darkOverlay = document.getElementById('darkModeOverlay');
 const burgerMenu = document.getElementById('burgerMenu');
 const burgerContent = document.getElementById('burgerMenuContent');
@@ -264,107 +276,96 @@ const trashBin = document.getElementById('trashBin');
 const tooltip = document.getElementById('tooltip');
 
 let darkModeActive = false;
-
-// Playlist
-const playlist = [
-  document.getElementById('background'),
-  document.getElementById('background2'),
-  document.getElementById('background3')
-];
 let currentTrackIndex = 0;
-playlist[currentTrackIndex].volume = 0;
-playlist[currentTrackIndex].play().catch(()=>{fadeInAudio(playlist[currentTrackIndex]);});
+let playlist = backgroundTracks;
 
-// Fade helper functions
-function fadeInAudio(audio, duration=500) {
-  audio.volume = 0;
-  audio.play().catch(()=>{});
-  const step = 50 / duration;
-  let vol = 0;
-  const fade = setInterval(()=>{
-    vol += step;
-    if(vol >= 0.6) {vol=0.6; clearInterval(fade);}
-    audio.volume = vol;
-  },50);
-}
-
-function fadeOutAudio(audio, callback=null, duration=500){
-  const step = 50 / duration;
-  let vol = audio.volume;
-  const fade = setInterval(()=>{
-    vol -= step;
-    if(vol <= 0){vol=0; clearInterval(fade); audio.pause(); if(callback) callback();}
-    audio.volume = vol;
-  },50);
-}
-
-function playTrack(index){
-  if(index === currentTrackIndex) return;
-  fadeOutAudio(playlist[currentTrackIndex], ()=>{
-    currentTrackIndex = index;
-    fadeInAudio(playlist[currentTrackIndex]);
-  });
-}
-
-// DOM loaded
 window.addEventListener('DOMContentLoaded', () => {
   requestAnimationFrame(() => container.classList.add('visible'));
-  playlist[currentTrackIndex].volume = 0.6;
+  backgroundTracks.forEach(track => track.volume = 0.6);
+  backgroundTracks.forEach(track => track.pause());
+  playlist[currentTrackIndex].play().catch(()=>{});
 });
 
-// Mute button
 muteBtn.addEventListener('click', () => {
-  playlist.forEach(a=>a.muted = !a.muted);
-  pickupSound.muted = !pickupSound.muted;
-  binSound.muted = !binSound.muted;
-  muteBtn.textContent = playlist[0].muted ? 'Unmute' : 'Mute';
+  backgroundTracks.forEach(track => track.muted = !track.muted);
+  muteBtn.textContent = backgroundTracks[0].muted ? 'Unmute' : 'Mute';
 });
 
-// Tray toggle
 trayTab.addEventListener('click', () => {
   tray.classList.toggle('open');
   trayTab.textContent = tray.classList.contains('open') ? '▼' : '▲';
+  traySound.currentTime = 0;
+  traySound.play();
 });
 
-// Burger toggle
 burgerMenu.addEventListener('click', () => {
   burgerContent.style.left = burgerContent.style.left === '0px' ? '-200px' : '0px';
 });
 
-// Dark mode
 darkModeBtn.addEventListener('click', () => {
   darkModeActive = !darkModeActive;
   darkOverlay.style.opacity = darkModeActive ? 1 : 0;
 });
 
-// Music buttons
-document.getElementById('nextTrack').addEventListener('click', ()=> {
-  let nextIndex = (currentTrackIndex + 1) % playlist.length;
+function fadeOutAudio(audio, duration=500, callback=null){
+  const step = 50/duration*audio.volume;
+  let vol = audio.volume;
+  const fade = setInterval(()=>{
+    vol -= step;
+    if(vol<=0){vol=0; clearInterval(fade); audio.pause(); if(callback) callback();}
+    audio.volume = vol;
+  },50);
+}
+
+function fadeInAudio(audio, duration=500){
+  audio.volume=0;
+  audio.currentTime=0;
+  audio.play().catch(()=>{});
+  const step=0.05;
+  let vol=0;
+  const fade=setInterval(()=>{
+    vol+=step;
+    if(vol>=0.6){vol=0.6; clearInterval(fade);}
+    audio.volume=vol;
+  },50);
+}
+
+function playTrack(index){
+  if(index===currentTrackIndex) return;
+  fadeOutAudio(playlist[currentTrackIndex], 500, ()=>{
+    currentTrackIndex=index;
+    fadeInAudio(playlist[currentTrackIndex], 500);
+  });
+}
+
+document.getElementById('nextTrack').addEventListener('click', ()=>{
+  let nextIndex=(currentTrackIndex+1)%playlist.length;
   playTrack(nextIndex);
 });
-document.getElementById('prevTrack').addEventListener('click', ()=> {
-  let prevIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length;
+document.getElementById('prevTrack').addEventListener('click', ()=>{
+  let prevIndex=(currentTrackIndex-1+playlist.length)%playlist.length;
   playTrack(prevIndex);
 });
 
-// Dragging
 function makeDraggable(item) {
   let offsetX, offsetY;
-  let lastX=0, lastY=0;
+  let lastX = 0, lastY = 0;
 
-  item.addEventListener('mousedown', e=>{
+  item.addEventListener('mousedown', e => {
     e.preventDefault();
-    pickupSound.currentTime=0; pickupSound.play();
+    pickupSound.currentTime=0;
+    pickupSound.play();
 
-    const rect = item.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
+    const itemRect = item.getBoundingClientRect();
+    offsetX = e.clientX - itemRect.left;
+    offsetY = e.clientY - itemRect.top;
+
     lastX = e.clientX;
     lastY = e.clientY;
 
     const bodyRect = document.body.getBoundingClientRect();
-    item.style.left = (rect.left - bodyRect.left) + 'px';
-    item.style.top = (rect.top - bodyRect.top) + 'px';
+    item.style.left = (itemRect.left - bodyRect.left) + 'px';
+    item.style.top = (itemRect.top - bodyRect.top) + 'px';
     document.body.appendChild(item);
     item.style.zIndex = 1000;
     item.style.transition = "transform 0s";
@@ -372,22 +373,22 @@ function makeDraggable(item) {
     function onMouseMove(e){
       const dx = e.clientX - lastX;
       const dy = e.clientY - lastY;
-      const swing = Math.min(Math.sqrt(dx*dx + dy*dy)*0.2,5);
+      const swing = Math.min(Math.sqrt(dx*dx + dy*dy)*0.2, 5);
       item.style.transform = `rotate(${swing}deg) scale(1.05)`;
-      item.style.left = (e.clientX - offsetX) + 'px';
-      item.style.top = (e.clientY - offsetY) + 'px';
+      item.style.left = (e.clientX - offsetX)+'px';
+      item.style.top = (e.clientY - offsetY)+'px';
       lastX = e.clientX;
       lastY = e.clientY;
 
-      // Bin hover shrink
-      const binRect = trashBin.getBoundingClientRect();
-      const dxCenter = e.clientX - (binRect.left + binRect.width/2);
-      const dyCenter = e.clientY - (binRect.top + binRect.height/2);
-      const dist = Math.sqrt(dxCenter*dxCenter + dyCenter*dyCenter);
-      if(dist < 100){
-        const scale = 1 - (0.2 * Math.min(dist/100,1));
-        item.style.transition = "transform 0.1s ease";
-        item.style.transform = `rotate(${swing}deg) scale(${scale})`;
+      // shrink when hovering bin smoothly
+      const binRect=trashBin.getBoundingClientRect();
+      const hoverX = e.clientX>=binRect.left && e.clientX<=binRect.right;
+      const hoverY = e.clientY>=binRect.top && e.clientY<=binRect.bottom;
+      if(hoverX && hoverY){
+        item.style.transition="transform 0.2s ease";
+        item.style.transform = `rotate(${swing}deg) scale(0.85)`;
+      } else {
+        item.style.transition="transform 0s";
       }
     }
 
@@ -401,40 +402,40 @@ function makeDraggable(item) {
       if(e.clientY > trayRect.top){
         trayItems.appendChild(item);
         const trayRectNew = trayItems.getBoundingClientRect();
-        item.style.left = (e.clientX - trayRectNew.left - offsetX) + 'px';
-        item.style.top = (e.clientY - trayRectNew.top - offsetY) + 'px';
+        item.style.left = (e.clientX - trayRectNew.left - offsetX)+'px';
+        item.style.top = (e.clientY - trayRectNew.top - offsetY)+'px';
       }
 
-      // Bin drop
+      // Trash bin drop
       const binRect = trashBin.getBoundingClientRect();
-      if (
-        e.clientX >= binRect.left &&
-        e.clientX <= binRect.right &&
-        e.clientY >= binRect.top &&
-        e.clientY <= binRect.bottom
-      ){
-        binSound.currentTime=0; binSound.play();
+      if(e.clientX>=binRect.left && e.clientX<=binRect.right &&
+         e.clientY>=binRect.top && e.clientY<=binRect.bottom){
+        binSound.currentTime=0;
+        binSound.play();
         item.remove();
       }
     }
 
     document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp,{once:true});
+    document.addEventListener('mouseup', onMouseUp, {once:true});
   });
 
   item.ondragstart=()=>false;
 
   // Tooltip for Peach Tea
-  if(item.querySelector('img[data-tooltip]')){
-    const img = item.querySelector('img');
+  const img=item.querySelector('img[data-tooltip]');
+  if(img){
     img.addEventListener('mouseenter', (e)=>{
       tooltip.textContent = img.dataset.tooltip;
       tooltip.style.opacity = 1;
-      const rect = img.getBoundingClientRect();
-      tooltip.style.left = rect.right + 10 + 'px';
-      tooltip.style.top = rect.top + 'px';
     });
-    img.addEventListener('mouseleave', ()=>{ tooltip.style.opacity = 0; });
+    img.addEventListener('mousemove', (e)=>{
+      tooltip.style.left = (e.clientX+15)+'px';
+      tooltip.style.top = (e.clientY+15)+'px';
+    });
+    img.addEventListener('mouseleave', ()=>{
+      tooltip.style.opacity = 0;
+    });
   }
 }
 
