@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Your Time Capsule</title>
+<title>Your Interactive Time Capsule</title>
 <style>
   body {
     margin:0;
@@ -22,8 +22,8 @@
     box-shadow: 3px 3px 10px rgba(0,0,0,0.5);
     min-width:120px;
     max-width:200px;
-    touch-action: none; /* needed for mobile dragging */
-    transform: rotate(0deg); /* optional, you can randomize for messy look */
+    transform: rotate(0deg) scale(1);
+    transition: transform 0.2s ease; /* smooth drop animation */
   }
 
   .draggable img {
@@ -38,6 +38,10 @@
 </style>
 </head>
 <body>
+
+<!-- Sounds -->
+<audio id="pickup" src="https://www.soundjay.com/buttons/sounds/button-16.mp3"></audio>
+<audio id="drop" src="https://www.soundjay.com/buttons/sounds/button-09.mp3"></audio>
 
 <!-- Draggable Notes / Images -->
 <div class="draggable" style="top:50px; left:50px;">
@@ -60,45 +64,51 @@
 
 <script>
 const draggables = document.querySelectorAll('.draggable');
+const pickupSound = document.getElementById('pickup');
+const dropSound = document.getElementById('drop');
 
 draggables.forEach(item => {
   let offsetX, offsetY;
+  let lastX = 0, lastY = 0;
 
-  const startDrag = (x, y) => {
-    offsetX = x - item.getBoundingClientRect().left;
-    offsetY = y - item.getBoundingClientRect().top;
-    item.style.zIndex = 1000;
-  };
-
-  const drag = (x, y) => {
-    item.style.left = (x - offsetX) + 'px';
-    item.style.top = (y - offsetY) + 'px';
-  };
-
-  // Desktop dragging
   item.addEventListener('mousedown', e => {
-    startDrag(e.clientX, e.clientY);
+    e.preventDefault();
+    pickupSound.currentTime = 0;
+    pickupSound.play();
 
-    const onMouseMove = e => drag(e.clientX, e.clientY);
-    document.addEventListener('mousemove', onMouseMove);
+    offsetX = e.clientX - item.getBoundingClientRect().left;
+    offsetY = e.clientY - item.getBoundingClientRect().top;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    item.style.zIndex = 1000;
 
-    document.addEventListener('mouseup', () => {
+    const onMouseMove = e => {
+      const dx = e.clientX - lastX;
+      const dy = e.clientY - lastY;
+      const swing = Math.min(Math.sqrt(dx*dx + dy*dy) * 0.2, 5); // subtle swing max 5 deg
+
+      item.style.transform = `rotate(${swing}deg) scale(1.05)`; // slightly bigger while dragging
+      item.style.left = (e.clientX - offsetX) + 'px';
+      item.style.top = (e.clientY - offsetY) + 'px';
+
+      lastX = e.clientX;
+      lastY = e.clientY;
+    };
+
+    const onMouseUp = e => {
       document.removeEventListener('mousemove', onMouseMove);
-    }, { once: true });
+      item.style.transition = "transform 0.2s ease";
+      item.style.transform = "rotate(0deg) scale(0.95)"; // tiny shrink for drop
+      dropSound.currentTime = 0;
+      dropSound.play();
+      setTimeout(() => { item.style.transform = "rotate(0deg) scale(1)"; }, 200); // return to normal
+    };
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp, { once: true });
   });
 
-  // Mobile dragging
-  item.addEventListener('touchstart', e => {
-    e.preventDefault(); // stop scrolling
-    const touch = e.touches[0];
-    startDrag(touch.clientX, touch.clientY);
-  }, { passive: false });
-
-  item.addEventListener('touchmove', e => {
-    e.preventDefault(); // stop scrolling
-    const touch = e.touches[0];
-    drag(touch.clientX, touch.clientY);
-  }, { passive: false });
+  item.ondragstart = () => false; // prevent default drag
 });
 </script>
 
