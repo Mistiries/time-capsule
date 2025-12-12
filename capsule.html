@@ -62,22 +62,6 @@ body {
   font-size: 14px;
 }
 
-/* Memory tabs: long, slim, spaced */
-.draggable.memory-tab {
-  min-width: 150px;
-  max-width: 180px;
-  height: 40px;
-  padding: 5px;
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  background: rgba(255,255,255,0.9);
-  border-radius: 5px;
-  box-shadow: 2px 2px 6px rgba(0,0,0,0.4);
-}
-
 #muteBtn {
   position: fixed;
   top: 10px;
@@ -148,11 +132,11 @@ body {
   left:0;
   width:100%;
   height:100%;
-  background-color: rgba(0,0,0,0.55); /* 5% lighter */
+  background-color: rgba(0,0,0,0.55);
   pointer-events:none;
   opacity:0;
   transition: opacity 0.3s ease;
-  z-index: 2005; /* above everything when active */
+  z-index: 2005;
 }
 
 /* Burger Menu */
@@ -161,7 +145,7 @@ body {
   top: 50%;
   left: 0;
   transform: translateY(-50%);
-  width: 36px; /* slightly smaller */
+  width: 36px;
   height: 36px;
   background: white;
   border-radius: 5px;
@@ -169,7 +153,7 @@ body {
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  z-index: 2003; /* above tray, below overlay */
+  z-index: 2003;
 }
 
 #burgerMenuContent {
@@ -184,7 +168,7 @@ body {
   flex-direction:column;
   padding: 20px;
   box-sizing:border-box;
-  z-index: 2002; /* below burger button, below overlay */
+  z-index: 2002;
 }
 
 #burgerMenuContent button {
@@ -196,8 +180,8 @@ body {
 /* Trash bin */
 #trashBin {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
+  bottom: 5%; /* moved up 5% */
+  right: 5%;  /* moved left 5% */
   font-size: 48px;
   cursor: pointer;
   z-index: 2000;
@@ -213,17 +197,13 @@ body {
 
   <button id="muteBtn">Mute</button>
 
+  <!-- Original memory tabs only -->
   <div class="draggable" style="top:20px; left:20px;">
     <p>This is our time capsule. It reminds us of what is and has been.</p>
   </div>
   <div class="draggable" style="top:100px; left:20px;">
     <p>Created on the 12th December, 2025.</p>
   </div>
-
-  <!-- Example memory tabs -->
-  <div class="draggable memory-tab" style="top:200px; left:50px;">Memory 1</div>
-  <div class="draggable memory-tab" style="top:250px; left:50px;">Memory 2</div>
-  <div class="draggable memory-tab" style="top:300px; left:50px;">Memory 3</div>
 
   <div id="tray">
     <div id="trayItems">
@@ -305,7 +285,6 @@ function makeDraggable(item) {
     lastX = e.clientX;
     lastY = e.clientY;
 
-    // move item to container body for correct dragging
     const bodyRect = document.body.getBoundingClientRect();
     item.style.left = (itemRect.left - bodyRect.left) + 'px';
     item.style.top = (itemRect.top - bodyRect.top) + 'px';
@@ -322,6 +301,17 @@ function makeDraggable(item) {
       item.style.top = (e.clientY - offsetY) + 'px';
       lastX = e.clientX;
       lastY = e.clientY;
+
+      // shrink when hovering bin
+      const binRect = trashBin.getBoundingClientRect();
+      if (
+        e.clientX >= binRect.left &&
+        e.clientX <= binRect.right &&
+        e.clientY >= binRect.top &&
+        e.clientY <= binRect.bottom
+      ) {
+        item.style.transform = `rotate(${swing}deg) scale(0.85)`;
+      }
     }
 
     function onMouseUp(e) {
@@ -329,18 +319,16 @@ function makeDraggable(item) {
       item.style.transition = "transform 0.2s ease";
       item.style.transform = "scale(1) rotate(0deg)";
 
-      // Check for tray drop
+      // Tray drop
       const trayRect = tray.getBoundingClientRect();
       if (e.clientY > trayRect.top) {
         trayItems.appendChild(item);
         const trayRectNew = trayItems.getBoundingClientRect();
-        const x = e.clientX - trayRectNew.left - offsetX;
-        const y = e.clientY - trayRectNew.top - offsetY;
-        item.style.left = x + 'px';
-        item.style.top = y + 'px';
+        item.style.left = (e.clientX - trayRectNew.left - offsetX) + 'px';
+        item.style.top = (e.clientY - trayRectNew.top - offsetY) + 'px';
       }
 
-      // Check for trash bin
+      // Trash bin drop
       const binRect = trashBin.getBoundingClientRect();
       if (
         e.clientX >= binRect.left &&
