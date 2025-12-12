@@ -24,7 +24,6 @@
     opacity: 1;
   }
 
-  /* Draggable items */
   .draggable {
     position: absolute;
     cursor: grab;
@@ -77,7 +76,6 @@
     box-shadow: 2px 2px 6px rgba(0,0,0,0.5);
   }
 
-  /* Tray */
   #tray {
     position: fixed;
     bottom: 0;
@@ -132,14 +130,11 @@
 
 <div id="container">
 
-  <!-- Audio Files -->
   <audio id="pickup" src="sounds/pickup.mp3"></audio>
   <audio id="background" src="sounds/background.mp3" loop></audio>
 
-  <!-- Mute / Unmute -->
   <button id="muteBtn">Mute</button>
 
-  <!-- Memory notes top-left -->
   <div class="draggable" style="top:20px; left:20px;">
     <p>This is our time capsule. It reminds us of what is and has been.</p>
   </div>
@@ -147,7 +142,6 @@
     <p>Created on the 12th December, 2025.</p>
   </div>
 
-  <!-- Tray -->
   <div id="tray">
     <div id="trayItems">
       <div class="draggable pure-item" style="top:20px; left:20px;">
@@ -156,7 +150,6 @@
     </div>
   </div>
 
-  <!-- Tray Tab -->
   <div id="trayTab">▲</div>
 
 </div>
@@ -187,7 +180,6 @@ trayTab.addEventListener('click', () => {
   trayTab.textContent = tray.classList.contains('open') ? '▼' : '▲';
 });
 
-// Draggable logic
 function makeDraggable(item) {
   let offsetX, offsetY;
   let lastX = 0, lastY = 0;
@@ -199,15 +191,19 @@ function makeDraggable(item) {
     pickupSound.play();
 
     startParent = item.parentElement;
-
-    // Calculate initial offset relative to page
     const rect = item.getBoundingClientRect();
     offsetX = e.clientX - rect.left;
     offsetY = e.clientY - rect.top;
     lastX = e.clientX;
     lastY = e.clientY;
 
-    // Temporarily append to container to prevent clipping
+    // Calculate absolute position to keep it in place
+    const absLeft = rect.left - container.getBoundingClientRect().left;
+    const absTop = rect.top - container.getBoundingClientRect().top;
+    item.style.left = absLeft + 'px';
+    item.style.top = absTop + 'px';
+
+    // Move to top-level container
     container.appendChild(item);
     item.style.zIndex = 1000;
     item.style.transition = "transform 0s";
@@ -218,7 +214,6 @@ function makeDraggable(item) {
       const swing = Math.min(Math.sqrt(dx*dx + dy*dy) * 0.2, 5);
       item.style.transform = `rotate(${swing}deg) scale(1.05)`;
 
-      // Position relative to container
       const containerRect = container.getBoundingClientRect();
       item.style.left = (e.clientX - containerRect.left - offsetX) + 'px';
       item.style.top = (e.clientY - containerRect.top - offsetY) + 'px';
@@ -231,8 +226,6 @@ function makeDraggable(item) {
       document.removeEventListener('mousemove', onMouseMove);
 
       const trayRect = tray.getBoundingClientRect();
-
-      // Snap to tray if dropped over it
       if(e.clientY > trayRect.top){
         trayItems.appendChild(item);
         const trayRectNew = trayItems.getBoundingClientRect();
@@ -256,7 +249,6 @@ function makeDraggable(item) {
   item.ondragstart = () => false;
 }
 
-// Initialize all draggables
 document.querySelectorAll('.draggable').forEach(makeDraggable);
 
 </script>
