@@ -20,7 +20,9 @@ body {
   width: 100%;
   height: 100vh;
 }
-#container.visible { opacity: 1; }
+#container.visible {
+  opacity: 1;
+}
 
 .draggable {
   position: absolute;
@@ -35,7 +37,11 @@ body {
   transition: transform 0.2s ease;
 }
 
-.draggable img { width: 100%; display: block; border-radius: 0; }
+.draggable img {
+  width: 100%;
+  display: block;
+  border-radius: 0;
+}
 
 .draggable.pure-item {
   background: transparent !important;
@@ -45,23 +51,37 @@ body {
   box-shadow: none !important;
 }
 
-.draggable img.pure { width: 150px; display: block; border-radius: 0; }
+.draggable img.pure {
+  width: 150px;
+  display: block;
+  border-radius: 0;
+}
 
-.draggable p { margin: 5px 0 0 0; font-size: 14px; }
+.draggable p {
+  margin: 5px 0 0 0;
+  font-size: 14px;
+}
 
 #muteBtn {
-  position: fixed; top: 10px; right: 10px;
+  position: fixed;
+  top: 10px;
+  right: 10px;
   z-index: 2002;
   padding: 8px 12px;
   background: rgba(255,255,255,0.85);
-  border: none; border-radius: 6px;
-  cursor: pointer; font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
   box-shadow: 2px 2px 6px rgba(0,0,0,0.5);
 }
 
 #tray {
-  position: fixed; bottom: 0; left: 0;
-  width: 100%; height: 25%;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 25%;
   transform: translateY(100%);
   background: rgba(240,240,240,0.9);
   border-top-left-radius: 20px;
@@ -75,26 +95,43 @@ body {
   padding: 10px;
   overflow: visible;
 }
-#tray.open { transform: translateY(0); }
+
+#tray.open {
+  transform: translateY(0);
+}
 
 #trayTab {
-  position: fixed; bottom: 0; left: 50%;
+  position: fixed;
+  bottom: 0;
+  left: 50%;
   transform: translateX(-50%);
-  width: 60px; height: 25px;
+  width: 60px;
+  height: 25px;
   background: rgba(200,200,200,0.9);
-  border-top-left-radius: 15px; border-top-right-radius: 15px;
-  display: flex; justify-content: center; align-items: center;
-  cursor: pointer; font-weight: bold;
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  font-weight: bold;
   box-shadow: 0 -2px 5px rgba(0,0,0,0.3);
   z-index: 1001;
 }
 
-#trayItems { position: relative; width: 100%; height: 100%; }
+#trayItems {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
 
 /* Dark Mode Overlay */
 #darkModeOverlay {
-  position: fixed; top:0; left:0;
-  width:100%; height:100%;
+  position: fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
   background-color: rgba(0,0,0,0.55);
   pointer-events:none;
   opacity:0;
@@ -104,9 +141,12 @@ body {
 
 /* Burger Menu */
 #burgerMenu {
-  position: fixed; top: 50%; left: 0;
+  position: fixed;
+  top: 50%;
+  left: 0;
   transform: translateY(-50%);
-  width: 36px; height: 36px;
+  width: 36px;
+  height: 36px;
   background: white;
   border-radius: 5px;
   display: flex;
@@ -117,43 +157,58 @@ body {
 }
 
 #burgerMenuContent {
-  position: fixed; top:0; left:-200px;
-  width:200px; height:100%;
+  position: fixed;
+  top:0;
+  left:-200px;
+  width:200px;
+  height:100%;
   background: rgba(255,255,255,0.95);
   transition: left 0.3s ease;
-  display:flex; flex-direction:column;
-  padding: 20px; box-sizing:border-box;
+  display:flex;
+  flex-direction:column;
+  padding: 20px;
+  box-sizing:border-box;
   z-index: 2002;
 }
+
 #burgerMenuContent button {
   margin: 10px 0;
   padding: 8px;
   cursor:pointer;
-  background:white; border:none;
+  background:white;
+  border:none;
   box-shadow:0 0 5px rgba(0,0,0,0.3);
-  font-size:16px;
 }
 
 /* Trash bin */
 #trashBin {
-  position: fixed; bottom: 5%; right: 5%;
-  font-size: 48px; cursor: pointer;
-  z-index: 2000; transition: transform 0.2s ease;
+  position: fixed;
+  bottom: 5%;
+  right: 5%;
+  font-size: 48px;
+  cursor: pointer;
+  z-index: 2000;
+  transition: transform 0.2s ease;
 }
 
 /* Table */
 #table {
-  position: fixed; bottom: 10%; right: 12%;
-  width: 240px; /* increased further 10% */
-  cursor: default; z-index: 450;
+  position: fixed;
+  bottom: 10%;
+  right: 12%;
+  width: 180px; /* increased 10% */
+  cursor: default;
+  z-index: 450; /* below tray */
 }
 
 /* Envelope */
 #envelope {
-  position: fixed; bottom: 13%; right: 12%;
-  transform: translateX(-130px);
+  position: fixed;
+  bottom: 18%; /* raised 50% from previous */
+  right: 12%;
   width: 70px;
-  cursor: default; z-index: 460;
+  cursor: default;
+  z-index: 460;
 }
 
 /* Tooltip */
@@ -173,13 +228,12 @@ body {
 </head>
 <body>
 <div id="container">
-  <audio id="pickup" src="sounds/pickup.mp3"></audio>
-  <audio id="binSound" src="sounds/bin.mp3"></audio>
-  <audio id="traySound" src="sounds/tray.mp3"></audio>
-
   <audio id="background" src="sounds/background.mp3" loop></audio>
   <audio id="background2" src="sounds/background2.mp3" loop></audio>
   <audio id="background3" src="sounds/background3.mp3" loop></audio>
+  <audio id="pickup" src="sounds/pickup.mp3"></audio>
+  <audio id="binSound" src="sounds/bin.mp3"></audio>
+  <audio id="traySound" src="sounds/tray.mp3"></audio>
 
   <button id="muteBtn">Mute</button>
 
@@ -198,6 +252,7 @@ body {
       </div>
     </div>
   </div>
+
   <div id="trayTab">▲</div>
 
   <div id="darkModeOverlay"></div>
@@ -206,8 +261,8 @@ body {
   <div id="burgerMenuContent">
     <button id="darkModeBtn">🌙 Dark Mode</button>
     <div style="display:flex; justify-content:center; gap:4px;">
-      <button id="prevTrack">◀</button>
-      <button id="nextTrack">▶</button>
+      <button id="prevTrack">⏮</button>
+      <button id="nextTrack">⏭</button>
     </div>
   </div>
 
@@ -215,6 +270,7 @@ body {
 
   <!-- Table -->
   <img src="images/table.webp" id="table">
+
   <!-- Envelope -->
   <img src="images/envelope.webp" id="envelope">
 
@@ -223,9 +279,9 @@ body {
 </div>
 
 <script>
-const container = document.getElementById('container');
 const pickupSound = document.getElementById('pickup');
-const trashBin = document.getElementById('trashBin');
+const muteBtn = document.getElementById('muteBtn');
+const container = document.getElementById('container');
 const tray = document.getElementById('tray');
 const trayItems = document.getElementById('trayItems');
 const trayTab = document.getElementById('trayTab');
@@ -233,7 +289,7 @@ const darkOverlay = document.getElementById('darkModeOverlay');
 const burgerMenu = document.getElementById('burgerMenu');
 const burgerContent = document.getElementById('burgerMenuContent');
 const darkModeBtn = document.getElementById('darkModeBtn');
-const muteBtn = document.getElementById('muteBtn');
+const trashBin = document.getElementById('trashBin');
 const tooltip = document.getElementById('tooltip');
 const table = document.getElementById('table');
 const envelope = document.getElementById('envelope');
@@ -242,7 +298,6 @@ const traySound = document.getElementById('traySound');
 
 let darkModeActive = false;
 
-// Only background tracks
 const musicTracks = [
   document.getElementById('background'),
   document.getElementById('background2'),
@@ -250,43 +305,21 @@ const musicTracks = [
 ];
 let currentTrackIndex = 0;
 
-// Fade utility
-function fadeOutIn(outTrack, inTrack){
-  const vol = 0.6;
-  const step = 0.05;
-  const fadeOut = setInterval(()=>{
-    if(outTrack.volume > 0){
-      outTrack.volume -= step;
-    } else {
-      clearInterval(fadeOut);
-      outTrack.pause();
-      inTrack.currentTime = 0;
-      inTrack.volume = 0;
-      inTrack.play().catch(()=>{});
-      const fadeIn = setInterval(()=>{
-        if(inTrack.volume < vol){
-          inTrack.volume += step;
-        } else clearInterval(fadeIn);
-      },50);
-    }
-  },50);
+// Start music after user interaction
+function startMusic() {
+  musicTracks.forEach(track=>{ track.loop=true; track.volume=0.6; });
+  musicTracks[0].play().catch(()=>{});
+  document.removeEventListener('click', startMusic);
 }
 
-// Start first track automatically
-window.addEventListener('DOMContentLoaded', ()=>{
-  requestAnimationFrame(()=>container.classList.add('visible'));
-  musicTracks.forEach(track=>track.loop=true);
-  musicTracks[0].volume = 0.6;
-  musicTracks[0].play().catch(()=>{});
-});
+document.addEventListener('click', startMusic);
 
-// Mute music only
 muteBtn.addEventListener('click', ()=>{
   musicTracks.forEach(track=>track.muted = !track.muted);
   muteBtn.textContent = musicTracks[0].muted ? 'Unmute' : 'Mute';
 });
 
-// Tray open/close with sound
+// Tray tab
 trayTab.addEventListener('click', ()=>{
   const isOpen = tray.classList.toggle('open');
   trayTab.textContent = isOpen ? '▼' : '▲';
@@ -294,9 +327,9 @@ trayTab.addEventListener('click', ()=>{
   traySound.play();
 });
 
-// Burger menu toggle
+// Burger menu
 burgerMenu.addEventListener('click', ()=>{
-  burgerContent.style.left = burgerContent.style.left === '0px' ? '-200px' : '0px';
+  burgerContent.style.left = burgerContent.style.left==='0px'?'-200px':'0px';
 });
 
 // Dark mode
@@ -306,140 +339,150 @@ darkModeBtn.addEventListener('click', ()=>{
 });
 
 // Music controls
+function playTrack(index){
+  musicTracks.forEach((t,i)=>{
+    if(i!==index){ t.pause(); t.currentTime=0; }
+  });
+  musicTracks[index].volume=0;
+  musicTracks[index].currentTime=0;
+  musicTracks[index].play().then(()=>fadeIn(musicTracks[index]));
+}
+
+function fadeIn(track){
+  let vol=0.6;
+  const interval = setInterval(()=>{
+    if(track.volume<vol){ track.volume+=0.05; }
+    else clearInterval(interval);
+  },50);
+}
+
+function fadeOut(track, callback){
+  const interval = setInterval(()=>{
+    if(track.volume>0){ track.volume-=0.05; }
+    else{ track.pause(); clearInterval(interval); callback(); }
+  },50);
+}
+
 document.getElementById('nextTrack').addEventListener('click', ()=>{
-  const nextIndex = (currentTrackIndex+1)%musicTracks.length;
-  fadeOutIn(musicTracks[currentTrackIndex], musicTracks[nextIndex]);
-  currentTrackIndex = nextIndex;
-});
-document.getElementById('prevTrack').addEventListener('click', ()=>{
-  const prevIndex = (currentTrackIndex-1+musicTracks.length)%musicTracks.length;
-  fadeOutIn(musicTracks[currentTrackIndex], musicTracks[prevIndex]);
-  currentTrackIndex = prevIndex;
+  const nextIndex=(currentTrackIndex+1)%musicTracks.length;
+  fadeOut(musicTracks[currentTrackIndex], ()=>{ currentTrackIndex=nextIndex; playTrack(currentTrackIndex); });
 });
 
-// Draggable items
+document.getElementById('prevTrack').addEventListener('click', ()=>{
+  const prevIndex=(currentTrackIndex-1+musicTracks.length)%musicTracks.length;
+  fadeOut(musicTracks[currentTrackIndex], ()=>{ currentTrackIndex=prevIndex; playTrack(currentTrackIndex); });
+});
+
+// Draggable
 function makeDraggable(item){
   let offsetX, offsetY, lastX, lastY;
-
   item.addEventListener('mousedown', e=>{
     e.preventDefault();
-    pickupSound.currentTime = 0;
-    pickupSound.play();
-
-    const itemRect = item.getBoundingClientRect();
-    offsetX = e.clientX - itemRect.left;
-    offsetY = e.clientY - itemRect.top;
-    lastX = e.clientX;
-    lastY = e.clientY;
-
-    const bodyRect = document.body.getBoundingClientRect();
-    const globalLeft = itemRect.left - bodyRect.left;
-    const globalTop = itemRect.top - bodyRect.top;
-    item.style.left = globalLeft+'px';
-    item.style.top = globalTop+'px';
-    item.style.zIndex = 1000;
-    item.style.transition = 'transform 0s';
+    pickupSound.currentTime=0; pickupSound.play();
+    const rect=item.getBoundingClientRect();
+    offsetX=e.clientX-rect.left;
+    offsetY=e.clientY-rect.top;
+    lastX=e.clientX; lastY=e.clientY;
+    item.style.zIndex=1000;
+    item.style.transition='transform 0s';
     document.body.appendChild(item);
 
     function onMouseMove(e){
-      const dx = e.clientX - lastX;
-      const dy = e.clientY - lastY;
-      const swing = Math.min(Math.sqrt(dx*dx + dy*dy)*0.2,5);
-      item.style.transform = `rotate(${swing}deg) scale(1.05)`;
-      item.style.left = (e.clientX - offsetX)+'px';
-      item.style.top = (e.clientY - offsetY)+'px';
-      lastX = e.clientX;
-      lastY = e.clientY;
+      const dx=e.clientX-lastX;
+      const dy=e.clientY-lastY;
+      const swing=Math.min(Math.sqrt(dx*dx+dy*dy)*0.2,5);
+      item.style.transform=`rotate(${swing}deg) scale(1.05)`;
+      item.style.left=(e.clientX-offsetX)+'px';
+      item.style.top=(e.clientY-offsetY)+'px';
+      lastX=e.clientX; lastY=e.clientY;
 
-      const binRect = trashBin.getBoundingClientRect();
-      if(e.clientX >= binRect.left && e.clientX <= binRect.right &&
-         e.clientY >= binRect.top && e.clientY <= binRect.bottom){
-        item.style.transform = `rotate(${swing}deg) scale(0.85)`;
+      // shrink over bin
+      const binRect=trashBin.getBoundingClientRect();
+      if(e.clientX>=binRect.left && e.clientX<=binRect.right &&
+         e.clientY>=binRect.top && e.clientY<=binRect.bottom){
+        item.style.transform=`rotate(${swing}deg) scale(0.85)`;
       }
     }
 
     function onMouseUp(e){
       document.removeEventListener('mousemove', onMouseMove);
-      item.style.transition = 'transform 0.2s ease';
-      item.style.transform = 'scale(1) rotate(0deg)';
+      item.style.transition='transform 0.2s ease';
+      item.style.transform='scale(1) rotate(0deg)';
 
-      const trayRect = tray.getBoundingClientRect();
-      if(e.clientY > trayRect.top){
+      // tray drop
+      const trayRect=tray.getBoundingClientRect();
+      if(e.clientY>trayRect.top){
         trayItems.appendChild(item);
-        const trayRectNew = trayItems.getBoundingClientRect();
-        item.style.left = (e.clientX - trayRectNew.left - offsetX)+'px';
-        item.style.top = (e.clientY - trayRectNew.top - offsetY)+'px';
+        const trayRectNew=trayItems.getBoundingClientRect();
+        item.style.left=(e.clientX-trayRectNew.left-offsetX)+'px';
+        item.style.top=(e.clientY-trayRectNew.top-offsetY)+'px';
       }
 
-      const binRect = trashBin.getBoundingClientRect();
-      if(e.clientX >= binRect.left && e.clientX <= binRect.right &&
-         e.clientY >= binRect.top && e.clientY <= binRect.bottom){
-        binSound.currentTime = 0;
-        binSound.play();
+      // trash drop
+      const binRect=trashBin.getBoundingClientRect();
+      if(e.clientX>=binRect.left && e.clientX<=binRect.right &&
+         e.clientY>=binRect.top && e.clientY<=binRect.bottom){
+        binSound.currentTime=0; binSound.play();
         item.remove();
       }
     }
 
     document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp,{once:true});
+    document.addEventListener('mouseup', onMouseUp, {once:true});
   });
-
-  item.ondragstart = ()=>false;
+  item.ondragstart=()=>false;
 }
+
 document.querySelectorAll('.draggable').forEach(makeDraggable);
 
-// Tooltip for peach tea
-const peachTea = document.getElementById('peachTea');
+// Tooltip Peach Tea
+const peachTea=document.getElementById('peachTea');
 let tooltipTimeout;
 peachTea.addEventListener('mouseenter', e=>{
-  tooltipTimeout = setTimeout(()=>{
-    tooltip.textContent = 'I love peach tea';
-    tooltip.style.opacity = 1;
+  tooltipTimeout=setTimeout(()=>{
+    tooltip.textContent='I love peach tea';
+    tooltip.style.opacity=1;
   },50);
 });
 peachTea.addEventListener('mouseleave', e=>{
   clearTimeout(tooltipTimeout);
-  tooltip.style.opacity = 0;
+  tooltip.style.opacity=0;
 });
 peachTea.addEventListener('mousemove', e=>{
-  const rect = peachTea.getBoundingClientRect();
-  if(e.clientX >= rect.left && e.clientX <= rect.right &&
-     e.clientY >= rect.top && e.clientY <= rect.bottom){
-    tooltip.style.left = (e.clientX + 15)+'px';
-    tooltip.style.top = (e.clientY + 15)+'px';
-  }
+  tooltip.style.left=(e.clientX+15)+'px';
+  tooltip.style.top=(e.clientY+15)+'px';
 });
 
-// Tooltip for table
+// Tooltip Table
 table.addEventListener('mouseenter', e=>{
-  tooltipTimeout = setTimeout(()=>{
-    tooltip.textContent = 'a sturdy wooden table';
-    tooltip.style.opacity = 1;
+  tooltipTimeout=setTimeout(()=>{
+    tooltip.textContent='a sturdy wooden table';
+    tooltip.style.opacity=1;
   },50);
 });
 table.addEventListener('mouseleave', e=>{
   clearTimeout(tooltipTimeout);
-  tooltip.style.opacity = 0;
+  tooltip.style.opacity=0;
 });
 table.addEventListener('mousemove', e=>{
-  tooltip.style.left = (e.clientX + 15)+'px';
-  tooltip.style.top = (e.clientY + 15)+'px';
+  tooltip.style.left=(e.clientX+15)+'px';
+  tooltip.style.top=(e.clientY+15)+'px';
 });
 
-// Tooltip for envelope
+// Tooltip Envelope
 envelope.addEventListener('mouseenter', e=>{
-  tooltipTimeout = setTimeout(()=>{
-    tooltip.textContent = 'an envelope full of texts';
-    tooltip.style.opacity = 1;
+  tooltipTimeout=setTimeout(()=>{
+    tooltip.textContent='an envelope full of texts';
+    tooltip.style.opacity=1;
   },50);
 });
 envelope.addEventListener('mouseleave', e=>{
   clearTimeout(tooltipTimeout);
-  tooltip.style.opacity = 0;
+  tooltip.style.opacity=0;
 });
 envelope.addEventListener('mousemove', e=>{
-  tooltip.style.left = (e.clientX + 15)+'px';
-  tooltip.style.top = (e.clientY + 15)+'px';
+  tooltip.style.left=(e.clientX+15)+'px';
+  tooltip.style.top=(e.clientY+15)+'px';
 });
 </script>
 </body>
