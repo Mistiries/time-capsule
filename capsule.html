@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Achraf and Eleni's Time Capsule</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet">
 <style>
   body {
     margin: 0;
@@ -56,9 +57,9 @@
     left: 75%;
     width: 180px;
     height: 140px;
-    background: url('images/paper_texture.webp') repeat;
+    background-color: #fff9b0;
     padding: 15px;
-    font-size: 16px;
+    font-size: 18px;
     font-family: 'Caveat', cursive;
     transform: rotate(-5deg) skew(-2deg, 1deg);
     box-shadow: 2px 2px 6px rgba(0,0,0,0.4);
@@ -180,15 +181,15 @@
     right: 20px;
     width: 80px;
     height: 80px;
-    background: url('images/trash_bin_icon.png') no-repeat center center;
-    background-size: contain;
+    font-size: 60px;
+    text-align: center;
+    line-height: 80px;
     z-index: 1500;
-    pointer-events: none; /* Bin itself is not draggable */
+    pointer-events: none;
+    user-select: none;
   }
 
-  .over-bin {
-    transform: scale(0.85) !important;
-  }
+  .over-bin { transform: scale(0.85) !important; }
 
 </style>
 </head>
@@ -227,7 +228,7 @@
     <button id="darkModeBtn">🌙 Dark Mode</button>
   </div>
 
-  <div id="trashBin"></div>
+  <div id="trashBin">🗑️</div>
 
 </div>
 
@@ -285,23 +286,17 @@ function makeDraggable(item) {
     pickupSound.currentTime = 0;
     pickupSound.play();
 
-    if(item.parentElement !== container) {
-      const rect = item.getBoundingClientRect();
-      const containerRect = container.getBoundingClientRect();
-      item.style.left = (rect.left - containerRect.left) + 'px';
-      item.style.top = (rect.top - containerRect.top) + 'px';
-      container.appendChild(item);
-    }
+    const rect = item.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+    lastX = e.clientX;
+    lastY = e.clientY;
 
+    container.appendChild(item);
     item.style.zIndex = 1000;
     item.style.transition = "transform 0.1s ease";
     item.style.transform = "scale(0.95)";
-
-    const containerRect = container.getBoundingClientRect();
-    offsetX = e.clientX - item.getBoundingClientRect().left;
-    offsetY = e.clientY - item.getBoundingClientRect().top;
-    lastX = e.clientX;
-    lastY = e.clientY;
 
     function onMouseMove(e) {
       const dx = e.clientX - lastX;
@@ -333,12 +328,6 @@ function makeDraggable(item) {
       if(e.clientX > trashRect.left && e.clientX < trashRect.right &&
          e.clientY > trashRect.top && e.clientY < trashRect.bottom) {
         item.remove();
-      } else {
-        // keep item where released, even if inside tray
-        const trayRect = tray.getBoundingClientRect();
-        if(e.clientY > trayRect.top) {
-          trayItems.appendChild(item);
-        }
       }
     }
 
