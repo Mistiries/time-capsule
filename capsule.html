@@ -53,7 +53,7 @@
     position: fixed;
     top: 10px;
     right: 10px;
-    z-index: 1500;
+    z-index: 1600;
     padding: 8px 12px;
     background: rgba(255,255,255,0.85);
     border: none;
@@ -61,7 +61,6 @@
     cursor: pointer;
     font-weight: bold;
     box-shadow: 2px 2px 6px rgba(0,0,0,0.5);
-    transition: opacity 0.3s ease;
   }
 
   #tray {
@@ -81,7 +80,7 @@
     justify-content: flex-start;
     align-items: flex-start;
     padding: 10px;
-    overflow: visible;
+    overflow: hidden;
   }
 
   #tray.open { transform: translateY(0); }
@@ -133,8 +132,7 @@
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    z-index: 1600;
-    transition: opacity 0.3s ease;
+    z-index: 2100; /* stays above menu */
   }
 
   #burgerMenuContent {
@@ -149,7 +147,7 @@
     flex-direction:column;
     padding: 20px;
     box-sizing:border-box;
-    z-index: 1500;
+    z-index: 2000; /* below burger button but above tray */
   }
 
   #burgerMenuContent button { margin: 10px 0; padding: 8px; cursor:pointer; }
@@ -198,7 +196,6 @@ const container = document.getElementById('container');
 const tray = document.getElementById('tray');
 const trayItems = document.getElementById('trayItems');
 const trayTab = document.getElementById('trayTab');
-
 const darkOverlay = document.getElementById('darkModeOverlay');
 const burgerMenu = document.getElementById('burgerMenu');
 const burgerContent = document.getElementById('burgerMenuContent');
@@ -206,43 +203,32 @@ const darkModeBtn = document.getElementById('darkModeBtn');
 
 let darkModeActive = false;
 
-// Page load
 window.addEventListener('DOMContentLoaded', () => {
   requestAnimationFrame(() => container.classList.add('visible'));
   backgroundSound.volume = 0.6;
   backgroundSound.loop = true;
   backgroundSound.play().catch(()=>{});
 
-  // Initialize draggable items after DOM fully loaded
   initializeDraggables();
 });
 
-// Mute button
 muteBtn.addEventListener('click', () => {
   backgroundSound.muted = !backgroundSound.muted;
   muteBtn.textContent = backgroundSound.muted ? 'Unmute' : 'Mute';
 });
 
-// Tray toggle
 trayTab.addEventListener('click', () => {
   tray.classList.toggle('open');
   trayTab.textContent = tray.classList.contains('open') ? '▼' : '▲';
 });
 
-// Burger menu toggle
 burgerMenu.addEventListener('click', () => {
   burgerContent.style.left = burgerContent.style.left === '0px' ? '-200px' : '0px';
 });
 
-// Dark Mode
 darkModeBtn.addEventListener('click', () => {
   darkModeActive = !darkModeActive;
   darkOverlay.style.opacity = darkModeActive ? 1 : 0;
-
-  const opacityVal = darkModeActive ? 0.5 : 1;
-  burgerMenu.style.opacity = opacityVal;
-  muteBtn.style.opacity = opacityVal;
-  burgerContent.style.opacity = opacityVal;
 });
 
 // --- Draggable Items ---
@@ -256,7 +242,6 @@ function initializeDraggables() {
       pickupSound.currentTime = 0;
       pickupSound.play();
 
-      // Move item to #container if it's in tray
       if(item.parentElement !== container) {
         const rect = item.getBoundingClientRect();
         const containerRect = container.getBoundingClientRect();
@@ -280,20 +265,27 @@ function initializeDraggables() {
         const dy = e.clientY - lastY;
         const swing = Math.min(Math.sqrt(dx*dx + dy*dy) * 0.2, 5);
         item.style.transform = `rotate(${swing}deg) scale(0.95)`;
-
-        // Follow cursor exactly
         item.style.left = (e.clientX - containerRect.left - offsetX) + 'px';
         item.style.top = (e.clientY - containerRect.top - offsetY) + 'px';
-
         lastX = e.clientX;
         lastY = e.clientY;
       }
 
-      function onMouseUp() {
+      function onMouseUp(e) {
         document.removeEventListener('mousemove', onMouseMove);
         item.style.transition = "transform 0.2s ease";
         item.style.transform = "scale(1) rotate(0deg)";
         item.style.zIndex = '';
+
+        // Keep item inside tray if dropped there
+        const trayRect = tray.getBoundingClientRect();
+        if(e.clientY > trayRect.top) {
+          const localX = e.clientX - trayRect.left - offsetX;
+          const localY = e.clientY - trayRect.top - offsetY;
+          trayItems.appendChild(item);
+          item.style.left = localX + 'px';
+          item.style.top = localY + 'px';
+        }
       }
 
       document.addEventListener('mousemove', onMouseMove);
