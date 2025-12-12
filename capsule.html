@@ -23,7 +23,7 @@
     min-width:120px;
     max-width:200px;
     transform: rotate(0deg) scale(1);
-    transition: transform 0.2s ease; /* smooth drop animation */
+    transition: transform 0.2s ease;
   }
 
   .draggable img {
@@ -35,12 +35,31 @@
     margin:5px 0 0 0;
     font-size:14px;
   }
+
+  /* Mute button styling */
+  #muteBtn {
+    position:fixed;
+    top:10px;
+    right:10px;
+    z-index:2000;
+    padding:8px 12px;
+    background:rgba(255,255,255,0.85);
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    font-weight:bold;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.5);
+  }
 </style>
 </head>
 <body>
 
-<!-- Pickup Sound -->
+<!-- Audio Files -->
 <audio id="pickup" src="sounds/pickup.mp3"></audio>
+<audio id="background" src="sounds/background.mp3" loop></audio>
+
+<!-- Mute / Unmute Button -->
+<button id="muteBtn">Mute</button>
 
 <!-- Draggable Notes / Images -->
 <div class="draggable" style="top:50px; left:50px;">
@@ -64,7 +83,22 @@
 <script>
 const draggables = document.querySelectorAll('.draggable');
 const pickupSound = document.getElementById('pickup');
+const backgroundSound = document.getElementById('background');
+const muteBtn = document.getElementById('muteBtn');
 
+// Play background as soon as page loads
+window.addEventListener('DOMContentLoaded', () => {
+  backgroundSound.volume = 0.5; // adjust initial volume
+  backgroundSound.play().catch(()=>{ /* ignore autoplay block errors */ });
+});
+
+// Mute / Unmute toggle
+muteBtn.addEventListener('click', () => {
+  backgroundSound.muted = !backgroundSound.muted;
+  muteBtn.textContent = backgroundSound.muted ? 'Unmute' : 'Mute';
+});
+
+// Draggable functionality
 draggables.forEach(item => {
   let offsetX, offsetY;
   let lastX = 0, lastY = 0;
@@ -86,9 +120,9 @@ draggables.forEach(item => {
     const onMouseMove = e => {
       const dx = e.clientX - lastX;
       const dy = e.clientY - lastY;
-      const swing = Math.min(Math.sqrt(dx*dx + dy*dy) * 0.2, 5); // subtle swing max 5deg
+      const swing = Math.min(Math.sqrt(dx*dx + dy*dy) * 0.2, 5); // subtle swing
 
-      item.style.transform = `rotate(${swing}deg) scale(1.05)`; // slightly bigger while dragging
+      item.style.transform = `rotate(${swing}deg) scale(1.05)`; 
       item.style.left = (e.clientX - offsetX) + 'px';
       item.style.top = (e.clientY - offsetY) + 'px';
 
@@ -100,8 +134,8 @@ draggables.forEach(item => {
       document.removeEventListener('mousemove', onMouseMove);
 
       item.style.transition = "transform 0.2s ease";
-      item.style.transform = "rotate(0deg) scale(0.95)"; // tiny shrink on release
-      setTimeout(() => { item.style.transform = "rotate(0deg) scale(1)"; }, 200); // return to normal
+      item.style.transform = "rotate(0deg) scale(0.95)";
+      setTimeout(() => { item.style.transform = "rotate(0deg) scale(1)"; }, 200);
     };
 
     document.addEventListener('mousemove', onMouseMove);
