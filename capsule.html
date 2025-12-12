@@ -21,7 +21,7 @@
     opacity: 1;
   }
 
-  /* All draggable items original size */
+  /* Normal draggable items */
   .draggable {
     position: absolute;
     cursor: grab;
@@ -41,12 +41,17 @@
     display: block;
   }
 
+  /* Pure draggable items (Peach Tea) */
+  .draggable.pure-item {
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
+  }
+
   .draggable img.pure {
-    width: 150px;  /* fixed visible width */
+    width: 150px;
     display: block;
     border-radius: 0;
-    padding: 0;
-    background: transparent;
   }
 
   .draggable p {
@@ -100,7 +105,7 @@
   </div>
 
   <!-- Peach Tea Image (pure, no background/padding) -->
-  <div class="draggable" style="top:200px; left:60%;">
+  <div class="draggable pure-item" style="top:200px; left:60%;">
     <img src="images/peachtea.webp" alt="Peach Tea" class="pure">
   </div>
 
@@ -169,7 +174,6 @@ draggables.forEach(item => {
 
       const img = item.querySelector('img');
       if(img && img.classList.contains('pure')){
-        // Peach Tea small shrink on drop
         item.style.transform = "scale(0.95)";
       } else {
         item.style.transform = "scale(1)";
