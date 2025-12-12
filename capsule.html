@@ -93,7 +93,6 @@
     align-items: flex-start;
     padding: 10px;
     overflow: hidden;
-    position: relative;
   }
 
   #tray.open {
@@ -137,15 +136,15 @@
   <!-- Mute / Unmute -->
   <button id="muteBtn">Mute</button>
 
-  <!-- Draggables on desk -->
-  <div class="draggable" style="top:50px; left:50px;">
-    <p>Memory note 1</p>
+  <!-- Memory notes top-left -->
+  <div class="draggable" style="top:20px; left:20px;">
+    <p>This is our time capsule. It reminds us of what is and has been.</p>
+  </div>
+  <div class="draggable" style="top:100px; left:20px;">
+    <p>Created on the 12th December, 2025.</p>
   </div>
 
-  <div class="draggable" style="top:150px; left:200px;">
-    <p>Memory note 2</p>
-  </div>
-
+  <!-- Other desk items -->
   <div class="draggable" style="top:300px; left:100px;">
     <img src="https://via.placeholder.com/150" alt="Image memory">
     <p>A summer memory</p>
@@ -179,7 +178,6 @@ const tray = document.getElementById('tray');
 const trayItems = document.getElementById('trayItems');
 const trayTab = document.getElementById('trayTab');
 
-// Fade-in container and start background music
 window.addEventListener('DOMContentLoaded', () => {
   requestAnimationFrame(() => container.classList.add('visible'));
   backgroundSound.volume = 0.6;
@@ -187,13 +185,11 @@ window.addEventListener('DOMContentLoaded', () => {
   backgroundSound.play().catch(()=>{});
 });
 
-// Mute toggle
 muteBtn.addEventListener('click', () => {
   backgroundSound.muted = !backgroundSound.muted;
   muteBtn.textContent = backgroundSound.muted ? 'Unmute' : 'Mute';
 });
 
-// Tray toggle
 trayTab.addEventListener('click', () => {
   tray.classList.toggle('open');
   trayTab.textContent = tray.classList.contains('open') ? '▼' : '▲';
@@ -203,13 +199,13 @@ trayTab.addEventListener('click', () => {
 function makeDraggable(item) {
   let offsetX, offsetY;
   let lastX = 0, lastY = 0;
-  let currentParent = item.parentElement;
 
   item.addEventListener('mousedown', e => {
     e.preventDefault();
     pickupSound.currentTime = 0;
     pickupSound.play();
 
+    const parent = item.parentElement;
     const rect = item.getBoundingClientRect();
     offsetX = e.clientX - rect.left;
     offsetY = e.clientY - rect.top;
@@ -218,35 +214,40 @@ function makeDraggable(item) {
     item.style.zIndex = 1000;
     item.style.transition = "transform 0s";
 
-    // Move item to body temporarily for dragging
-    document.body.appendChild(item);
-
-    const onMouseMove = e => {
+    function onMouseMove(e) {
       const dx = e.clientX - lastX;
       const dy = e.clientY - lastY;
       const swing = Math.min(Math.sqrt(dx*dx + dy*dy) * 0.2, 5);
 
-      item.style.transform = `rotate(${swing}deg) scale(1.05)`; 
-      item.style.left = (e.clientX - offsetX) + 'px';
-      item.style.top = (e.clientY - offsetY) + 'px';
+      item.style.transform = `rotate(${swing}deg) scale(1.05)`;
+
+      const parentRect = parent.getBoundingClientRect();
+      item.style.left = (e.clientX - parentRect.left - offsetX) + 'px';
+      item.style.top = (e.clientY - parentRect.top - offsetY) + 'px';
 
       lastX = e.clientX;
       lastY = e.clientY;
-    };
+    }
 
-    const onMouseUp = e => {
+    function onMouseUp(e) {
       document.removeEventListener('mousemove', onMouseMove);
 
-      // Drop inside tray if mouse over tray
+      // Determine if item should move to tray or desk
       const trayRect = tray.getBoundingClientRect();
-      if(e.clientY > trayRect.top) {
+      const deskContainer = document.getElementById('container');
+
+      if (e.clientY > trayRect.top) {
         trayItems.appendChild(item);
         item.style.position = 'absolute';
-        item.style.left = (e.clientX - trayRect.left - offsetX) + 'px';
-        item.style.top = (e.clientY - trayRect.top - offsetY) + 'px';
+        const newRect = trayItems.getBoundingClientRect();
+        item.style.left = (e.clientX - newRect.left - offsetX) + 'px';
+        item.style.top = (e.clientY - newRect.top - offsetY) + 'px';
       } else {
-        document.getElementById('container').appendChild(item);
+        deskContainer.appendChild(item);
         item.style.position = 'absolute';
+        const newRect = deskContainer.getBoundingClientRect();
+        item.style.left = (e.clientX - newRect.left - offsetX) + 'px';
+        item.style.top = (e.clientY - newRect.top - offsetY) + 'px';
       }
 
       item.style.transition = "transform 0.2s ease";
@@ -256,7 +257,7 @@ function makeDraggable(item) {
       } else {
         item.style.transform = "scale(1)";
       }
-    };
+    }
 
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp, { once: true });
@@ -265,7 +266,7 @@ function makeDraggable(item) {
   item.ondragstart = () => false;
 }
 
-// Initialize draggables
+// Initialize all draggables
 document.querySelectorAll('.draggable').forEach(makeDraggable);
 
 </script>
