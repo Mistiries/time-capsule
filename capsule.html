@@ -10,12 +10,7 @@
     background:#2a2a2a;
     font-family:sans-serif;
     overflow:hidden;
-    opacity: 0;
-    transition: opacity 1s ease-in;
-  }
-
-  body.loaded {
-    opacity: 1;
+    opacity: 0; /* start hidden for fade-in */
   }
 
   .draggable {
@@ -91,10 +86,18 @@ const pickupSound = document.getElementById('pickup');
 const backgroundSound = document.getElementById('background');
 const muteBtn = document.getElementById('muteBtn');
 
-// Fade-in capsule and play looping background music
+// Fade-in body and start looping background music
 window.addEventListener('DOMContentLoaded', () => {
-  document.body.classList.add('loaded');
-  backgroundSound.volume = 0.05; // subtle volume
+  const body = document.body;
+  body.style.opacity = 0; // ensure starting point
+  requestAnimationFrame(() => {
+    body.style.transition = "opacity 1s ease-in";
+    body.style.opacity = 1;
+  });
+
+  // Play background music at moderate volume
+  backgroundSound.volume = 0.22; // 22%
+  backgroundSound.loop = true;
   backgroundSound.play().catch(()=>{});
 });
 
@@ -104,7 +107,7 @@ muteBtn.addEventListener('click', () => {
   muteBtn.textContent = backgroundSound.muted ? 'Unmute' : 'Mute';
 });
 
-// Draggable functionality
+// Draggable functionality with swing and shrink
 draggables.forEach(item => {
   let offsetX, offsetY;
   let lastX = 0, lastY = 0;
@@ -112,6 +115,7 @@ draggables.forEach(item => {
   item.addEventListener('mousedown', e => {
     e.preventDefault();
 
+    // Play pickup sound
     pickupSound.currentTime = 0;
     pickupSound.play();
 
