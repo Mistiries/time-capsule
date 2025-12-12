@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Time Capsule Desk</title>
+<title>Achraf and Eleni's Time Capsule</title>
 <style>
 body {
   margin:0;
@@ -27,15 +27,15 @@ body {
   background: rgba(255,255,255,0.85);
   border-radius: 10px;
   box-shadow: 3px 3px 10px rgba(0,0,0,0.5);
-  min-width: 120px;
-  max-width: 200px;
+  min-width: 108px; /* 10% smaller */
+  max-width: 180px;
   transition: transform 0.1s ease;
   z-index: 400;
 }
 
 .draggable img { width:100%; display:block; }
 .draggable.pure-item { background:transparent; padding:0; box-shadow:none; }
-.draggable img.pure { width:150px; }
+.draggable img.pure { width:135px; } /* 10% smaller */
 
 #muteBtn, #burgerMenu {
   position: fixed;
@@ -109,9 +109,7 @@ body {
   z-index:550;
   cursor:pointer;
 }
-#trashBin:hover .draggable-hover {
-  transform: scale(0.85);
-}
+#trashBin .draggable-hover { transform: scale(0.85); }
 
 #darkModeOverlay {
   position: fixed; top:0; left:0; width:100%; height:100%;
@@ -193,17 +191,20 @@ darkModeBtn.onclick = () => {
 };
 
 function makeDraggable(item){
-  let offsetX, offsetY, lastX=0, lastY=0, isDragging=false;
+  let offsetX, offsetY, lastX=0,lastY=0,isDragging=false,parentBefore;
   item.addEventListener('mousedown', e=>{
     e.preventDefault();
     pickupSound.currentTime=0;
     pickupSound.play();
 
     const rect = item.getBoundingClientRect();
+    parentBefore = item.parentElement;
     offsetX = e.clientX - rect.left;
     offsetY = e.clientY - rect.top;
-    lastX=e.clientX;
-    lastY=e.clientY;
+    lastX = e.clientX;
+    lastY = e.clientY;
+
+    document.body.appendChild(item);
     item.style.zIndex=10000;
     isDragging=true;
     item.classList.add('draggable-hover');
@@ -215,26 +216,38 @@ function makeDraggable(item){
       item.style.transform = `rotate(${swing}deg) scale(1.05)`;
       item.style.left = (e.clientX - offsetX) + 'px';
       item.style.top = (e.clientY - offsetY) + 'px';
-      lastX=e.clientX;
-      lastY=e.clientY;
+      lastX = e.clientX;
+      lastY = e.clientY;
     }
 
     function up(e){
       document.removeEventListener('mousemove', move);
       document.removeEventListener('mouseup', up);
-      item.style.transform='rotate(0deg) scale(1)';
+      item.style.transform = 'rotate(0deg) scale(1)';
       item.style.zIndex=400;
       isDragging=false;
       item.classList.remove('draggable-hover');
 
-      // check bin
       const binRect = trashBin.getBoundingClientRect();
       const itemRect = item.getBoundingClientRect();
       if(itemRect.right > binRect.left && itemRect.left < binRect.right &&
          itemRect.bottom > binRect.top && itemRect.top < binRect.bottom){
-        binSound.currentTime=0;
-        binSound.play();
+        binSound.currentTime=0; binSound.play();
         item.remove();
+        return;
+      }
+
+      // check if dropped inside tray
+      const trayRect = trayItems.getBoundingClientRect();
+      if(itemRect.left + itemRect.width/2 > trayRect.left &&
+         itemRect.left + itemRect.width/2 < trayRect.right &&
+         itemRect.top + itemRect.height/2 > trayRect.top &&
+         itemRect.top + itemRect.height/2 < trayRect.bottom){
+        trayItems.appendChild(item);
+        const relativeX = itemRect.left - trayRect.left;
+        const relativeY = itemRect.top - trayRect.top;
+        item.style.left = relativeX + 'px';
+        item.style.top = relativeY + 'px';
       }
     }
 
@@ -244,7 +257,6 @@ function makeDraggable(item){
   item.ondragstart = ()=>false;
 }
 
-// Initialize draggable items
 document.querySelectorAll('.draggable').forEach(makeDraggable);
 </script>
 </body>
