@@ -144,8 +144,16 @@ body {
 /* Table */
 #table {
   position: fixed; bottom: 10%; right: 12%;
-  width: 198px; /* increased */
+  width: 218px; /* increased 10% more */
   cursor: default; z-index: 450;
+}
+
+/* Envelope */
+#envelope {
+  position: fixed; bottom: 10%; right: 12%;
+  transform: translateX(-130px) translateY(-10px);
+  width: 70px;
+  cursor: default; z-index: 460;
 }
 
 /* Tooltip */
@@ -207,6 +215,8 @@ body {
 
   <!-- Table -->
   <img src="images/table.webp" id="table">
+  <!-- Envelope -->
+  <img src="images/envelope.webp" id="envelope">
 
   <!-- Tooltip -->
   <div id="tooltip"></div>
@@ -226,11 +236,13 @@ const darkModeBtn = document.getElementById('darkModeBtn');
 const muteBtn = document.getElementById('muteBtn');
 const tooltip = document.getElementById('tooltip');
 const table = document.getElementById('table');
+const envelope = document.getElementById('envelope');
 const binSound = document.getElementById('binSound');
 const traySound = document.getElementById('traySound');
 
 let darkModeActive = false;
 
+// Only background tracks
 const musicTracks = [
   document.getElementById('background'),
   document.getElementById('background2'),
@@ -240,8 +252,8 @@ let currentTrackIndex = 0;
 
 // Fade utility
 function fadeOutIn(outTrack, inTrack){
-  let step = 0.05;
   const vol = 0.6;
+  const step = 0.05;
   const fadeOut = setInterval(()=>{
     if(outTrack.volume > 0){
       outTrack.volume -= step;
@@ -295,12 +307,12 @@ darkModeBtn.addEventListener('click', ()=>{
 
 // Music controls
 document.getElementById('nextTrack').addEventListener('click', ()=>{
-  let nextIndex = (currentTrackIndex+1)%musicTracks.length;
+  const nextIndex = (currentTrackIndex+1)%musicTracks.length;
   fadeOutIn(musicTracks[currentTrackIndex], musicTracks[nextIndex]);
   currentTrackIndex = nextIndex;
 });
 document.getElementById('prevTrack').addEventListener('click', ()=>{
-  let prevIndex = (currentTrackIndex-1+musicTracks.length)%musicTracks.length;
+  const prevIndex = (currentTrackIndex-1+musicTracks.length)%musicTracks.length;
   fadeOutIn(musicTracks[currentTrackIndex], musicTracks[prevIndex]);
   currentTrackIndex = prevIndex;
 });
@@ -320,7 +332,7 @@ function makeDraggable(item){
     lastX = e.clientX;
     lastY = e.clientY;
 
-    // Calculate global position to prevent jump
+    // Fix jump by using current position
     const bodyRect = document.body.getBoundingClientRect();
     const globalLeft = itemRect.left - bodyRect.left;
     const globalTop = itemRect.top - bodyRect.top;
@@ -340,7 +352,6 @@ function makeDraggable(item){
       lastX = e.clientX;
       lastY = e.clientY;
 
-      // shrink when hovering bin
       const binRect = trashBin.getBoundingClientRect();
       if(e.clientX >= binRect.left && e.clientX <= binRect.right &&
          e.clientY >= binRect.top && e.clientY <= binRect.bottom){
@@ -353,7 +364,6 @@ function makeDraggable(item){
       item.style.transition = 'transform 0.2s ease';
       item.style.transform = 'scale(1) rotate(0deg)';
 
-      // Tray drop
       const trayRect = tray.getBoundingClientRect();
       if(e.clientY > trayRect.top){
         trayItems.appendChild(item);
@@ -362,7 +372,6 @@ function makeDraggable(item){
         item.style.top = (e.clientY - trayRectNew.top - offsetY)+'px';
       }
 
-      // Trash drop
       const binRect = trashBin.getBoundingClientRect();
       if(e.clientX >= binRect.left && e.clientX <= binRect.right &&
          e.clientY >= binRect.top && e.clientY <= binRect.bottom){
@@ -414,6 +423,22 @@ table.addEventListener('mouseleave', e=>{
   tooltip.style.opacity = 0;
 });
 table.addEventListener('mousemove', e=>{
+  tooltip.style.left = (e.clientX + 15)+'px';
+  tooltip.style.top = (e.clientY + 15)+'px';
+});
+
+// Envelope tooltip (optional)
+envelope.addEventListener('mouseenter', e=>{
+  tooltipTimeout = setTimeout(()=>{
+    tooltip.textContent = 'a sealed envelope';
+    tooltip.style.opacity = 1;
+  },50);
+});
+envelope.addEventListener('mouseleave', e=>{
+  clearTimeout(tooltipTimeout);
+  tooltip.style.opacity = 0;
+});
+envelope.addEventListener('mousemove', e=>{
   tooltip.style.left = (e.clientX + 15)+'px';
   tooltip.style.top = (e.clientY + 15)+'px';
 });
