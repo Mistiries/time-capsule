@@ -277,7 +277,10 @@ function makeDraggable(item) {
 
     container.appendChild(item);
     item.style.zIndex = 1000;
-    item.style.transition = "transform 0s";
+    item.style.transition = "transform 0.1s ease";
+
+    // shrink slightly when picked up
+    item.style.transform = "scale(0.95)";
 
     offsetX = e.clientX - itemRect.left;
     offsetY = e.clientY - itemRect.top;
@@ -288,11 +291,14 @@ function makeDraggable(item) {
       const dx = e.clientX - lastX;
       const dy = e.clientY - lastY;
       const swing = Math.min(Math.sqrt(dx*dx + dy*dy) * 0.2, 5);
-      item.style.transform = `rotate(${swing}deg) scale(1.05)`;
+      item.style.transform = `rotate(${swing}deg) scale(0.95)`; // tilt + shrink
 
       const containerRect = container.getBoundingClientRect();
-      item.style.left = (e.clientX - containerRect.left - offsetX) + 'px';
-      item.style.top = (e.clientY - containerRect.top - offsetY) + 'px';
+      const newX = e.clientX - containerRect.left - offsetX;
+      const newY = e.clientY - containerRect.top - offsetY;
+      // slight lag behind cursor
+      item.style.left = (parseFloat(item.style.left) + (newX - parseFloat(item.style.left)) * 0.15) + 'px';
+      item.style.top = (parseFloat(item.style.top) + (newY - parseFloat(item.style.top)) * 0.15) + 'px';
 
       lastX = e.clientX;
       lastY = e.clientY;
@@ -301,6 +307,7 @@ function makeDraggable(item) {
     function onMouseUp(e) {
       document.removeEventListener('mousemove', onMouseMove);
 
+      // snap to tray if dropped inside
       const trayRect = tray.getBoundingClientRect();
       if(e.clientY > trayRect.top){
         trayItems.appendChild(item);
@@ -309,13 +316,9 @@ function makeDraggable(item) {
         item.style.top = (e.clientY - trayRectNew.top - offsetY) + 'px';
       }
 
+      // reset tilt and scale on drop
       item.style.transition = "transform 0.2s ease";
-      const img = item.querySelector('img');
-      if(img && img.classList.contains('pure')){
-        item.style.transform = "scale(0.95)";
-      } else {
-        item.style.transform = "scale(1)";
-      }
+      item.style.transform = "scale(1) rotate(0deg)";
     }
 
     document.addEventListener('mousemove', onMouseMove);
@@ -326,6 +329,7 @@ function makeDraggable(item) {
 }
 
 document.querySelectorAll('.draggable').forEach(makeDraggable);
+
 </script>
 </body>
 </html>
