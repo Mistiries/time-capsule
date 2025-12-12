@@ -145,8 +145,8 @@ body {
   top: 50%;
   left: 0;
   transform: translateY(-50%);
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   background: white;
   border-radius: 5px;
   display: flex;
@@ -180,12 +180,27 @@ body {
 /* Trash bin */
 #trashBin {
   position: fixed;
-  bottom: 5%; /* moved up 5% */
-  right: 5%;  /* moved left 5% */
+  bottom: 5%;
+  right: 5%;
   font-size: 48px;
   cursor: pointer;
   z-index: 2000;
-  transition: transform 0.3s ease; /* smooth hover shrink */
+  transition: transform 0.3s ease;
+}
+
+/* Tooltip */
+.tooltip {
+  position: fixed;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 3000;
 }
 </style>
 </head>
@@ -198,7 +213,7 @@ body {
 
   <button id="muteBtn">Mute</button>
 
-  <!-- Original memory tabs only -->
+  <!-- Original memory tabs -->
   <div class="draggable" style="top:20px; left:20px;">
     <p>This is our time capsule. It reminds us of what is and has been.</p>
   </div>
@@ -224,6 +239,9 @@ body {
   </div>
 
   <div id="trashBin">🗑️</div>
+  
+  <!-- Tooltip -->
+  <div id="tooltip" class="tooltip">I love peach tea</div>
 </div>
 
 <script>
@@ -242,6 +260,8 @@ const burgerMenu = document.getElementById('burgerMenu');
 const burgerContent = document.getElementById('burgerMenuContent');
 const darkModeBtn = document.getElementById('darkModeBtn');
 const trashBin = document.getElementById('trashBin');
+const tooltip = document.getElementById('tooltip');
+const peachTeaImg = document.querySelector('img[alt="Peach Tea"]');
 
 let darkModeActive = false;
 
@@ -273,6 +293,14 @@ darkModeBtn.addEventListener('click', () => {
   darkOverlay.style.opacity = darkModeActive ? 1 : 0;
 });
 
+// Tooltip hover
+peachTeaImg.addEventListener('mouseenter', () => tooltip.style.opacity = 1);
+peachTeaImg.addEventListener('mousemove', e => {
+  tooltip.style.left = e.clientX + 15 + 'px';
+  tooltip.style.top = e.clientY - 25 + 'px';
+});
+peachTeaImg.addEventListener('mouseleave', () => tooltip.style.opacity = 0);
+
 function makeDraggable(item) {
   let offsetX, offsetY;
   let lastX = 0, lastY = 0;
@@ -285,6 +313,7 @@ function makeDraggable(item) {
     const itemRect = item.getBoundingClientRect();
     offsetX = e.clientX - itemRect.left;
     offsetY = e.clientY - itemRect.top;
+
     lastX = e.clientX;
     lastY = e.clientY;
 
@@ -305,7 +334,6 @@ function makeDraggable(item) {
       lastX = e.clientX;
       lastY = e.clientY;
 
-      // Smooth shrink when hovering over bin
       const binRect = trashBin.getBoundingClientRect();
       if (
         e.clientX >= binRect.left &&
@@ -313,10 +341,7 @@ function makeDraggable(item) {
         e.clientY >= binRect.top &&
         e.clientY <= binRect.bottom
       ) {
-        item.style.transition = "transform 0.3s ease";
         item.style.transform = `rotate(${swing}deg) scale(0.85)`;
-      } else {
-        item.style.transition = "transform 0.2s ease";
       }
     }
 
@@ -330,6 +355,7 @@ function makeDraggable(item) {
       if (e.clientY > trayRect.top) {
         trayItems.appendChild(item);
         const trayRectNew = trayItems.getBoundingClientRect();
+        // Keep item exactly where dropped
         item.style.left = (e.clientX - trayRectNew.left - offsetX) + 'px';
         item.style.top = (e.clientY - trayRectNew.top - offsetY) + 'px';
       }
