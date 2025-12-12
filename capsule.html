@@ -185,7 +185,7 @@ body {
   font-size: 48px;
   cursor: pointer;
   z-index: 2000;
-  transition: transform 0.2s ease;
+  transition: transform 0.3s ease; /* smooth hover shrink */
 }
 </style>
 </head>
@@ -194,6 +194,7 @@ body {
   <audio id="pickup" src="sounds/pickup.mp3"></audio>
   <audio id="background" src="sounds/background.mp3" loop></audio>
   <audio id="binSound" src="sounds/bin.mp3"></audio>
+  <audio id="traySound" src="sounds/tray.mp3"></audio>
 
   <button id="muteBtn">Mute</button>
 
@@ -229,6 +230,7 @@ body {
 const pickupSound = document.getElementById('pickup');
 const backgroundSound = document.getElementById('background');
 const binSound = document.getElementById('binSound');
+const traySound = document.getElementById('traySound');
 const muteBtn = document.getElementById('muteBtn');
 const container = document.getElementById('container');
 const tray = document.getElementById('tray');
@@ -258,6 +260,8 @@ muteBtn.addEventListener('click', () => {
 trayTab.addEventListener('click', () => {
   tray.classList.toggle('open');
   trayTab.textContent = tray.classList.contains('open') ? '▼' : '▲';
+  traySound.currentTime = 0;
+  traySound.play();
 });
 
 burgerMenu.addEventListener('click', () => {
@@ -281,7 +285,6 @@ function makeDraggable(item) {
     const itemRect = item.getBoundingClientRect();
     offsetX = e.clientX - itemRect.left;
     offsetY = e.clientY - itemRect.top;
-
     lastX = e.clientX;
     lastY = e.clientY;
 
@@ -302,7 +305,7 @@ function makeDraggable(item) {
       lastX = e.clientX;
       lastY = e.clientY;
 
-      // shrink when hovering bin
+      // Smooth shrink when hovering over bin
       const binRect = trashBin.getBoundingClientRect();
       if (
         e.clientX >= binRect.left &&
@@ -310,7 +313,10 @@ function makeDraggable(item) {
         e.clientY >= binRect.top &&
         e.clientY <= binRect.bottom
       ) {
+        item.style.transition = "transform 0.3s ease";
         item.style.transform = `rotate(${swing}deg) scale(0.85)`;
+      } else {
+        item.style.transition = "transform 0.2s ease";
       }
     }
 
