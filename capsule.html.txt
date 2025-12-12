@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Your Time Capsule</title>
+<style>
+  body {
+    background:#2a2a2a;
+    font-family:sans-serif;
+    overflow:hidden;
+  }
+  .draggable {
+    position:absolute;
+    cursor:grab;
+    user-select:none;
+    padding:10px;
+    background:rgba(255,255,255,0.8);
+    border-radius:8px;
+    box-shadow:2px 2px 8px rgba(0,0,0,0.5);
+  }
+</style>
+</head>
+<body>
+
+<div class="draggable" style="top:50px; left:50px;">This is a memory note.</div>
+<div class="draggable" style="top:150px; left:200px;">Another note or image placeholder.</div>
+<div class="draggable" style="top:300px; left:100px;">Add images, text, or links here.</div>
+
+<script>
+const draggables = document.querySelectorAll('.draggable');
+
+draggables.forEach(item => {
+  item.onmousedown = function(event) {
+    let shiftX = event.clientX - item.getBoundingClientRect().left;
+    let shiftY = event.clientY - item.getBoundingClientRect().top;
+
+    item.style.position = 'absolute';
+    item.style.zIndex = 1000;
+    moveAt(event.pageX, event.pageY);
+
+    function moveAt(pageX, pageY) {
+      item.style.left = pageX - shiftX + 'px';
+      item.style.top = pageY - shiftY + 'px';
+    }
+
+    function onMouseMove(event) {
+      moveAt(event.pageX, event.pageY);
+    }
+
+    document.addEventListener('mousemove', onMouseMove);
+
+    item.onmouseup = function() {
+      document.removeEventListener('mousemove', onMouseMove);
+      item.onmouseup = null;
+    };
+  };
+
+  item.ondragstart = function() {
+    return false;
+  };
+});
+</script>
+
+</body>
+</html>
