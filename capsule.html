@@ -20,9 +20,7 @@
     width: 100%;
     height: 100vh;
   }
-  #container.visible {
-    opacity: 1;
-  }
+  #container.visible { opacity: 1; }
 
   .draggable {
     position: absolute;
@@ -37,11 +35,7 @@
     transition: transform 0.2s ease;
   }
 
-  .draggable img {
-    width: 100%;
-    border-radius: 0;
-    display: block;
-  }
+  .draggable img { width: 100%; display: block; border-radius: 0; }
 
   .draggable.pure-item {
     background: transparent !important;
@@ -51,16 +45,9 @@
     box-shadow: none !important;
   }
 
-  .draggable img.pure {
-    width: 150px;
-    display: block;
-    border-radius: 0;
-  }
+  .draggable img.pure { width: 150px; display: block; }
 
-  .draggable p {
-    margin: 5px 0 0 0;
-    font-size: 14px;
-  }
+  .draggable p { margin: 5px 0 0 0; font-size: 14px; }
 
   #muteBtn {
     position: fixed;
@@ -74,6 +61,7 @@
     cursor: pointer;
     font-weight: bold;
     box-shadow: 2px 2px 6px rgba(0,0,0,0.5);
+    transition: opacity 0.3s ease;
   }
 
   #tray {
@@ -96,9 +84,7 @@
     overflow: visible;
   }
 
-  #tray.open {
-    transform: translateY(0);
-  }
+  #tray.open { transform: translateY(0); }
 
   #trayTab {
     position: fixed;
@@ -119,11 +105,7 @@
     z-index: 1001;
   }
 
-  #trayItems {
-    position: relative;
-    width: 100%;
-    height: 100%;
-  }
+  #trayItems { position: relative; width: 100%; height: 100%; }
 
   /* Dark Mode Overlay */
   #darkModeOverlay {
@@ -132,7 +114,7 @@
     left:0;
     width:100%;
     height:100%;
-    background-color: rgba(0,0,0,0.55); /* 5% lighter */
+    background-color: rgba(0,0,0,0.55);
     pointer-events:none;
     opacity:0;
     transition: opacity 0.3s ease;
@@ -154,6 +136,7 @@
     align-items: center;
     cursor: pointer;
     z-index: 2001;
+    transition: opacity 0.3s ease;
   }
 
   #burgerMenuContent {
@@ -163,7 +146,7 @@
     width:200px;
     height:100%;
     background: rgba(255,255,255,0.95);
-    transition: left 0.3s ease;
+    transition: left 0.3s ease, z-index 0s;
     display:flex;
     flex-direction:column;
     padding: 20px;
@@ -171,11 +154,7 @@
     z-index:2000;
   }
 
-  #burgerMenuContent button {
-    margin: 10px 0;
-    padding: 8px;
-    cursor:pointer;
-  }
+  #burgerMenuContent button { margin: 10px 0; padding: 8px; cursor:pointer; }
 
 </style>
 </head>
@@ -232,6 +211,7 @@ const darkModeBtn = document.getElementById('darkModeBtn');
 
 let darkModeActive = false;
 
+// Page load
 window.addEventListener('DOMContentLoaded', () => {
   requestAnimationFrame(() => container.classList.add('visible'));
   backgroundSound.volume = 0.6;
@@ -239,28 +219,35 @@ window.addEventListener('DOMContentLoaded', () => {
   backgroundSound.play().catch(()=>{});
 });
 
+// Mute
 muteBtn.addEventListener('click', () => {
   backgroundSound.muted = !backgroundSound.muted;
   muteBtn.textContent = backgroundSound.muted ? 'Unmute' : 'Mute';
 });
 
+// Tray toggle
 trayTab.addEventListener('click', () => {
   tray.classList.toggle('open');
   trayTab.textContent = tray.classList.contains('open') ? '▼' : '▲';
 });
 
+// Burger menu toggle
 burgerMenu.addEventListener('click', () => {
-  burgerContent.style.left = burgerContent.style.left === '0px' ? '-200px' : '0px';
+  const open = burgerContent.style.left !== '0px';
+  burgerContent.style.left = open ? '0px' : '-200px';
+  burgerContent.style.zIndex = open ? 2002 : 2000; // menu content always above overlay when open
 });
 
-// Dark Mode Toggle + burger menu behind overlay
+// Dark Mode
 darkModeBtn.addEventListener('click', () => {
   darkModeActive = !darkModeActive;
   darkOverlay.style.opacity = darkModeActive ? 1 : 0;
 
-  burgerMenu.style.zIndex = darkModeActive ? 1400 : 2001;
+  // Dim burger and mute button behind overlay
+  burgerMenu.style.opacity = darkModeActive ? 0.5 : 1;
+  muteBtn.style.opacity = darkModeActive ? 0.5 : 1;
 });
-
+  
 // --- Draggable Items ---
 function makeDraggable(item) {
   let offsetX, offsetY;
