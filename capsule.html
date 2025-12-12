@@ -191,7 +191,6 @@ function makeDraggable(item) {
 
     const startParent = item.parentElement;
 
-    // Absolute position relative to container
     const itemRect = item.getBoundingClientRect();
     const containerRect = container.getBoundingClientRect();
     const absLeft = itemRect.left - containerRect.left;
@@ -200,7 +199,6 @@ function makeDraggable(item) {
     item.style.left = absLeft + 'px';
     item.style.top = absTop + 'px';
 
-    // Move to container to prevent clipping
     container.appendChild(item);
     item.style.zIndex = 1000;
     item.style.transition = "transform 0s";
@@ -242,6 +240,9 @@ function makeDraggable(item) {
       } else {
         item.style.transform = "scale(1)";
       }
+
+      startDrifting(item);
+      checkBounds(item);
     }
 
     document.addEventListener('mousemove', onMouseMove);
@@ -249,6 +250,42 @@ function makeDraggable(item) {
   });
 
   item.ondragstart = () => false;
+}
+
+// DRIFT + RESPAWN LOGIC
+function startDrifting(item){
+  let driftX = (Math.random() * 1.5) - 0.75;
+  let driftY = (Math.random() * 1.5) - 0.75;
+
+  function drift(){
+    const rect = item.getBoundingClientRect();
+    const cont = container.getBoundingClientRect();
+
+    item.style.left = (rect.left - cont.left + driftX) + 'px';
+    item.style.top = (rect.top - cont.top + driftY) + 'px';
+
+    checkBounds(item);
+
+    item._driftFrame = requestAnimationFrame(drift);
+  }
+
+  cancelAnimationFrame(item._driftFrame);
+  item._driftFrame = requestAnimationFrame(drift);
+}
+
+function checkBounds(item){
+  const rect = item.getBoundingClientRect();
+  const cont = container.getBoundingClientRect();
+
+  if(
+    rect.right < cont.left ||
+    rect.left > cont.right ||
+    rect.bottom < cont.top ||
+    rect.top > cont.bottom
+  ){
+    item.style.left = (cont.width / 2 - rect.width / 2) + "px";
+    item.style.top = (cont.height / 2 - rect.height / 2) + "px";
+  }
 }
 
 document.querySelectorAll('.draggable').forEach(makeDraggable);
