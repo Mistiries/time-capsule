@@ -191,7 +191,7 @@ body {
   transition: transform 0.3s ease;
 }
 
-/* Tooltip for peach tea */
+/* Tooltip for peach tea & table */
 #tooltip {
   position: fixed;
   pointer-events: none;
@@ -203,6 +203,17 @@ body {
   opacity: 0;
   transition: opacity 0.2s ease;
   z-index: 2010;
+}
+
+/* Table */
+#table {
+  position: fixed;
+  bottom: 12%;
+  right: 12%;
+  width: 180px; /* initial size, can be adjusted */
+  z-index: 499; /* below tray */
+  pointer-events: auto;
+  cursor: default;
 }
 </style>
 </head>
@@ -248,6 +259,8 @@ body {
 
   <div id="trashBin">🗑️</div>
 
+  <img id="table" src="images/table.webp" alt="Wooden Table">
+
   <div id="tooltip">I love peach tea</div>
 </div>
 
@@ -266,6 +279,7 @@ const trashBin = document.getElementById('trashBin');
 const binSound = document.getElementById('binSound');
 const traySound = document.getElementById('traySound');
 const tooltip = document.getElementById('tooltip');
+const table = document.getElementById('table');
 
 // Music
 const musicTracks = [document.getElementById('background'), document.getElementById('background2'), document.getElementById('background3')];
@@ -284,9 +298,17 @@ function fadeOutInTrack(direction){
   let current = musicTracks[currentTrack];
   let nextIndex = (currentTrack + direction + musicTracks.length) % musicTracks.length;
   let next = musicTracks[nextIndex];
-  let vol = 0.6;
   let fadeOut = setInterval(()=>{
-    if(current.volume>0.05){ current.volume -=0.05; } else { clearInterval(fadeOut); current.pause(); current.currentTime=0; next.volume=0; next.play(); fadeIn(next); currentTrack=nextIndex; }
+    if(current.volume>0.05){ current.volume -=0.05; } 
+    else { 
+      clearInterval(fadeOut); 
+      current.pause(); 
+      current.currentTime=0; 
+      next.volume=0; 
+      next.play(); 
+      fadeIn(next); 
+      currentTrack=nextIndex; 
+    }
   },50);
 }
 
@@ -295,9 +317,6 @@ function fadeIn(track){
     if(track.volume<0.6){ track.volume +=0.05; } else { clearInterval(fadeIn); }
   },50);
 }
-
-// Delay for tooltip
-let tooltipTimeout;
 
 // Event listeners
 window.addEventListener('DOMContentLoaded', () => {
@@ -326,10 +345,11 @@ darkModeBtn.addEventListener('click', () => {
 
 // Tooltip for peach tea
 const peachTea = document.querySelector('.pure-item img.pure');
+let tooltipTimeout;
 peachTea.addEventListener('mouseenter', e=>{
   tooltipTimeout=setTimeout(()=>{
     tooltip.style.opacity=1;
-  },250); // slightly shorter delay
+  },150); 
 });
 peachTea.addEventListener('mouseleave', e=>{
   clearTimeout(tooltipTimeout);
@@ -345,6 +365,18 @@ peachTea.addEventListener('mousemove', e=>{
     tooltip.style.left = (e.clientX+15)+'px';
     tooltip.style.top = (e.clientY+15)+'px';
   }
+});
+
+// Tooltip for table
+table.addEventListener('mouseenter', e=>{
+  tooltipTimeout=setTimeout(()=>{
+    tooltip.textContent='a sturdy wooden table';
+    tooltip.style.opacity=1;
+  },150);
+});
+table.addEventListener('mouseleave', e=>{
+  clearTimeout(tooltipTimeout);
+  tooltip.style.opacity=0;
 });
 
 // Drag and drop
