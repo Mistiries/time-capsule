@@ -16,6 +16,9 @@
   #container {
     opacity: 0;
     transition: opacity 1s ease-in;
+    position: relative;
+    width: 100%;
+    height: 100vh;
   }
   #container.visible {
     opacity: 1;
@@ -92,7 +95,7 @@
     justify-content: flex-start;
     align-items: flex-start;
     padding: 10px;
-    overflow: hidden;
+    overflow: visible;
   }
 
   #tray.open {
@@ -205,10 +208,11 @@ function makeDraggable(item) {
     pickupSound.currentTime = 0;
     pickupSound.play();
 
-    const parent = item.parentElement;
-    const rect = item.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
+    const startParent = item.parentElement;
+    const startParentRect = startParent.getBoundingClientRect();
+
+    offsetX = e.clientX - item.getBoundingClientRect().left;
+    offsetY = e.clientY - item.getBoundingClientRect().top;
     lastX = e.clientX;
     lastY = e.clientY;
     item.style.zIndex = 1000;
@@ -218,10 +222,25 @@ function makeDraggable(item) {
       const dx = e.clientX - lastX;
       const dy = e.clientY - lastY;
       const swing = Math.min(Math.sqrt(dx*dx + dy*dy) * 0.2, 5);
-
       item.style.transform = `rotate(${swing}deg) scale(1.05)`;
 
-      const parentRect = parent.getBoundingClientRect();
+      const trayRect = tray.getBoundingClientRect();
+      let parentRect, parentContainer;
+
+      // Check if pointer is over tray
+      if (e.clientY > trayRect.top) {
+        parentContainer = trayItems;
+        parentRect = trayRect;
+      } else {
+        parentContainer = container;
+        parentRect = container.getBoundingClientRect();
+      }
+
+      // If parent has changed, reparent item
+      if(item.parentElement !== parentContainer){
+        parentContainer.appendChild(item);
+      }
+
       item.style.left = (e.clientX - parentRect.left - offsetX) + 'px';
       item.style.top = (e.clientY - parentRect.top - offsetY) + 'px';
 
@@ -231,24 +250,6 @@ function makeDraggable(item) {
 
     function onMouseUp(e) {
       document.removeEventListener('mousemove', onMouseMove);
-
-      // Determine if item should move to tray or desk
-      const trayRect = tray.getBoundingClientRect();
-      const deskContainer = document.getElementById('container');
-
-      if (e.clientY > trayRect.top) {
-        trayItems.appendChild(item);
-        item.style.position = 'absolute';
-        const newRect = trayItems.getBoundingClientRect();
-        item.style.left = (e.clientX - newRect.left - offsetX) + 'px';
-        item.style.top = (e.clientY - newRect.top - offsetY) + 'px';
-      } else {
-        deskContainer.appendChild(item);
-        item.style.position = 'absolute';
-        const newRect = deskContainer.getBoundingClientRect();
-        item.style.left = (e.clientX - newRect.left - offsetX) + 'px';
-        item.style.top = (e.clientY - newRect.top - offsetY) + 'px';
-      }
 
       item.style.transition = "transform 0.2s ease";
       const img = item.querySelector('img');
@@ -266,7 +267,6 @@ function makeDraggable(item) {
   item.ondragstart = () => false;
 }
 
-// Initialize all draggables
 document.querySelectorAll('.draggable').forEach(makeDraggable);
 
 </script>
