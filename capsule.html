@@ -21,7 +21,7 @@
     opacity: 1;
   }
 
-  /* Normal draggable items */
+  /* Draggable items */
   .draggable {
     position: absolute;
     cursor: grab;
@@ -75,34 +75,35 @@
     box-shadow: 2px 2px 6px rgba(0,0,0,0.5);
   }
 
-  /* Tray styling */
+  /* Tray */
   #tray {
     position: fixed;
-    bottom: -25%;
+    bottom: 0;
     left: 0;
     width: 100%;
     height: 25%;
+    transform: translateY(100%);
     background: rgba(240,240,240,0.9);
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
     box-shadow: 0 -3px 10px rgba(0,0,0,0.3);
-    transition: bottom 0.5s ease;
+    transition: transform 0.5s ease;
     z-index: 500;
     display: flex;
     justify-content: flex-start;
     align-items: flex-start;
     padding: 10px;
-    overflow: visible; /* allow tab to show */
+    overflow: hidden;
   }
 
   #tray.open {
-    bottom: 0;
+    transform: translateY(0);
   }
 
-  /* Pull-out tab always visible */
+  /* Tray tab always visible */
   #trayTab {
-    position: absolute;
-    top: -30px; /* slightly higher than tray to be visible */
+    position: fixed;
+    bottom: 0;
     left: 50%;
     transform: translateX(-50%);
     width: 60px;
@@ -116,7 +117,7 @@
     cursor: pointer;
     font-weight: bold;
     box-shadow: 0 -2px 5px rgba(0,0,0,0.3);
-    z-index: 1001; /* above tray */
+    z-index: 1001;
   }
 
   #trayItems {
@@ -134,10 +135,10 @@
   <audio id="pickup" src="sounds/pickup.mp3"></audio>
   <audio id="background" src="sounds/background.mp3" loop></audio>
 
-  <!-- Mute / Unmute Button -->
+  <!-- Mute / Unmute -->
   <button id="muteBtn">Mute</button>
 
-  <!-- Draggable Notes / Images on desk -->
+  <!-- Draggables on desk -->
   <div class="draggable" style="top:50px; left:50px;">
     <p>Memory note 1</p>
   </div>
@@ -158,14 +159,15 @@
 
   <!-- Tray -->
   <div id="tray">
-    <div id="trayTab">▲</div>
     <div id="trayItems">
-      <!-- Peach Tea inside tray -->
       <div class="draggable pure-item" style="top:20px; left:20px;">
         <img src="images/peachtea.webp" alt="Peach Tea" class="pure">
       </div>
     </div>
   </div>
+
+  <!-- Tray Tab -->
+  <div id="trayTab">▲</div>
 
 </div>
 
@@ -176,18 +178,17 @@ const backgroundSound = document.getElementById('background');
 const muteBtn = document.getElementById('muteBtn');
 const container = document.getElementById('container');
 
-// Fade-in container and start looping background music
+// Fade-in container and start background music
 window.addEventListener('DOMContentLoaded', () => {
   requestAnimationFrame(() => {
     container.classList.add('visible');
   });
-
-  backgroundSound.volume = 0.55;
+  backgroundSound.volume = 0.6;
   backgroundSound.loop = true;
   backgroundSound.play().catch(()=>{});
 });
 
-// Mute / Unmute toggle
+// Mute toggle
 muteBtn.addEventListener('click', () => {
   backgroundSound.muted = !backgroundSound.muted;
   muteBtn.textContent = backgroundSound.muted ? 'Unmute' : 'Mute';
@@ -202,7 +203,7 @@ trayTab.addEventListener('click', () => {
   trayTab.textContent = tray.classList.contains('open') ? '▼' : '▲';
 });
 
-// Draggable functionality with swing and shrink
+// Draggable items
 draggables.forEach(item => {
   let offsetX, offsetY;
   let lastX = 0, lastY = 0;
@@ -238,7 +239,6 @@ draggables.forEach(item => {
       document.removeEventListener('mousemove', onMouseMove);
 
       item.style.transition = "transform 0.2s ease";
-
       const img = item.querySelector('img');
       if(img && img.classList.contains('pure')){
         item.style.transform = "scale(0.95)";
