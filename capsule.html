@@ -53,7 +53,7 @@
     position: fixed;
     top: 10px;
     right: 10px;
-    z-index: 1499; /* behind overlay in dark mode */
+    z-index: 1500; /* below overlay when dark mode */
     padding: 8px 12px;
     background: rgba(255,255,255,0.85);
     border: none;
@@ -118,7 +118,7 @@
     pointer-events:none;
     opacity:0;
     transition: opacity 0.3s ease;
-    z-index: 1500;
+    z-index: 2000;
   }
 
   /* Burger Menu */
@@ -135,7 +135,7 @@
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    z-index: 1499; /* behind overlay in dark mode */
+    z-index: 1600; /* above menu content but below overlay */
     transition: opacity 0.3s ease;
   }
 
@@ -151,7 +151,7 @@
     flex-direction:column;
     padding: 20px;
     box-sizing:border-box;
-    z-index: 2002; /* always above overlay when open */
+    z-index: 1500; /* below burger button */
   }
 
   #burgerMenuContent button { margin: 10px 0; padding: 8px; cursor:pointer; }
@@ -233,16 +233,21 @@ trayTab.addEventListener('click', () => {
 
 // Burger menu toggle
 burgerMenu.addEventListener('click', () => {
-  const open = burgerContent.style.left !== '0px';
-  burgerContent.style.left = open ? '0px' : '-200px';
+  burgerContent.style.left = burgerContent.style.left === '0px' ? '-200px' : '0px';
 });
 
 // Dark Mode
 darkModeBtn.addEventListener('click', () => {
   darkModeActive = !darkModeActive;
   darkOverlay.style.opacity = darkModeActive ? 1 : 0;
-  burgerMenu.style.opacity = darkModeActive ? 0.5 : 1;
-  muteBtn.style.opacity = darkModeActive ? 0.5 : 1;
+  // fade all items behind overlay
+  if(darkModeActive){
+    burgerMenu.style.opacity = 0.5;
+    muteBtn.style.opacity = 0.5;
+  } else {
+    burgerMenu.style.opacity = 1;
+    muteBtn.style.opacity = 1;
+  }
 });
 
 // --- Draggable Items ---
