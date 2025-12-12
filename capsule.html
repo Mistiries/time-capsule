@@ -39,10 +39,6 @@
 </head>
 <body>
 
-<!-- Sounds -->
-<audio id="pickup" src="https://www.soundjay.com/buttons/sounds/button-16.mp3"></audio>
-<audio id="drop" src="https://www.soundjay.com/buttons/sounds/button-09.mp3"></audio>
-
 <!-- Draggable Notes / Images -->
 <div class="draggable" style="top:50px; left:50px;">
   <p>Memory note 1</p>
@@ -64,8 +60,6 @@
 
 <script>
 const draggables = document.querySelectorAll('.draggable');
-const pickupSound = document.getElementById('pickup');
-const dropSound = document.getElementById('drop');
 
 draggables.forEach(item => {
   let offsetX, offsetY;
@@ -73,19 +67,18 @@ draggables.forEach(item => {
 
   item.addEventListener('mousedown', e => {
     e.preventDefault();
-    pickupSound.currentTime = 0;
-    pickupSound.play();
 
     offsetX = e.clientX - item.getBoundingClientRect().left;
     offsetY = e.clientY - item.getBoundingClientRect().top;
     lastX = e.clientX;
     lastY = e.clientY;
     item.style.zIndex = 1000;
+    item.style.transition = "transform 0s"; // remove transition while dragging
 
     const onMouseMove = e => {
       const dx = e.clientX - lastX;
       const dy = e.clientY - lastY;
-      const swing = Math.min(Math.sqrt(dx*dx + dy*dy) * 0.2, 5); // subtle swing max 5 deg
+      const swing = Math.min(Math.sqrt(dx*dx + dy*dy) * 0.2, 5); // subtle swing max 5deg
 
       item.style.transform = `rotate(${swing}deg) scale(1.05)`; // slightly bigger while dragging
       item.style.left = (e.clientX - offsetX) + 'px';
@@ -98,9 +91,7 @@ draggables.forEach(item => {
     const onMouseUp = e => {
       document.removeEventListener('mousemove', onMouseMove);
       item.style.transition = "transform 0.2s ease";
-      item.style.transform = "rotate(0deg) scale(0.95)"; // tiny shrink for drop
-      dropSound.currentTime = 0;
-      dropSound.play();
+      item.style.transform = "rotate(0deg) scale(0.95)"; // tiny shrink on release
       setTimeout(() => { item.style.transform = "rotate(0deg) scale(1)"; }, 200); // return to normal
     };
 
