@@ -39,6 +39,10 @@
 </head>
 <body>
 
+<!-- Sounds -->
+<audio id="pickup" src="https://www.soundjay.com/buttons/sounds/button-16.mp3"></audio>
+<audio id="drop" src="https://www.soundjay.com/buttons/sounds/button-09.mp3"></audio>
+
 <!-- Draggable Notes / Images -->
 <div class="draggable" style="top:50px; left:50px;">
   <p>Memory note 1</p>
@@ -60,6 +64,8 @@
 
 <script>
 const draggables = document.querySelectorAll('.draggable');
+const pickupSound = document.getElementById('pickup');
+const dropSound = document.getElementById('drop');
 
 draggables.forEach(item => {
   let offsetX, offsetY;
@@ -67,6 +73,10 @@ draggables.forEach(item => {
 
   item.addEventListener('mousedown', e => {
     e.preventDefault();
+
+    // Play pick-up sound
+    pickupSound.currentTime = 0;
+    pickupSound.play();
 
     offsetX = e.clientX - item.getBoundingClientRect().left;
     offsetY = e.clientY - item.getBoundingClientRect().top;
@@ -90,6 +100,11 @@ draggables.forEach(item => {
 
     const onMouseUp = e => {
       document.removeEventListener('mousemove', onMouseMove);
+
+      // Play drop sound
+      dropSound.currentTime = 0;
+      dropSound.play();
+
       item.style.transition = "transform 0.2s ease";
       item.style.transform = "rotate(0deg) scale(0.95)"; // tiny shrink on release
       setTimeout(() => { item.style.transform = "rotate(0deg) scale(1)"; }, 200); // return to normal
