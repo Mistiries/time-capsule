@@ -41,7 +41,6 @@
     display: block;
   }
 
-  /* Pure draggable items (Peach Tea) */
   .draggable.pure-item {
     background: transparent !important;
     padding: 0 !important;
@@ -94,13 +93,13 @@
     align-items: flex-start;
     padding: 10px;
     overflow: hidden;
+    position: relative;
   }
 
   #tray.open {
     transform: translateY(0);
   }
 
-  /* Tray tab always visible */
   #trayTab {
     position: fixed;
     bottom: 0;
@@ -172,17 +171,17 @@
 </div>
 
 <script>
-const draggables = document.querySelectorAll('.draggable');
 const pickupSound = document.getElementById('pickup');
 const backgroundSound = document.getElementById('background');
 const muteBtn = document.getElementById('muteBtn');
 const container = document.getElementById('container');
+const tray = document.getElementById('tray');
+const trayItems = document.getElementById('trayItems');
+const trayTab = document.getElementById('trayTab');
 
 // Fade-in container and start background music
 window.addEventListener('DOMContentLoaded', () => {
-  requestAnimationFrame(() => {
-    container.classList.add('visible');
-  });
+  requestAnimationFrame(() => container.classList.add('visible'));
   backgroundSound.volume = 0.6;
   backgroundSound.loop = true;
   backgroundSound.play().catch(()=>{});
@@ -195,22 +194,19 @@ muteBtn.addEventListener('click', () => {
 });
 
 // Tray toggle
-const tray = document.getElementById('tray');
-const trayTab = document.getElementById('trayTab');
-
 trayTab.addEventListener('click', () => {
   tray.classList.toggle('open');
   trayTab.textContent = tray.classList.contains('open') ? '▼' : '▲';
 });
 
-// Draggable items
-draggables.forEach(item => {
+// Draggable logic
+function makeDraggable(item) {
   let offsetX, offsetY;
   let lastX = 0, lastY = 0;
+  let currentParent = item.parentElement;
 
   item.addEventListener('mousedown', e => {
     e.preventDefault();
-
     pickupSound.currentTime = 0;
     pickupSound.play();
 
@@ -221,6 +217,9 @@ draggables.forEach(item => {
     lastY = e.clientY;
     item.style.zIndex = 1000;
     item.style.transition = "transform 0s";
+
+    // Move item to body temporarily for dragging
+    document.body.appendChild(item);
 
     const onMouseMove = e => {
       const dx = e.clientX - lastX;
@@ -238,6 +237,18 @@ draggables.forEach(item => {
     const onMouseUp = e => {
       document.removeEventListener('mousemove', onMouseMove);
 
+      // Drop inside tray if mouse over tray
+      const trayRect = tray.getBoundingClientRect();
+      if(e.clientY > trayRect.top) {
+        trayItems.appendChild(item);
+        item.style.position = 'absolute';
+        item.style.left = (e.clientX - trayRect.left - offsetX) + 'px';
+        item.style.top = (e.clientY - trayRect.top - offsetY) + 'px';
+      } else {
+        document.getElementById('container').appendChild(item);
+        item.style.position = 'absolute';
+      }
+
       item.style.transition = "transform 0.2s ease";
       const img = item.querySelector('img');
       if(img && img.classList.contains('pure')){
@@ -252,8 +263,11 @@ draggables.forEach(item => {
   });
 
   item.ondragstart = () => false;
-});
-</script>
+}
 
+// Initialize draggables
+document.querySelectorAll('.draggable').forEach(makeDraggable);
+
+</script>
 </body>
 </html>
