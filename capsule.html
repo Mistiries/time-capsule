@@ -5,61 +5,71 @@
 <title>Your Time Capsule</title>
 <style>
   body {
+    margin:0;
+    padding:0;
     background:#2a2a2a;
     font-family:sans-serif;
     overflow:hidden;
   }
+
   .draggable {
     position:absolute;
     cursor:grab;
     user-select:none;
     padding:10px;
-    background:rgba(255,255,255,0.8);
+    background:rgba(255,255,255,0.85);
+    border-radius:10px;
+    box-shadow: 3px 3px 10px rgba(0,0,0,0.5);
+    min-width:120px;
+    max-width:200px;
+    touch-action: none; /* important for mobile drag */
+  }
+
+  .draggable img {
+    width:100%;
     border-radius:8px;
-    box-shadow:2px 2px 8px rgba(0,0,0,0.5);
+  }
+
+  .draggable p {
+    margin:5px 0 0 0;
+    font-size:14px;
   }
 </style>
 </head>
 <body>
 
-<div class="draggable" style="top:50px; left:50px;">This is a memory note.</div>
-<div class="draggable" style="top:150px; left:200px;">Another note or image placeholder.</div>
-<div class="draggable" style="top:300px; left:100px;">Add images, text, or links here.</div>
+<!-- Draggable Notes / Images -->
+<div class="draggable" style="top:50px; left:50px;">
+  <p>Memory note 1</p>
+</div>
+
+<div class="draggable" style="top:150px; left:200px;">
+  <p>Memory note 2</p>
+</div>
+
+<div class="draggable" style="top:300px; left:100px;">
+  <img src="https://via.placeholder.com/150" alt="Image memory">
+  <p>A summer memory</p>
+</div>
+
+<div class="draggable" style="top:400px; left:250px;">
+  <img src="https://via.placeholder.com/120" alt="Image memory">
+  <p>Another memory</p>
+</div>
 
 <script>
 const draggables = document.querySelectorAll('.draggable');
 
 draggables.forEach(item => {
-  item.onmousedown = function(event) {
-    let shiftX = event.clientX - item.getBoundingClientRect().left;
-    let shiftY = event.clientY - item.getBoundingClientRect().top;
+  let offsetX, offsetY;
 
-    item.style.position = 'absolute';
+  const startDrag = (x, y) => {
+    offsetX = x - item.getBoundingClientRect().left;
+    offsetY = y - item.getBoundingClientRect().top;
     item.style.zIndex = 1000;
-    moveAt(event.pageX, event.pageY);
-
-    function moveAt(pageX, pageY) {
-      item.style.left = pageX - shiftX + 'px';
-      item.style.top = pageY - shiftY + 'px';
-    }
-
-    function onMouseMove(event) {
-      moveAt(event.pageX, event.pageY);
-    }
-
-    document.addEventListener('mousemove', onMouseMove);
-
-    item.onmouseup = function() {
-      document.removeEventListener('mousemove', onMouseMove);
-      item.onmouseup = null;
-    };
   };
 
-  item.ondragstart = function() {
-    return false;
-  };
-});
-</script>
+  const drag = (x, y) => {
+    item.style.left = (x - offsetX) + 'px';
+    item
 
-</body>
-</html>
