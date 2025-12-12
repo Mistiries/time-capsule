@@ -196,7 +196,7 @@ body {
   position: fixed;
   bottom: 10%;
   right: 12%;
-  width: 165px; /* increased by ~10% */
+  width: 180px;
   cursor: default;
   z-index: 450; /* below tray */
 }
@@ -265,6 +265,8 @@ body {
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', ()=>{
+
 const pickupSound = document.getElementById('pickup');
 const muteBtn = document.getElementById('muteBtn');
 const container = document.getElementById('container');
@@ -290,23 +292,21 @@ const musicTracks = [
 ];
 let currentTrackIndex = 0;
 
-window.addEventListener('DOMContentLoaded', () => {
-  requestAnimationFrame(() => container.classList.add('visible'));
-  musicTracks[0].volume = 0.6;
-  musicTracks[0].play().catch(()=>{});
+// Fade in container
+requestAnimationFrame(()=>container.classList.add('visible'));
 
-  musicTracks.forEach(track=>{
-    track.loop = true;
-  });
-});
+// Play first music track
+musicTracks[0].volume = 0.6;
+musicTracks[0].play().catch(()=>{});
+musicTracks.forEach(track=>track.loop=true);
 
-// Mute button (only music)
+// Mute music only
 muteBtn.addEventListener('click', ()=>{
   musicTracks.forEach(track=>track.muted = !track.muted);
   muteBtn.textContent = musicTracks[0].muted ? 'Unmute' : 'Mute';
 });
 
-// Tray tab open/close
+// Tray open/close with sound
 trayTab.addEventListener('click', ()=>{
   const isOpen = tray.classList.toggle('open');
   trayTab.textContent = isOpen ? '▼' : '▲';
@@ -314,12 +314,12 @@ trayTab.addEventListener('click', ()=>{
   traySound.play();
 });
 
-// Burger menu
+// Burger menu toggle
 burgerMenu.addEventListener('click', ()=>{
   burgerContent.style.left = burgerContent.style.left === '0px' ? '-200px' : '0px';
 });
 
-// Dark mode
+// Dark mode toggle
 darkModeBtn.addEventListener('click', ()=>{
   darkModeActive = !darkModeActive;
   darkOverlay.style.opacity = darkModeActive ? 1 : 0;
@@ -331,8 +331,9 @@ document.getElementById('nextTrack').addEventListener('click', ()=>{
   currentTrackIndex = (currentTrackIndex+1)%musicTracks.length;
 });
 document.getElementById('prevTrack').addEventListener('click', ()=>{
-  currentTrackIndex = (currentTrackIndex-1+musicTracks.length)%musicTracks.length;
-  fadeOutIn(musicTracks[(currentTrackIndex+1)%musicTracks.length], musicTracks[currentTrackIndex]);
+  const prevIndex = (currentTrackIndex-1+musicTracks.length)%musicTracks.length;
+  fadeOutIn(musicTracks[currentTrackIndex], musicTracks[prevIndex]);
+  currentTrackIndex = prevIndex;
 });
 
 function fadeOutIn(outTrack, inTrack){
@@ -356,7 +357,7 @@ function fadeOutIn(outTrack, inTrack){
   },50);
 }
 
-// Draggable function
+// Draggable function with fixed tray pickup
 function makeDraggable(item){
   let offsetX, offsetY, lastX, lastY;
 
@@ -386,7 +387,6 @@ function makeDraggable(item){
       lastX = e.clientX;
       lastY = e.clientY;
 
-      // shrink when hovering bin
       const binRect = trashBin.getBoundingClientRect();
       if(e.clientX >= binRect.left && e.clientX <= binRect.right &&
          e.clientY >= binRect.top && e.clientY <= binRect.bottom){
@@ -419,7 +419,7 @@ function makeDraggable(item){
     }
 
     document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp, {once:true});
+    document.addEventListener('mouseup', onMouseUp,{once:true});
   });
 
   item.ondragstart = ()=>false;
@@ -427,43 +427,29 @@ function makeDraggable(item){
 
 document.querySelectorAll('.draggable').forEach(makeDraggable);
 
-// Tooltip for peach tea
-const peachTea = document.getElementById('peachTea');
-let tooltipTimeout;
-peachTea.addEventListener('mouseenter', e=>{
-  tooltipTimeout = setTimeout(()=>{
-    tooltip.textContent = 'I love peach tea';
-    tooltip.style.opacity = 1;
-  },100);
-});
-peachTea.addEventListener('mouseleave', e=>{
-  clearTimeout(tooltipTimeout);
-  tooltip.style.opacity = 0;
-});
-peachTea.addEventListener('mousemove', e=>{
-  const rect = peachTea.getBoundingClientRect();
-  if(e.clientX >= rect.left && e.clientX <= rect.right &&
-     e.clientY >= rect.top && e.clientY <= rect.bottom){
+// Tooltip logic
+function attachTooltip(el, text){
+  let tooltipTimeout;
+  el.addEventListener('mouseenter', e=>{
+    tooltipTimeout = setTimeout(()=>{
+      tooltip.textContent = text;
+      tooltip.style.opacity = 1;
+    },50);
+  });
+  el.addEventListener('mouseleave', e=>{
+    clearTimeout(tooltipTimeout);
+    tooltip.style.opacity = 0;
+  });
+  el.addEventListener('mousemove', e=>{
     tooltip.style.left = (e.clientX + 15)+'px';
     tooltip.style.top = (e.clientY + 15)+'px';
-  }
-});
+  });
+}
 
-// Tooltip for table
-table.addEventListener('mouseenter', e=>{
-  tooltipTimeout = setTimeout(()=>{
-    tooltip.textContent = 'a sturdy wooden table';
-    tooltip.style.opacity = 1;
-  },100);
-});
-table.addEventListener('mouseleave', e=>{
-  clearTimeout(tooltipTimeout);
-  tooltip.style.opacity = 0;
-});
-table.addEventListener('mousemove', e=>{
-  tooltip.style.left = (e.clientX + 15)+'px';
-  tooltip.style.top = (e.clientY + 15)+'px';
-});
+attachTooltip(document.getElementById('peachTea'), 'I love peach tea');
+attachTooltip(table, 'a sturdy wooden table');
+
+}); // DOMContentLoaded
 </script>
 </body>
 </html>
