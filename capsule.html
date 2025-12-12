@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Your Interactive Time Capsule</title>
+<title>Interactive Time Capsule</title>
 <style>
   body {
     margin:0;
@@ -10,6 +10,36 @@
     background:#2a2a2a;
     font-family:sans-serif;
     overflow:hidden;
+  }
+
+  /* Password screen */
+  #passwordScreen {
+    position:fixed;
+    top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,0.85);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+    color:white;
+    z-index:3000;
+  }
+
+  #passwordInput {
+    padding:10px;
+    font-size:16px;
+    border-radius:6px;
+    border:none;
+    margin-top:10px;
+  }
+
+  #unlockBtn {
+    margin-top:10px;
+    padding:8px 12px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    font-weight:bold;
   }
 
   .draggable {
@@ -36,7 +66,7 @@
     font-size:14px;
   }
 
-  /* Mute button styling */
+  /* Mute button */
   #muteBtn {
     position:fixed;
     top:10px;
@@ -49,10 +79,18 @@
     cursor:pointer;
     font-weight:bold;
     box-shadow: 2px 2px 6px rgba(0,0,0,0.5);
+    display:none; /* hidden until unlocked */
   }
 </style>
 </head>
 <body>
+
+<!-- Password Screen -->
+<div id="passwordScreen">
+  <h2>Enter Password to Unlock Capsule</h2>
+  <input type="password" id="passwordInput" placeholder="Password">
+  <button id="unlockBtn">Unlock</button>
+</div>
 
 <!-- Audio Files -->
 <audio id="pickup" src="sounds/pickup.mp3"></audio>
@@ -86,10 +124,26 @@ const pickupSound = document.getElementById('pickup');
 const backgroundSound = document.getElementById('background');
 const muteBtn = document.getElementById('muteBtn');
 
-// Play background as soon as page loads
-window.addEventListener('DOMContentLoaded', () => {
-  backgroundSound.volume = 0.5; // adjust initial volume
-  backgroundSound.play().catch(()=>{ /* ignore autoplay block errors */ });
+const passwordScreen = document.getElementById('passwordScreen');
+const unlockBtn = document.getElementById('unlockBtn');
+const passwordInput = document.getElementById('passwordInput');
+
+const correctPassword = "letmein"; // change to your desired password
+
+// Unlock capsule
+unlockBtn.addEventListener('click', () => {
+  if(passwordInput.value === correctPassword) {
+    passwordScreen.style.display = "none";
+
+    // Show mute button
+    muteBtn.style.display = "block";
+
+    // Start background audio (user interaction allows autoplay)
+    backgroundSound.volume = 0.5;
+    backgroundSound.play().catch(()=>{});
+  } else {
+    alert("Incorrect password!");
+  }
 });
 
 // Mute / Unmute toggle
@@ -115,12 +169,12 @@ draggables.forEach(item => {
     lastX = e.clientX;
     lastY = e.clientY;
     item.style.zIndex = 1000;
-    item.style.transition = "transform 0s"; // remove transition while dragging
+    item.style.transition = "transform 0s";
 
     const onMouseMove = e => {
       const dx = e.clientX - lastX;
       const dy = e.clientY - lastY;
-      const swing = Math.min(Math.sqrt(dx*dx + dy*dy) * 0.2, 5); // subtle swing
+      const swing = Math.min(Math.sqrt(dx*dx + dy*dy) * 0.2, 5);
 
       item.style.transform = `rotate(${swing}deg) scale(1.05)`; 
       item.style.left = (e.clientX - offsetX) + 'px';
@@ -142,7 +196,7 @@ draggables.forEach(item => {
     document.addEventListener('mouseup', onMouseUp, { once: true });
   });
 
-  item.ondragstart = () => false; // prevent default drag
+  item.ondragstart = () => false;
 });
 </script>
 
