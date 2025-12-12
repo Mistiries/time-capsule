@@ -92,16 +92,17 @@
     justify-content: flex-start;
     align-items: flex-start;
     padding: 10px;
-    overflow: hidden;
+    overflow: visible; /* allow tab to show */
   }
 
   #tray.open {
     bottom: 0;
   }
 
+  /* Pull-out tab always visible */
   #trayTab {
     position: absolute;
-    top: -25px;
+    top: -30px; /* slightly higher than tray to be visible */
     left: 50%;
     transform: translateX(-50%);
     width: 60px;
@@ -115,6 +116,7 @@
     cursor: pointer;
     font-weight: bold;
     box-shadow: 0 -2px 5px rgba(0,0,0,0.3);
+    z-index: 1001; /* above tray */
   }
 
   #trayItems {
