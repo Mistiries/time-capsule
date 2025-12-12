@@ -49,25 +49,26 @@
 
   .draggable p { margin: 5px 0 0 0; font-size: 14px; }
 
+  /* Sticky Note */
   #stickyNote {
     position: absolute;
     top: 50%;
     left: 75%;
-    width: 160px;
-    height: 120px;
-    background: #fffa82;
-    padding: 10px;
-    font-size: 14px;
-    font-family: sans-serif;
-    transform: rotate(-5deg);
+    width: 180px;
+    height: 140px;
+    background: url('images/paper_texture.webp') repeat;
+    padding: 15px;
+    font-size: 16px;
+    font-family: 'Caveat', cursive;
+    transform: rotate(-5deg) skew(-2deg, 1deg);
     box-shadow: 2px 2px 6px rgba(0,0,0,0.4);
-    border: 1px solid #e2e2a0;
     border-radius: 6px;
     z-index: 800;
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
+    cursor: grab;
   }
 
   #muteBtn {
@@ -105,7 +106,6 @@
   }
 
   #tray.open { transform: translateY(0); }
-
   #trayTab {
     position: fixed;
     bottom: 0;
@@ -173,24 +173,23 @@
 
   #burgerMenuContent button { margin: 10px 0; padding: 8px; cursor:pointer; }
 
+  /* Trash Bin */
   #trashBin {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    width: 60px;
-    height: 60px;
-    background: rgba(255,0,0,0.7);
-    border-radius: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: white;
-    font-weight: bold;
-    font-size: 16px;
+    width: 80px;
+    height: 80px;
+    background: url('images/trash_bin_icon.png') no-repeat center center;
+    background-size: contain;
     z-index: 1500;
-    cursor: pointer;
-    box-shadow: 2px 2px 6px rgba(0,0,0,0.4);
+    pointer-events: none; /* Bin itself is not draggable */
   }
+
+  .over-bin {
+    transform: scale(0.85) !important;
+  }
+
 </style>
 </head>
 <body>
@@ -228,7 +227,7 @@
     <button id="darkModeBtn">🌙 Dark Mode</button>
   </div>
 
-  <div id="trashBin">🗑</div>
+  <div id="trashBin"></div>
 
 </div>
 
@@ -254,7 +253,7 @@ window.addEventListener('DOMContentLoaded', () => {
   backgroundSound.loop = true;
   backgroundSound.play().catch(()=>{});
 
-  initializeDraggables();
+  document.querySelectorAll('.draggable').forEach(makeDraggable);
 });
 
 muteBtn.addEventListener('click', () => {
@@ -276,77 +275,78 @@ darkModeBtn.addEventListener('click', () => {
   darkOverlay.style.opacity = darkModeActive ? 1 : 0;
 });
 
-// --- Draggable Items ---
-function initializeDraggables() {
-  function makeDraggable(item) {
-    let offsetX, offsetY;
-    let lastX = 0, lastY = 0;
+// --- Draggable ---
+function makeDraggable(item) {
+  let offsetX, offsetY;
+  let lastX = 0, lastY = 0;
 
-    item.addEventListener('mousedown', e => {
-      e.preventDefault();
-      pickupSound.currentTime = 0;
-      pickupSound.play();
+  item.addEventListener('mousedown', e => {
+    e.preventDefault();
+    pickupSound.currentTime = 0;
+    pickupSound.play();
 
-      if(item.parentElement !== container) {
-        const rect = item.getBoundingClientRect();
-        const containerRect = container.getBoundingClientRect();
-        item.style.left = (rect.left - containerRect.left) + 'px';
-        item.style.top = (rect.top - containerRect.top) + 'px';
-        container.appendChild(item);
+    if(item.parentElement !== container) {
+      const rect = item.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+      item.style.left = (rect.left - containerRect.left) + 'px';
+      item.style.top = (rect.top - containerRect.top) + 'px';
+      container.appendChild(item);
+    }
+
+    item.style.zIndex = 1000;
+    item.style.transition = "transform 0.1s ease";
+    item.style.transform = "scale(0.95)";
+
+    const containerRect = container.getBoundingClientRect();
+    offsetX = e.clientX - item.getBoundingClientRect().left;
+    offsetY = e.clientY - item.getBoundingClientRect().top;
+    lastX = e.clientX;
+    lastY = e.clientY;
+
+    function onMouseMove(e) {
+      const dx = e.clientX - lastX;
+      const dy = e.clientY - lastY;
+      const swing = Math.min(Math.sqrt(dx*dx + dy*dy) * 0.2, 5);
+      item.style.transform = `rotate(${swing}deg) scale(0.95)`;
+      item.style.left = (e.clientX - containerRect.left - offsetX) + 'px';
+      item.style.top = (e.clientY - containerRect.top - offsetY) + 'px';
+
+      const trashRect = trashBin.getBoundingClientRect();
+      if(e.clientX > trashRect.left && e.clientX < trashRect.right &&
+         e.clientY > trashRect.top && e.clientY < trashRect.bottom) {
+        item.classList.add('over-bin');
+      } else {
+        item.classList.remove('over-bin');
       }
 
-      item.style.zIndex = 1000;
-      item.style.transition = "transform 0.1s ease";
-      item.style.transform = "scale(0.95)";
-
-      const containerRect = container.getBoundingClientRect();
-      offsetX = e.clientX - item.getBoundingClientRect().left;
-      offsetY = e.clientY - item.getBoundingClientRect().top;
       lastX = e.clientX;
       lastY = e.clientY;
+    }
 
-      function onMouseMove(e) {
-        const dx = e.clientX - lastX;
-        const dy = e.clientY - lastY;
-        const swing = Math.min(Math.sqrt(dx*dx + dy*dy) * 0.2, 5);
-        item.style.transform = `rotate(${swing}deg) scale(0.95)`;
-        item.style.left = (e.clientX - containerRect.left - offsetX) + 'px';
-        item.style.top = (e.clientY - containerRect.top - offsetY) + 'px';
-        lastX = e.clientX;
-        lastY = e.clientY;
-      }
+    function onMouseUp(e) {
+      document.removeEventListener('mousemove', onMouseMove);
+      item.style.transition = "transform 0.2s ease";
+      item.style.transform = "scale(1) rotate(0deg)";
+      item.style.zIndex = '';
 
-      function onMouseUp(e) {
-        document.removeEventListener('mousemove', onMouseMove);
-        item.style.transition = "transform 0.2s ease";
-        item.style.transform = "scale(1) rotate(0deg)";
-        item.style.zIndex = '';
-
+      const trashRect = trashBin.getBoundingClientRect();
+      if(e.clientX > trashRect.left && e.clientX < trashRect.right &&
+         e.clientY > trashRect.top && e.clientY < trashRect.bottom) {
+        item.remove();
+      } else {
+        // keep item where released, even if inside tray
         const trayRect = tray.getBoundingClientRect();
-        const trashRect = trashBin.getBoundingClientRect();
-        
-        // Trash bin check
-        if(e.clientX > trashRect.left && e.clientX < trashRect.right &&
-           e.clientY > trashRect.top && e.clientY < trashRect.bottom) {
-          item.remove();
-        } else if(e.clientY > trayRect.top) {
-          // Just append to trayItems but keep position
-          const localX = e.clientX - trayRect.left - offsetX;
-          const localY = e.clientY - trayRect.top - offsetY;
+        if(e.clientY > trayRect.top) {
           trayItems.appendChild(item);
-          item.style.left = localX + 'px';
-          item.style.top = localY + 'px';
         }
       }
+    }
 
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', onMouseUp, { once: true });
-    });
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp, { once: true });
+  });
 
-    item.ondragstart = () => false;
-  }
-
-  document.querySelectorAll('.draggable').forEach(makeDraggable);
+  item.ondragstart = () => false;
 }
 </script>
 </body>
