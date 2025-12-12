@@ -132,7 +132,7 @@
     left:0;
     width:100%;
     height:100%;
-    background-color: rgba(0,0,0,0.6);
+    background-color: rgba(0,0,0,0.55); /* 5% lighter */
     pointer-events:none;
     opacity:0;
     transition: opacity 0.3s ease;
@@ -253,11 +253,15 @@ burgerMenu.addEventListener('click', () => {
   burgerContent.style.left = burgerContent.style.left === '0px' ? '-200px' : '0px';
 });
 
+// Dark Mode Toggle + burger menu behind overlay
 darkModeBtn.addEventListener('click', () => {
   darkModeActive = !darkModeActive;
   darkOverlay.style.opacity = darkModeActive ? 1 : 0;
+
+  burgerMenu.style.zIndex = darkModeActive ? 1400 : 2001;
 });
 
+// --- Draggable Items ---
 function makeDraggable(item) {
   let offsetX, offsetY;
   let lastX = 0, lastY = 0;
@@ -278,8 +282,6 @@ function makeDraggable(item) {
     container.appendChild(item);
     item.style.zIndex = 1000;
     item.style.transition = "transform 0.1s ease";
-
-    // shrink slightly when picked up
     item.style.transform = "scale(0.95)";
 
     offsetX = e.clientX - itemRect.left;
@@ -291,12 +293,12 @@ function makeDraggable(item) {
       const dx = e.clientX - lastX;
       const dy = e.clientY - lastY;
       const swing = Math.min(Math.sqrt(dx*dx + dy*dy) * 0.2, 5);
-      item.style.transform = `rotate(${swing}deg) scale(0.95)`; // tilt + shrink
+      item.style.transform = `rotate(${swing}deg) scale(0.95)`;
 
       const containerRect = container.getBoundingClientRect();
       const newX = e.clientX - containerRect.left - offsetX;
       const newY = e.clientY - containerRect.top - offsetY;
-      // slight lag behind cursor
+
       item.style.left = (parseFloat(item.style.left) + (newX - parseFloat(item.style.left)) * 0.15) + 'px';
       item.style.top = (parseFloat(item.style.top) + (newY - parseFloat(item.style.top)) * 0.15) + 'px';
 
@@ -307,7 +309,6 @@ function makeDraggable(item) {
     function onMouseUp(e) {
       document.removeEventListener('mousemove', onMouseMove);
 
-      // snap to tray if dropped inside
       const trayRect = tray.getBoundingClientRect();
       if(e.clientY > trayRect.top){
         trayItems.appendChild(item);
@@ -316,9 +317,9 @@ function makeDraggable(item) {
         item.style.top = (e.clientY - trayRectNew.top - offsetY) + 'px';
       }
 
-      // reset tilt and scale on drop
       item.style.transition = "transform 0.2s ease";
       item.style.transform = "scale(1) rotate(0deg)";
+      item.style.zIndex = '';
     }
 
     document.addEventListener('mousemove', onMouseMove);
@@ -329,7 +330,6 @@ function makeDraggable(item) {
 }
 
 document.querySelectorAll('.draggable').forEach(makeDraggable);
-
 </script>
 </body>
 </html>
