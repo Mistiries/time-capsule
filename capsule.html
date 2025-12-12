@@ -144,14 +144,14 @@ body {
 /* Table */
 #table {
   position: fixed; bottom: 10%; right: 12%;
-  width: 218px; /* increased 10% more */
+  width: 240px; /* increased further 10% */
   cursor: default; z-index: 450;
 }
 
 /* Envelope */
 #envelope {
-  position: fixed; bottom: 10%; right: 12%;
-  transform: translateX(-130px) translateY(-10px);
+  position: fixed; bottom: 13%; right: 12%;
+  transform: translateX(-130px);
   width: 70px;
   cursor: default; z-index: 460;
 }
@@ -332,7 +332,6 @@ function makeDraggable(item){
     lastX = e.clientX;
     lastY = e.clientY;
 
-    // Fix jump by using current position
     const bodyRect = document.body.getBoundingClientRect();
     const globalLeft = itemRect.left - bodyRect.left;
     const globalTop = itemRect.top - bodyRect.top;
@@ -427,10 +426,10 @@ table.addEventListener('mousemove', e=>{
   tooltip.style.top = (e.clientY + 15)+'px';
 });
 
-// Envelope tooltip (optional)
+// Tooltip for envelope
 envelope.addEventListener('mouseenter', e=>{
   tooltipTimeout = setTimeout(()=>{
-    tooltip.textContent = 'a sealed envelope';
+    tooltip.textContent = 'an envelope full of texts';
     tooltip.style.opacity = 1;
   },50);
 });
