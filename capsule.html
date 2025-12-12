@@ -5,12 +5,12 @@
 <title>Achraf and Eleni's Time Capsule</title>
 <style>
   body {
-    margin:0;
-    padding:0;
+    margin: 0;
+    padding: 0;
     background: url('images/backgroundwall.webp') no-repeat center center fixed;
     background-size: cover;
-    font-family:sans-serif;
-    overflow:hidden;
+    font-family: sans-serif;
+    overflow: hidden;
   }
 
   #container {
@@ -21,45 +21,50 @@
     opacity: 1;
   }
 
-  /* Draggable items original size */
+  /* All draggable items original size */
   .draggable {
-    position:absolute;
-    cursor:grab;
-    user-select:none;
-    padding:8px;
-    background:rgba(255,255,255,0.85);
-    border-radius:10px;
+    position: absolute;
+    cursor: grab;
+    user-select: none;
+    padding: 8px;
+    background: rgba(255,255,255,0.85);
+    border-radius: 10px;
     box-shadow: 3px 3px 10px rgba(0,0,0,0.5);
-    min-width:120px;
-    max-width:200px;
-    transform: rotate(0deg) scale(1);
+    min-width: 120px;
+    max-width: 200px;
     transition: transform 0.2s ease;
   }
 
-  /* Remove background/padding for pure images (Peach Tea) */
+  .draggable img {
+    width: 100%;
+    border-radius: 0;
+    display: block;
+  }
+
   .draggable img.pure {
-    width:150px;
-    border-radius:0;
-    display:block;
-    padding:0;
+    width: 150px;  /* fixed visible width */
+    display: block;
+    border-radius: 0;
+    padding: 0;
+    background: transparent;
   }
 
   .draggable p {
-    margin:5px 0 0 0;
-    font-size:14px;
+    margin: 5px 0 0 0;
+    font-size: 14px;
   }
 
   #muteBtn {
-    position:fixed;
-    top:10px;
-    right:10px;
-    z-index:2000;
-    padding:8px 12px;
-    background:rgba(255,255,255,0.85);
-    border:none;
-    border-radius:6px;
-    cursor:pointer;
-    font-weight:bold;
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 2000;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.85);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
     box-shadow: 2px 2px 6px rgba(0,0,0,0.5);
   }
 </style>
@@ -94,8 +99,8 @@
     <p>Another memory</p>
   </div>
 
-  <!-- Peach Tea Image (pure, no background, centered slightly right) -->
-  <div class="draggable" style="top:200px; left:60%;" >
+  <!-- Peach Tea Image (pure, no background/padding) -->
+  <div class="draggable" style="top:200px; left:60%;">
     <img src="images/peachtea.webp" alt="Peach Tea" class="pure">
   </div>
 
@@ -114,7 +119,7 @@ window.addEventListener('DOMContentLoaded', () => {
     container.classList.add('visible');
   });
 
-  backgroundSound.volume = 0.55; // moderate volume
+  backgroundSound.volume = 0.55;
   backgroundSound.loop = true;
   backgroundSound.play().catch(()=>{});
 });
@@ -133,7 +138,6 @@ draggables.forEach(item => {
   item.addEventListener('mousedown', e => {
     e.preventDefault();
 
-    // Play pickup sound
     pickupSound.currentTime = 0;
     pickupSound.play();
 
@@ -163,9 +167,10 @@ draggables.forEach(item => {
 
       item.style.transition = "transform 0.2s ease";
 
-      // For Peach Tea image, keep scale same after drop
-      if(item.querySelector('img') && item.querySelector('img').classList.contains('pure')){
-        item.style.transform = "scale(0.95)"; // slight shrink for drop
+      const img = item.querySelector('img');
+      if(img && img.classList.contains('pure')){
+        // Peach Tea small shrink on drop
+        item.style.transform = "scale(0.95)";
       } else {
         item.style.transform = "scale(1)";
       }
