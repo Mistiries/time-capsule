@@ -53,7 +53,7 @@
     position: fixed;
     top: 10px;
     right: 10px;
-    z-index: 2000;
+    z-index: 1499; /* behind overlay in dark mode */
     padding: 8px 12px;
     background: rgba(255,255,255,0.85);
     border: none;
@@ -135,7 +135,7 @@
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    z-index: 2001;
+    z-index: 1499; /* behind overlay in dark mode */
     transition: opacity 0.3s ease;
   }
 
@@ -146,12 +146,12 @@
     width:200px;
     height:100%;
     background: rgba(255,255,255,0.95);
-    transition: left 0.3s ease, z-index 0s;
+    transition: left 0.3s ease;
     display:flex;
     flex-direction:column;
     padding: 20px;
     box-sizing:border-box;
-    z-index:2000;
+    z-index: 2002; /* always above overlay when open */
   }
 
   #burgerMenuContent button { margin: 10px 0; padding: 8px; cursor:pointer; }
@@ -219,7 +219,7 @@ window.addEventListener('DOMContentLoaded', () => {
   backgroundSound.play().catch(()=>{});
 });
 
-// Mute
+// Mute button
 muteBtn.addEventListener('click', () => {
   backgroundSound.muted = !backgroundSound.muted;
   muteBtn.textContent = backgroundSound.muted ? 'Unmute' : 'Mute';
@@ -235,19 +235,16 @@ trayTab.addEventListener('click', () => {
 burgerMenu.addEventListener('click', () => {
   const open = burgerContent.style.left !== '0px';
   burgerContent.style.left = open ? '0px' : '-200px';
-  burgerContent.style.zIndex = open ? 2002 : 2000; // menu content always above overlay when open
 });
 
 // Dark Mode
 darkModeBtn.addEventListener('click', () => {
   darkModeActive = !darkModeActive;
   darkOverlay.style.opacity = darkModeActive ? 1 : 0;
-
-  // Dim burger and mute button behind overlay
   burgerMenu.style.opacity = darkModeActive ? 0.5 : 1;
   muteBtn.style.opacity = darkModeActive ? 0.5 : 1;
 });
-  
+
 // --- Draggable Items ---
 function makeDraggable(item) {
   let offsetX, offsetY;
@@ -265,8 +262,6 @@ function makeDraggable(item) {
 
     item.style.left = absLeft + 'px';
     item.style.top = absTop + 'px';
-
-    container.appendChild(item);
     item.style.zIndex = 1000;
     item.style.transition = "transform 0.1s ease";
     item.style.transform = "scale(0.95)";
@@ -282,12 +277,10 @@ function makeDraggable(item) {
       const swing = Math.min(Math.sqrt(dx*dx + dy*dy) * 0.2, 5);
       item.style.transform = `rotate(${swing}deg) scale(0.95)`;
 
+      // Move exactly with the mouse
       const containerRect = container.getBoundingClientRect();
-      const newX = e.clientX - containerRect.left - offsetX;
-      const newY = e.clientY - containerRect.top - offsetY;
-
-      item.style.left = (parseFloat(item.style.left) + (newX - parseFloat(item.style.left)) * 0.15) + 'px';
-      item.style.top = (parseFloat(item.style.top) + (newY - parseFloat(item.style.top)) * 0.15) + 'px';
+      item.style.left = (e.clientX - containerRect.left - offsetX) + 'px';
+      item.style.top = (e.clientY - containerRect.top - offsetY) + 'px';
 
       lastX = e.clientX;
       lastY = e.clientY;
@@ -295,15 +288,6 @@ function makeDraggable(item) {
 
     function onMouseUp(e) {
       document.removeEventListener('mousemove', onMouseMove);
-
-      const trayRect = tray.getBoundingClientRect();
-      if(e.clientY > trayRect.top){
-        trayItems.appendChild(item);
-        const trayRectNew = trayItems.getBoundingClientRect();
-        item.style.left = (e.clientX - trayRectNew.left - offsetX) + 'px';
-        item.style.top = (e.clientY - trayRectNew.top - offsetY) + 'px';
-      }
-
       item.style.transition = "transform 0.2s ease";
       item.style.transform = "scale(1) rotate(0deg)";
       item.style.zIndex = '';
