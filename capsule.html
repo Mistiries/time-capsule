@@ -4,196 +4,165 @@
 <meta charset="UTF-8">
 <title>Achraf and Eleni's Time Capsule</title>
 <style>
-  body {
-    margin: 0;
-    padding: 0;
-    background: url('images/backgroundwall.webp') no-repeat center center fixed;
-    background-size: cover;
-    font-family: sans-serif;
-    overflow: hidden;
-  }
+body {
+  margin: 0;
+  padding: 0;
+  background: url('images/backgroundwall.webp') no-repeat center center fixed;
+  background-size: cover;
+  font-family: sans-serif;
+  overflow: hidden;
+}
 
-  #container {
-    position: relative;
-    width: 100%;
-    height: 100vh;
-  }
+#container { position: relative; width: 100%; height: 100vh; }
 
-  .draggable {
-    position: absolute;
-    cursor: grab;
-    user-select: none;
-    padding: 8px;
-    background: rgba(255,255,255,0.85);
-    border-radius: 10px;
-    box-shadow: 3px 3px 10px rgba(0,0,0,0.5);
-    min-width: 120px;
-    max-width: 200px;
-    transition: transform 0.2s ease;
-  }
+.draggable {
+  position: absolute;
+  cursor: grab;
+  user-select: none;
+  padding: 8px;
+  background: rgba(255,255,255,0.85);
+  border-radius: 10px;
+  box-shadow: 3px 3px 10px rgba(0,0,0,0.5);
+  min-width: 120px;
+  max-width: 200px;
+  transition: transform 0.2s ease;
+  z-index: 400;
+}
 
-  .draggable img {
-    width: 100%;
-    display: block;
-  }
+.draggable img { width: 100%; display: block; }
+.draggable.pure-item { background: transparent !important; padding: 0 !important; box-shadow: none !important; }
+.draggable img.pure { width: 150px; }
 
-  .draggable.pure-item {
-    background: transparent !important;
-    padding: 0 !important;
-    min-width: 0 !important;
-    max-width: none !important;
-    box-shadow: none !important;
-  }
+#muteBtn, #burgerMenu {
+  position: fixed;
+  z-index: 2001;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: bold;
+  border-radius: 6px;
+}
 
-  .draggable img.pure {
-    width: 150px;
-    display: block;
-  }
+#muteBtn {
+  top: 10px;
+  right: 10px;
+  background: rgba(255,255,255,0.85);
+  border: none;
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.5);
+}
 
-  .draggable p {
-    margin: 5px 0 0 0;
-    font-size: 14px;
-  }
+#burgerMenu {
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  background: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 5px;
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.5);
+}
 
-  #muteBtn, #burgerMenu {
-    position: fixed;
-    z-index: 2001;
-    padding: 8px 12px;
-    cursor: pointer;
-    font-weight: bold;
-    border-radius: 6px;
-  }
+#burgerMenuContent {
+  position: fixed;
+  top:0;
+  left:-200px;
+  width:200px;
+  height:100%;
+  background: rgba(255,255,255,0.95);
+  transition: left 0.3s ease;
+  display:flex;
+  flex-direction:column;
+  padding: 20px;
+  box-sizing:border-box;
+  z-index: 2000;
+}
 
-  #muteBtn {
-    top: 10px;
-    right: 10px;
-    background: rgba(255,255,255,0.85);
-    border: none;
-    box-shadow: 2px 2px 6px rgba(0,0,0,0.5);
-  }
+#burgerMenuContent button {
+  margin: 10px 0;
+  padding: 8px;
+  cursor:pointer;
+}
 
-  #burgerMenu {
-    top: 50%;
-    left: 0;
-    transform: translateY(-50%);
-    width: 40px;
-    height: 40px;
-    background: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 5px;
-    box-shadow: 2px 2px 6px rgba(0,0,0,0.5);
-  }
+#tray {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 25%;
+  transform: translateY(100%);
+  background: rgba(240,240,240,0.9);
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  box-shadow: 0 -3px 10px rgba(0,0,0,0.3);
+  transition: transform 0.5s ease;
+  z-index: 500;
+  display: flex;
+  padding: 10px;
+  overflow: visible;
+}
 
-  #burgerMenuContent {
-    position: fixed;
-    top:0;
-    left:-200px;
-    width:200px;
-    height:100%;
-    background: rgba(255,255,255,0.95);
-    transition: left 0.3s ease;
-    display:flex;
-    flex-direction:column;
-    padding: 20px;
-    box-sizing:border-box;
-    z-index: 2000;
-  }
+#tray.open { transform: translateY(0); }
+#trayTab {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 25px;
+  background: rgba(200,200,200,0.9);
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0 -2px 5px rgba(0,0,0,0.3);
+  z-index: 1001;
+}
 
-  #burgerMenuContent button {
-    margin: 10px 0;
-    padding: 8px;
-    cursor:pointer;
-  }
+#trayItems { position: relative; width: 100%; height: 100%; }
 
-  #tray {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 25%;
-    transform: translateY(100%);
-    background: rgba(240,240,240,0.9);
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
-    box-shadow: 0 -3px 10px rgba(0,0,0,0.3);
-    transition: transform 0.5s ease;
-    z-index: 500;
-    display: flex;
-    justify-content: flex-start;
-    align-items: flex-start;
-    padding: 10px;
-    overflow: visible;
-  }
+#stickyNote {
+  position: absolute;
+  left: 25%;
+  top: 30%;
+  width: 150px;
+  padding: 12px;
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+  font-size: 17px;
+  color: #000;
+  background: url('images/paper-texture.webp');
+  background-size: cover;
+  border-radius: 8px;
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+  cursor: grab;
+  z-index: 300;
+}
 
-  #tray.open { transform: translateY(0); }
+#trashBin {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  width: 80px;
+  height: 80px;
+  background: url('images/bin-icon.png') no-repeat center center;
+  background-size: contain;
+  z-index: 550;
+}
 
-  #trayTab {
-    position: fixed;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 25px;
-    background: rgba(200,200,200,0.9);
-    border-top-left-radius: 15px;
-    border-top-right-radius: 15px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    font-weight: bold;
-    box-shadow: 0 -2px 5px rgba(0,0,0,0.3);
-    z-index: 1001;
-  }
-
-  #trayItems {
-    position: relative;
-    width: 100%;
-    height: 100%;
-  }
-
-  #darkModeOverlay {
-    position: fixed;
-    top:0; left:0;
-    width:100%; height:100%;
-    background-color: rgba(0,0,0,0.55);
-    pointer-events:none;
-    opacity:0;
-    transition: opacity 0.3s ease;
-    z-index: 3000;
-  }
-
-  #stickyNote {
-    position: absolute;
-    left: 25%;
-    top: 40%;
-    width: 150px;
-    padding: 10px;
-    font-family: 'Comic Sans MS', cursive, sans-serif;
-    font-size: 16px;
-    color: #000;
-    background: url('images/paper-texture.webp');
-    background-size: cover;
-    border-radius: 8px;
-    box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
-    cursor: grab;
-    z-index: 400;
-  }
-
-  #trashBin {
-    position: fixed;
-    bottom: 10px;
-    right: 10px;
-    width: 70px;
-    height: 70px;
-    background: url('images/bin-icon.png') no-repeat center center;
-    background-size: contain;
-    cursor: default;
-    z-index: 600;
-  }
-
+#darkModeOverlay {
+  position: fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background-color: rgba(0,0,0,0.55);
+  pointer-events:none;
+  opacity:0;
+  transition: opacity 0.3s ease;
+  z-index: 3000;
+}
 </style>
 </head>
 <body>
@@ -226,12 +195,7 @@
   </div>
 
   <div id="trayTab">▲</div>
-
-  <div id="stickyNote">
-    you can drag things around!<br>
-    Reload the page to reset everything.
-  </div>
-
+  <div id="stickyNote">you can drag things around!<br>Reload the page to reset everything.</div>
   <div id="trashBin"></div>
   <div id="darkModeOverlay"></div>
 
@@ -261,24 +225,20 @@ window.addEventListener('DOMContentLoaded', () => {
   backgroundSound.play().catch(()=>{});
 });
 
-// Mute
 muteBtn.addEventListener('click', () => {
   backgroundSound.muted = !backgroundSound.muted;
   muteBtn.textContent = backgroundSound.muted ? 'Unmute' : 'Mute';
 });
 
-// Tray
 trayTab.addEventListener('click', () => {
   tray.classList.toggle('open');
   trayTab.textContent = tray.classList.contains('open') ? '▼' : '▲';
 });
 
-// Burger Menu
 burgerMenu.addEventListener('click', () => {
   burgerContent.style.left = burgerContent.style.left === '0px' ? '-200px' : '0px';
 });
 
-// Dark Mode
 darkModeBtn.addEventListener('click', () => {
   darkModeActive = !darkModeActive;
   darkOverlay.style.opacity = darkModeActive ? 1 : 0;
@@ -297,8 +257,8 @@ function makeDraggable(item){
     item.style.zIndex = 10000;
 
     function onMouseMove(e){
-      const dx = e.clientX - (rect.left + offsetX);
-      const dy = e.clientY - (rect.top + offsetY);
+      const dx = e.movementX;
+      const dy = e.movementY;
       const swing = Math.min(Math.sqrt(dx*dx + dy*dy)*0.2, 5);
       item.style.transform = `rotate(${swing}deg) scale(1.05)`;
       item.style.left = (e.clientX - offsetX) + 'px';
@@ -309,8 +269,8 @@ function makeDraggable(item){
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
       item.style.transform = 'rotate(0deg) scale(1)';
+      item.style.zIndex = 400;
 
-      // Trash bin check
       const binRect = trashBin.getBoundingClientRect();
       const itemRect = item.getBoundingClientRect();
       if(itemRect.right > binRect.left && itemRect.left < binRect.right &&
@@ -318,10 +278,7 @@ function makeDraggable(item){
         binSound.currentTime = 0;
         binSound.play();
         item.remove();
-        return;
       }
-
-      item.style.zIndex = 400;
     }
 
     document.addEventListener('mousemove', onMouseMove);
@@ -331,7 +288,6 @@ function makeDraggable(item){
   item.ondragstart = () => false;
 }
 
-// Make all existing draggable items draggable
 document.querySelectorAll('.draggable').forEach(makeDraggable);
 makeDraggable(stickyNote);
 
