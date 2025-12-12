@@ -147,17 +147,6 @@
     <p>Created on the 12th December, 2025.</p>
   </div>
 
-  <!-- Other desk items -->
-  <div class="draggable" style="top:300px; left:100px;">
-    <img src="https://via.placeholder.com/150" alt="Image memory">
-    <p>A summer memory</p>
-  </div>
-
-  <div class="draggable" style="top:400px; left:250px;">
-    <img src="https://via.placeholder.com/120" alt="Image memory">
-    <p>Another memory</p>
-  </div>
-
   <!-- Tray -->
   <div id="tray">
     <div id="trayItems">
@@ -202,19 +191,24 @@ trayTab.addEventListener('click', () => {
 function makeDraggable(item) {
   let offsetX, offsetY;
   let lastX = 0, lastY = 0;
+  let startParent;
 
   item.addEventListener('mousedown', e => {
     e.preventDefault();
     pickupSound.currentTime = 0;
     pickupSound.play();
 
-    const startParent = item.parentElement;
-    const startParentRect = startParent.getBoundingClientRect();
+    startParent = item.parentElement;
 
-    offsetX = e.clientX - item.getBoundingClientRect().left;
-    offsetY = e.clientY - item.getBoundingClientRect().top;
+    // Calculate initial offset relative to page
+    const rect = item.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
     lastX = e.clientX;
     lastY = e.clientY;
+
+    // Temporarily append to container to prevent clipping
+    container.appendChild(item);
     item.style.zIndex = 1000;
     item.style.transition = "transform 0s";
 
@@ -224,25 +218,10 @@ function makeDraggable(item) {
       const swing = Math.min(Math.sqrt(dx*dx + dy*dy) * 0.2, 5);
       item.style.transform = `rotate(${swing}deg) scale(1.05)`;
 
-      const trayRect = tray.getBoundingClientRect();
-      let parentRect, parentContainer;
-
-      // Check if pointer is over tray
-      if (e.clientY > trayRect.top) {
-        parentContainer = trayItems;
-        parentRect = trayRect;
-      } else {
-        parentContainer = container;
-        parentRect = container.getBoundingClientRect();
-      }
-
-      // If parent has changed, reparent item
-      if(item.parentElement !== parentContainer){
-        parentContainer.appendChild(item);
-      }
-
-      item.style.left = (e.clientX - parentRect.left - offsetX) + 'px';
-      item.style.top = (e.clientY - parentRect.top - offsetY) + 'px';
+      // Position relative to container
+      const containerRect = container.getBoundingClientRect();
+      item.style.left = (e.clientX - containerRect.left - offsetX) + 'px';
+      item.style.top = (e.clientY - containerRect.top - offsetY) + 'px';
 
       lastX = e.clientX;
       lastY = e.clientY;
@@ -250,6 +229,16 @@ function makeDraggable(item) {
 
     function onMouseUp(e) {
       document.removeEventListener('mousemove', onMouseMove);
+
+      const trayRect = tray.getBoundingClientRect();
+
+      // Snap to tray if dropped over it
+      if(e.clientY > trayRect.top){
+        trayItems.appendChild(item);
+        const trayRectNew = trayItems.getBoundingClientRect();
+        item.style.left = (e.clientX - trayRectNew.left - offsetX) + 'px';
+        item.style.top = (e.clientY - trayRectNew.top - offsetY) + 'px';
+      }
 
       item.style.transition = "transform 0.2s ease";
       const img = item.querySelector('img');
@@ -267,6 +256,7 @@ function makeDraggable(item) {
   item.ondragstart = () => false;
 }
 
+// Initialize all draggables
 document.querySelectorAll('.draggable').forEach(makeDraggable);
 
 </script>
