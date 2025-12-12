@@ -37,40 +37,34 @@
   }
 
   .draggable img { width: 100%; display: block; border-radius: 0; }
-
-  .draggable.pure-item {
-    background: transparent !important;
-    padding: 0 !important;
-    min-width: 0 !important;
-    max-width: none !important;
-    box-shadow: none !important;
-  }
-
+  .draggable.pure-item { background: transparent !important; padding: 0 !important; min-width: 0 !important; max-width: none !important; box-shadow: none !important; }
   .draggable img.pure { width: 150px; display: block; }
-
   .draggable p { margin: 5px 0 0 0; font-size: 14px; }
 
   /* Sticky Note */
   #stickyNote {
     position: absolute;
-    top: 50%;
+    top: 40%;
     left: 75%;
-    width: 180px;
-    height: 140px;
+    width: 150px;
+    height: 100px;
     background-color: #fff9b0;
-    padding: 15px;
-    font-size: 18px;
+    padding: 12px;
+    font-size: 16px;
     font-family: 'Caveat', cursive;
     transform: rotate(-5deg) skew(-2deg, 1deg);
     box-shadow: 2px 2px 6px rgba(0,0,0,0.4);
     border-radius: 6px;
     z-index: 400; /* behind tray */
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     text-align: center;
     cursor: grab;
   }
+
+  #stickyNote p { margin: 2px 0; }
 
   #muteBtn {
     position: fixed;
@@ -96,6 +90,7 @@
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
     box-shadow: 0 -3px 10px rgba(0,0,0,0.3);
+    transform: translateY(100%);
     transition: transform 0.5s ease;
     z-index: 500;
     display: flex;
@@ -106,6 +101,7 @@
   }
 
   #tray.open { transform: translateY(0); }
+
   #trayTab {
     position: fixed;
     bottom: 0;
@@ -173,13 +169,12 @@
 
   #burgerMenuContent button { margin: 10px 0; padding: 8px; cursor:pointer; }
 
-  /* Trash Bin */
   #trashBin {
     position: absolute;
     bottom: 20px;
     right: 20px;
     font-size: 60px;
-    z-index: 450; /* behind tray but above post-it */
+    z-index: 450; /* behind tray */
     pointer-events: none;
     user-select: none;
   }
@@ -203,7 +198,10 @@
     <p>Created on the 12th December, 2025.</p>
   </div>
 
-  <div id="stickyNote" class="draggable">You can drag things around!</div>
+  <div id="stickyNote" class="draggable">
+    <p>You can drag things around!</p>
+    <p>Reload the page to reset everything.</p>
+  </div>
 
   <div id="tray">
     <div id="trayItems">
@@ -214,16 +212,12 @@
   </div>
 
   <div id="trayTab">▲</div>
-
   <div id="darkModeOverlay"></div>
-
   <div id="burgerMenu">☰</div>
   <div id="burgerMenuContent">
     <button id="darkModeBtn">🌙 Dark Mode</button>
   </div>
-
   <div id="trashBin">🗑️</div>
-
 </div>
 
 <script>
@@ -283,7 +277,7 @@ function makeDraggable(item) {
     offsetX = e.clientX - rect.left;
     offsetY = e.clientY - rect.top;
 
-    container.appendChild(item); // always append to container while dragging
+    container.appendChild(item);
     item.style.zIndex = 1000;
     item.style.transition = "transform 0.1s ease";
     item.style.transform = "scale(0.95)";
