@@ -13,27 +13,49 @@
     color:white;
     font-family:sans-serif;
     flex-direction:column;
+    margin:0;
   }
+
+  #passwordScreen {
+    opacity: 1;
+    transition: opacity 0.8s ease;
+    text-align:center;
+  }
+
+  #passwordScreen.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
   input { padding:10px; font-size:16px; margin-top:10px; }
   button { padding:10px; font-size:16px; margin-top:10px; cursor:pointer; }
 </style>
 </head>
 <body>
-<h2>Enter Password to Unlock the Capsule</h2>
-<input type="password" id="passwordInput" placeholder="Password">
-<button onclick="checkPassword()">Unlock</button>
+
+<div id="passwordScreen">
+  <h2>Enter Password to Unlock the Capsule</h2>
+  <input type="password" id="passwordInput" placeholder="Password">
+  <button onclick="checkPassword()">Unlock</button>
+</div>
 
 <script>
   const correctPassword = "april242023"; // change this to your password
 
   function checkPassword() {
     const input = document.getElementById("passwordInput").value;
+    const screen = document.getElementById("passwordScreen");
     if(input === correctPassword) {
-      window.location.href = "capsule.html";
+      // Fade out
+      screen.classList.add('hidden');
+      setTimeout(() => {
+        window.location.href = "capsule.html";
+      }, 800); // wait for fade-out
     } else {
       alert("Wrong password!");
     }
   }
 </script>
+
 </body>
 </html>
