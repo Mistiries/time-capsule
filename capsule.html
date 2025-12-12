@@ -10,7 +10,14 @@
     background:#2a2a2a;
     font-family:sans-serif;
     overflow:hidden;
-    opacity: 0; /* start hidden for fade-in */
+  }
+
+  #container {
+    opacity: 0;
+    transition: opacity 1s ease-in;
+  }
+  #container.visible {
+    opacity: 1;
   }
 
   .draggable {
@@ -54,30 +61,34 @@
 </head>
 <body>
 
-<!-- Audio Files -->
-<audio id="pickup" src="sounds/pickup.mp3"></audio>
-<audio id="background" src="sounds/background.mp3" loop></audio>
+<div id="container">
 
-<!-- Mute / Unmute Button -->
-<button id="muteBtn">Mute</button>
+  <!-- Audio Files -->
+  <audio id="pickup" src="sounds/pickup.mp3"></audio>
+  <audio id="background" src="sounds/background.mp3" loop></audio>
 
-<!-- Draggable Notes / Images -->
-<div class="draggable" style="top:50px; left:50px;">
-  <p>Memory note 1</p>
-</div>
+  <!-- Mute / Unmute Button -->
+  <button id="muteBtn">Mute</button>
 
-<div class="draggable" style="top:150px; left:200px;">
-  <p>Memory note 2</p>
-</div>
+  <!-- Draggable Notes / Images -->
+  <div class="draggable" style="top:50px; left:50px;">
+    <p>Memory note 1</p>
+  </div>
 
-<div class="draggable" style="top:300px; left:100px;">
-  <img src="https://via.placeholder.com/150" alt="Image memory">
-  <p>A summer memory</p>
-</div>
+  <div class="draggable" style="top:150px; left:200px;">
+    <p>Memory note 2</p>
+  </div>
 
-<div class="draggable" style="top:400px; left:250px;">
-  <img src="https://via.placeholder.com/120" alt="Image memory">
-  <p>Another memory</p>
+  <div class="draggable" style="top:300px; left:100px;">
+    <img src="https://via.placeholder.com/150" alt="Image memory">
+    <p>A summer memory</p>
+  </div>
+
+  <div class="draggable" style="top:400px; left:250px;">
+    <img src="https://via.placeholder.com/120" alt="Image memory">
+    <p>Another memory</p>
+  </div>
+
 </div>
 
 <script>
@@ -85,18 +96,15 @@ const draggables = document.querySelectorAll('.draggable');
 const pickupSound = document.getElementById('pickup');
 const backgroundSound = document.getElementById('background');
 const muteBtn = document.getElementById('muteBtn');
+const container = document.getElementById('container');
 
-// Fade-in body and start looping background music
+// Fade-in container and start looping background music
 window.addEventListener('DOMContentLoaded', () => {
-  const body = document.body;
-  body.style.opacity = 0; // ensure starting point
   requestAnimationFrame(() => {
-    body.style.transition = "opacity 1s ease-in";
-    body.style.opacity = 1;
+    container.classList.add('visible');
   });
 
-  // Play background music at moderate volume
-  backgroundSound.volume = 0.22; // 22%
+  backgroundSound.volume = 0.55; // raise to 55%
   backgroundSound.loop = true;
   backgroundSound.play().catch(()=>{});
 });
