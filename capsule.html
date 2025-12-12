@@ -43,9 +43,11 @@
 
   /* Pure draggable items (Peach Tea) */
   .draggable.pure-item {
-    background: transparent;
-    padding: 0;
-    box-shadow: none;
+    background: transparent !important;
+    padding: 0 !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    box-shadow: none !important;
   }
 
   .draggable img.pure {
@@ -104,7 +106,7 @@
     <p>Another memory</p>
   </div>
 
-  <!-- Peach Tea Image (pure, no background/padding) -->
+  <!-- Peach Tea Image (pure, no background/padding/box) -->
   <div class="draggable pure-item" style="top:200px; left:60%;">
     <img src="images/peachtea.webp" alt="Peach Tea" class="pure">
   </div>
