@@ -49,12 +49,14 @@ body {
   min-width: 0 !important;
   max-width: none !important;
   box-shadow: none !important;
+  display: inline-block;
 }
 
 .draggable img.pure {
-  width: 150px;
+  width: 195px; /* 30% bigger than original 150px */
   display: block;
   border-radius: 0;
+  pointer-events: none; /* ensures drag is precise */
 }
 
 .draggable p {
@@ -196,7 +198,7 @@ body {
   position: fixed;
   bottom: 10%;
   right: 12%;
-  width: 234px;
+  width: 234px; 
   cursor: default;
   z-index: 450;
 }
@@ -235,7 +237,6 @@ body {
     <p>Created on the 12th December, 2025.</p>
   </div>
 
-  <!-- Tray -->
   <div id="tray">
     <div id="trayItems">
       <div class="draggable pure-item" style="top:20px; left:20px;">
@@ -265,12 +266,12 @@ body {
   <!-- Table -->
   <img src="images/table.webp" id="table">
 
-  <!-- New Images -->
+  <!-- New images -->
   <div class="draggable pure-item" id="image1" style="top:40%; right:15%; transform: rotate(-8deg); z-index:460;">
-    <img src="images/image1.jpg" class="pure" style="width:150px;">
+    <img src="images/image1.jpg" class="pure">
   </div>
   <div class="draggable pure-item" id="image2" style="top:42%; right:16%; transform: rotate(-5deg); z-index:455;">
-    <img src="images/image2.jpg" class="pure" style="width:150px;">
+    <img src="images/image2.jpg" class="pure">
   </div>
 
   <div id="tooltip"></div>
@@ -305,18 +306,21 @@ function fadeOutInTrack(direction){
   let current = musicTracks[currentTrack];
   let nextIndex = (currentTrack + direction + musicTracks.length) % musicTracks.length;
   let next = musicTracks[nextIndex];
-  let fadeOut = setInterval(()=>{
-    if(current.volume>0.05){ current.volume -=0.05; } else { clearInterval(fadeOut); current.pause(); current.currentTime=0; next.volume=0; next.play(); fadeIn(next); currentTrack=nextIndex; }
+  let vol = 0.6;
+  let fadeOut = setInterval(()=>{ 
+    if(current.volume>0.05){ current.volume -=0.05; } 
+    else { clearInterval(fadeOut); current.pause(); current.currentTime=0; next.volume=0; next.play(); fadeIn(next); currentTrack=nextIndex; } 
   },50);
 }
 
 function fadeIn(track){
-  let fadeIn = setInterval(()=>{
-    if(track.volume<0.6){ track.volume +=0.05; } else { clearInterval(fadeIn); }
+  let fadeIn = setInterval(()=>{ 
+    if(track.volume<0.6){ track.volume +=0.05; } 
+    else { clearInterval(fadeIn); } 
   },50);
 }
 
-// Tooltip setup
+// Tooltip helper
 function setupTooltip(img,text){
   let timeout;
   img.addEventListener('mouseenter',()=>{ timeout=setTimeout(()=>{ tooltip.textContent=text; tooltip.style.opacity=1; },250); });
@@ -329,14 +333,15 @@ const trayItemImgs = document.querySelectorAll('.pure-item img.pure');
 setupTooltip(trayItemImgs[0],'I love peach tea');
 setupTooltip(trayItemImgs[1],'I ate these all the time as a child');
 
-// Table tooltip
-setupTooltip(document.getElementById('table'),'a strong sturdy table');
-
 // Image tooltips
-setupTooltip(document.querySelector('#image1 img'),'the day you got my first letter');
-setupTooltip(document.querySelector('#image2 img'),'the day you got my first letter');
+setupTooltip(document.getElementById('image1').querySelector('img'),'the day you got my first letter');
+setupTooltip(document.getElementById('image2').querySelector('img'),'the day you got my first letter');
 
-// Draggable logic
+// Table tooltip
+const table = document.getElementById('table');
+setupTooltip(table,'a strong sturdy table');
+
+// Draggable function
 function makeDraggable(item){
   let offsetX, offsetY,lastX=0,lastY=0;
   item.addEventListener('mousedown', e=>{
@@ -358,7 +363,7 @@ function makeDraggable(item){
       const dx = e.clientX - lastX;
       const dy = e.clientY - lastY;
       const swing = Math.min(Math.sqrt(dx*dx+dy*dy)*0.2,5);
-      let scale = 1;
+      let scale=1; // prevent zoom
       const binRect = trashBin.getBoundingClientRect();
       if(e.clientX>=binRect.left && e.clientX<=binRect.right && e.clientY>=binRect.top && e.clientY<=binRect.bottom){ scale=0.85; }
       item.style.transform=`rotate(${swing}deg) scale(${scale})`;
