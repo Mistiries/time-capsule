@@ -11,17 +11,28 @@ body {
   background-size: cover;
   font-family: sans-serif;
   overflow: hidden;
+  opacity: 0;
+  transition: opacity 3s ease-in;
+}
+
+body.loaded {
+  opacity: 1;
 }
 
 #container {
   opacity: 0;
-  transition: opacity 1s ease-in;
+  transition: opacity 3s ease-in;
   position: relative;
   width: 100%;
   height: 100vh;
+  filter: blur(0px);
+  transition: opacity 3s ease-in, filter 0.3s ease;
 }
 #container.visible {
   opacity: 1;
+}
+#container.blurred {
+  filter: blur(5px);
 }
 
 .draggable {
@@ -70,6 +81,15 @@ body {
 
 .draggable.small-tab p {
   font-size: 12px;
+}
+
+.draggable.editable-tab {
+  cursor: text;
+}
+
+.draggable.editable-tab p {
+  outline: none;
+  min-height: 18px;
 }
 
 #muteBtn {
@@ -224,7 +244,7 @@ body {
 /* Envelope */
 #envelope {
   position: fixed;
-  bottom: 29%;
+  bottom: 24%;
   right: 22%;
   width: 100px;
   cursor: pointer;
@@ -385,6 +405,31 @@ body {
   left: 0;
   font-size: 20px;
 }
+
+/* Headphones text */
+#headphonesText {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Brush Script MT', cursive;
+  font-style: italic;
+  font-size: 32px;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+  opacity: 0;
+  transition: opacity 3s ease-in-out;
+  z-index: 5000;
+  pointer-events: none;
+}
+
+#headphonesText.visible {
+  opacity: 1;
+}
+
+#headphonesText.hidden {
+  opacity: 0;
+}
 </style>
 </head>
 <body>
@@ -416,6 +461,11 @@ body {
   <div class="draggable small-tab" style="top:120px; left:550px; z-index:400;">
     <p>you can decorate this space with the tray items!</p>
   </div>
+  <div class="draggable small-tab editable-tab" style="top:420px; left:200px; z-index:400;">
+    <p contenteditable="true" data-placeholder="you can type in this box">you can type in this box</p>
+  </div>
+
+  <div id="headphonesText">Headphones recommended</div>
 
   <div id="tray">
     <div id="trayItems">
@@ -475,7 +525,7 @@ body {
   <div class="draggable pure-item" style="top:10%; left:32%; transform: rotate(-8deg);">
     <img src="images/image1.jpg" alt="Memory 1" class="pure" style="width:144px;">
   </div>
-  <div class="draggable pure-item" style="top:400px; left:380px;">
+  <div class="draggable pure-item" style="top:400px; left:350px;">
     <img src="images/sticker1.jpg" alt="Sticker" class="pure" style="width:114px;">
   </div>
   
@@ -489,7 +539,7 @@ body {
   
   <!-- Bean bag -->
   <div class="draggable pure-item" style="bottom:5%; left:3%;">
-    <img src="images/bean.png" alt="Bean Bag" class="pure" style="width:120px;">
+    <img src="images/bean.png" alt="Bean Bag" class="pure" style="width:180px;">
   </div>
   
   <!-- Page -->
@@ -551,6 +601,7 @@ const imageViewer = document.getElementById('imageViewer');
 const viewerImg = document.getElementById('viewerImg');
 const letterViewer = document.getElementById('letterViewer');
 const pageItem = document.getElementById('pageItem');
+const headphonesText = document.getElementById('headphonesText');
 let darkModeEnabled = false;
 let viewerDarkOverlay = false;
 
@@ -609,7 +660,15 @@ function makeDraggable(item){
   let dragStartTime = 0;
   let startX = 0, startY = 0;
   
+  // Check if this is an editable tab
+  const editableP = item.querySelector('p[contenteditable="true"]');
+  
   function handleStart(e){
+    // Don't start drag if clicking on editable content
+    if(editableP && e.target === editableP) {
+      return;
+    }
+    
     const touch = e.touches ? e.touches[0] : e;
     e.preventDefault();
     isDragging = false;
@@ -709,18 +768,21 @@ function makeDraggable(item){
           paper2Sound.currentTime=0;
           paper2Sound.play();
           letterViewer.classList.add('visible');
+          container.classList.add('blurred');
           viewerDarkOverlay = true;
           darkOverlay.style.opacity = 1;
           darkOverlay.style.pointerEvents = 'auto';
         } else if(img && item.classList.contains('letter-img')){
           viewerImg.src = img.src;
           imageViewer.classList.add('visible');
+          container.classList.add('blurred');
           viewerDarkOverlay = true;
           darkOverlay.style.opacity = 1;
           darkOverlay.style.pointerEvents = 'auto';
         } else if(img && img.classList.contains('pure') && (img.alt === 'Memory 1' || img.alt === 'Memory 2' || img.alt === 'Cat' || img.alt === 'Computer' || img.alt === 'Sticker')){
           viewerImg.src = img.src;
           imageViewer.classList.add('visible');
+          container.classList.add('blurred');
           viewerDarkOverlay = true;
           darkOverlay.style.opacity = 1;
           darkOverlay.style.pointerEvents = 'auto';
@@ -740,6 +802,25 @@ function makeDraggable(item){
 }
 
 document.querySelectorAll('.draggable').forEach(makeDraggable);
+
+// Handle editable tab
+document.querySelectorAll('.editable-tab p[contenteditable="true"]').forEach(p => {
+  p.addEventListener('focus', function() {
+    if(this.textContent === this.dataset.placeholder) {
+      this.textContent = '';
+    }
+  });
+  
+  p.addEventListener('blur', function() {
+    if(this.textContent.trim() === '') {
+      this.textContent = this.dataset.placeholder;
+    }
+  });
+  
+  p.addEventListener('click', function(e) {
+    e.stopPropagation();
+  });
+});
 
 // Tooltip for table
 const table = document.getElementById('table');
@@ -783,7 +864,27 @@ envelope.addEventListener('click', () => {
   }
 });
 
-window.addEventListener('DOMContentLoaded', () => { requestAnimationFrame(()=>container.classList.add('visible')); });
+window.addEventListener('DOMContentLoaded', () => { 
+  // Start music immediately
+  musicTracks[currentTrack].play();
+  
+  // Show headphones text
+  requestAnimationFrame(() => {
+    headphonesText.classList.add('visible');
+  });
+  
+  // Start fade in after a brief moment
+  setTimeout(() => {
+    document.body.classList.add('loaded');
+    container.classList.add('visible');
+  }, 100);
+  
+  // Fade out headphones text as page fades in
+  setTimeout(() => {
+    headphonesText.classList.remove('visible');
+    headphonesText.classList.add('hidden');
+  }, 3000);
+});
 
 muteBtn.addEventListener('click', () => {
   musicTracks.forEach(track => track.muted = !track.muted);
@@ -810,6 +911,7 @@ document.getElementById('instructionsBtn').addEventListener('click', () => {
   paperSound.currentTime=0;
   paperSound.play();
   instructionsPaper.classList.add('visible');
+  container.classList.add('blurred');
   viewerDarkOverlay = true;
   darkOverlay.style.opacity = 1;
   darkOverlay.style.pointerEvents = 'auto';
@@ -819,6 +921,7 @@ instructionsPaper.addEventListener('click', () => {
   paperSound.currentTime=0;
   paperSound.play();
   instructionsPaper.classList.remove('visible');
+  container.classList.remove('blurred');
   viewerDarkOverlay = false;
   darkOverlay.style.opacity = darkModeEnabled ? 1 : 0;
   darkOverlay.style.pointerEvents = 'none';
@@ -829,16 +932,19 @@ darkOverlay.addEventListener('click', () => {
     paperSound.currentTime=0;
     paperSound.play();
     instructionsPaper.classList.remove('visible');
+    container.classList.remove('blurred');
     viewerDarkOverlay = false;
     darkOverlay.style.opacity = darkModeEnabled ? 1 : 0;
     darkOverlay.style.pointerEvents = 'none';
   } else if(imageViewer.classList.contains('visible')){
     imageViewer.classList.remove('visible');
+    container.classList.remove('blurred');
     viewerDarkOverlay = false;
     darkOverlay.style.opacity = darkModeEnabled ? 1 : 0;
     darkOverlay.style.pointerEvents = 'none';
   } else if(letterViewer.classList.contains('visible')){
     letterViewer.classList.remove('visible');
+    container.classList.remove('blurred');
     viewerDarkOverlay = false;
     darkOverlay.style.opacity = darkModeEnabled ? 1 : 0;
     darkOverlay.style.pointerEvents = 'none';
@@ -847,6 +953,7 @@ darkOverlay.addEventListener('click', () => {
 
 imageViewer.addEventListener('click', () => {
   imageViewer.classList.remove('visible');
+  container.classList.remove('blurred');
   viewerDarkOverlay = false;
   darkOverlay.style.opacity = darkModeEnabled ? 1 : 0;
   darkOverlay.style.pointerEvents = 'none';
@@ -854,6 +961,7 @@ imageViewer.addEventListener('click', () => {
 
 letterViewer.addEventListener('click', () => {
   letterViewer.classList.remove('visible');
+  container.classList.remove('blurred');
   viewerDarkOverlay = false;
   darkOverlay.style.opacity = darkModeEnabled ? 1 : 0;
   darkOverlay.style.pointerEvents = 'none';
