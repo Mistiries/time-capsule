@@ -37,26 +37,6 @@ body {
   transition: transform 0.2s ease;
 }
 
-.draggable img {
-  width: 100%;
-  display: block;
-  border-radius: 0;
-}
-
-.draggable.pure-item {
-  background: transparent !important;
-  padding: 0 !important;
-  min-width: 0 !important;
-  max-width: none !important;
-  box-shadow: none !important;
-}
-
-.draggable img.pure {
-  width: 150px;
-  display: block;
-  border-radius: 0;
-}
-
 .draggable p {
   margin: 5px 0 0 0;
   font-size: 14px;
@@ -125,7 +105,6 @@ body {
   height: 100%;
 }
 
-/* Dark Mode Overlay */
 #darkModeOverlay {
   position: fixed;
   top:0;
@@ -139,7 +118,6 @@ body {
   z-index: 2005;
 }
 
-/* Burger Menu */
 #burgerMenu {
   position: fixed;
   top: 50%;
@@ -180,7 +158,6 @@ body {
   box-shadow:0 0 5px rgba(0,0,0,0.3);
 }
 
-/* Trash bin */
 #trashBin {
   position: fixed;
   bottom: 5%;
@@ -194,17 +171,6 @@ body {
   transform: scale(0.9);
 }
 
-/* Table */
-#table {
-  position: fixed;
-  bottom: 10%;
-  right: 12%;
-  width: 198px;
-  cursor: default;
-  z-index: 450;
-}
-
-/* Tooltip */
 #tooltip {
   position: fixed;
   padding: 4px 8px;
@@ -222,7 +188,9 @@ body {
 <body>
 <div id="container">
   <!-- Audio -->
-  <audio id="background" src="sounds/background.mp3" loop></audio>
+  <audio id="background" src="sounds/background.mp3"></audio>
+  <audio id="background2" src="sounds/background2.mp3"></audio>
+  <audio id="background3" src="sounds/background3.mp3"></audio>
   <audio id="pickup" src="sounds/pickup.mp3"></audio>
   <audio id="binSound" src="sounds/bin.mp3"></audio>
   <audio id="traySound" src="sounds/tray.mp3"></audio>
@@ -256,10 +224,6 @@ body {
 
   <div id="trashBin">🗑️</div>
 
-  <!-- Table -->
-  <img src="images/table.webp" id="table">
-
-  <!-- Tooltip -->
   <div id="tooltip"></div>
 </div>
 
@@ -277,22 +241,39 @@ window.addEventListener('DOMContentLoaded', () => {
   const darkModeBtn = document.getElementById('darkModeBtn');
   const trashBin = document.getElementById('trashBin');
   const tooltip = document.getElementById('tooltip');
-  const table = document.getElementById('table');
   const binSound = document.getElementById('binSound');
   const traySound = document.getElementById('traySound');
-  const background = document.getElementById('background');
 
   requestAnimationFrame(()=>container.classList.add('visible'));
 
-  // Play background music once page loads
-  background.volume = 0.6;
-  background.play().catch(()=>{});
+  // Sequential music playback
+  const tracks = [
+    document.getElementById('background'),
+    document.getElementById('background2'),
+    document.getElementById('background3')
+  ];
+  let currentTrackIndex = 0;
 
-  muteBtn.addEventListener('click', ()=>{
-    background.muted = !background.muted;
-    muteBtn.textContent = background.muted ? 'Unmute':'Mute';
+  tracks[currentTrackIndex].volume = 0.6;
+  tracks[currentTrackIndex].play().catch(()=>{});
+
+  tracks.forEach((track, index) => {
+    track.addEventListener('ended', () => {
+      currentTrackIndex = (index + 1) % tracks.length;
+      const nextTrack = tracks[currentTrackIndex];
+      nextTrack.volume = 0.6;
+      nextTrack.currentTime = 0;
+      nextTrack.play().catch(()=>{});
+    });
   });
 
+  // Mute button
+  muteBtn.addEventListener('click', ()=>{
+    tracks.forEach(track => track.muted = !track.muted);
+    muteBtn.textContent = tracks[0].muted ? 'Unmute':'Mute';
+  });
+
+  // Tray toggle
   trayTab.addEventListener('click', ()=>{
     const isOpen = tray.classList.toggle('open');
     trayTab.textContent = isOpen ? '▼':'▲';
@@ -300,41 +281,41 @@ window.addEventListener('DOMContentLoaded', () => {
     traySound.play();
   });
 
+  // Burger menu toggle
   burgerMenu.addEventListener('click', ()=>{
     burgerContent.style.left = burgerContent.style.left==='0px'?'-200px':'0px';
   });
 
+  // Dark mode
   darkModeBtn.addEventListener('click', ()=>{
-    darkOverlay.style.opacity = darkOverlay.style.opacity==1 ? 0 : 1;
+    darkOverlay.style.opacity = darkOverlay.style.opacity === "1" ? 0 : 1;
   });
 
+  // Draggable with wobble based on direction
   function makeDraggable(item){
     let offsetX, offsetY, lastX, lastY;
     item.addEventListener('mousedown', e=>{
       e.preventDefault();
       pickupSound.currentTime=0;
       pickupSound.play();
-
-      const rect = item.getBoundingClientRect();
-      offsetX = e.clientX - rect.left;
-      offsetY = e.clientY - rect.top;
+      const rect=item.getBoundingClientRect();
+      offsetX=e.clientX-rect.left;
+      offsetY=e.clientY-rect.top;
+      lastX=e.clientX;
+      lastY=e.clientY;
+      item.style.zIndex=1000;
+      item.style.transition='transform 0s';
       document.body.appendChild(item);
-      item.style.left = rect.left + 'px';
-      item.style.top = rect.top + 'px';
-      item.style.zIndex = 1000;
-      item.style.transition = 'transform 0s';
-      lastX = e.clientX;
-      lastY = e.clientY;
 
       function onMouseMove(e){
-        const dx = e.clientX - lastX;
-        const dy = e.clientY - lastY;
-        const tilt = Math.max(Math.min(dx*0.2, 5), -5); // tilt depends on horizontal drag
-        item.style.transform = `rotate(${tilt}deg) scale(1.05)`;
-        item.style.left = (e.clientX - offsetX) + 'px';
-        item.style.top = (e.clientY - offsetY) + 'px';
-        lastX = e.clientX;
-        lastY = e.clientY;
+        const dx=e.clientX-lastX;
+        const dy=e.clientY-lastY;
+        const angle = Math.atan2(dy, dx) * (180/Math.PI) * 0.1; // tilt based on drag direction
+        item.style.transform=`rotate(${angle}deg) scale(1.05)`;
+        item.style.left=(e.clientX-offsetX)+'px';
+        item.style.top=(e.clientY-offsetY)+'px';
+        lastX=e.clientX;
+        lastY=e.clientY;
       }
 
       function onMouseUp(e){
@@ -342,12 +323,11 @@ window.addEventListener('DOMContentLoaded', () => {
         item.style.transition='transform 0.2s ease';
         item.style.transform='scale(1) rotate(0deg)';
 
-        const trayRect=tray.getBoundingClientRect();
-        if(e.clientY>trayRect.top){
+        const trayRect=trayItems.getBoundingClientRect();
+        if(e.clientY>tray.getBoundingClientRect().top){
           trayItems.appendChild(item);
-          const trayItemsRect = trayItems.getBoundingClientRect();
-          item.style.left = (e.clientX - offsetX - trayItemsRect.left)+'px';
-          item.style.top = (e.clientY - offsetY - trayItemsRect.top)+'px';
+          item.style.left=(e.clientX-offsetX-trayRect.left)+'px';
+          item.style.top=(e.clientY-offsetY-trayRect.top)+'px';
         }
 
         const binRect=trashBin.getBoundingClientRect();
@@ -366,27 +346,6 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   document.querySelectorAll('.draggable').forEach(makeDraggable);
-
-  function setupTooltip(element, text){
-    let timeout;
-    element.addEventListener('mouseenter', ()=>{
-      timeout=setTimeout(()=>{
-        tooltip.textContent=text;
-        tooltip.style.opacity=1;
-      },50);
-    });
-    element.addEventListener('mouseleave', ()=>{
-      clearTimeout(timeout);
-      tooltip.style.opacity=0;
-    });
-    element.addEventListener('mousemove', e=>{
-      tooltip.style.left=(e.clientX+15)+'px';
-      tooltip.style.top=(e.clientY+15)+'px';
-    });
-  }
-
-  setupTooltip(document.getElementById('peachTea'),'I love peach tea');
-  setupTooltip(table,'a sturdy wooden table');
 
 });
 </script>
