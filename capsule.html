@@ -222,7 +222,7 @@ body {
   border-radius: 4px;
   opacity: 0;
   transition: opacity 0.2s ease;
-  z-index: 2010;
+  z-index: 3000;
 }
 </style>
 </head>
@@ -336,6 +336,7 @@ function setupTooltip(img,text){
   let timeout;
   img.addEventListener('mouseenter',()=>{ timeout=setTimeout(()=>{ tooltip.textContent=text; tooltip.style.opacity=1; },250); });
   img.addEventListener('mouseleave',()=>{ clearTimeout(timeout); tooltip.style.opacity=0; });
+  img.addEventListener('mousedown',()=>{ clearTimeout(timeout); tooltip.style.opacity=0; });
   img.addEventListener('mousemove',(e)=>{ tooltip.style.left=(e.clientX+15)+'px'; tooltip.style.top=(e.clientY+15)+'px'; });
 }
 
