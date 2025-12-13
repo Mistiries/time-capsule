@@ -188,6 +188,16 @@ body {
   background:white;
   border:none;
   box-shadow: 0 0 5px rgba(0,0,0,0.3);
+  font-size: 16px;
+}
+
+#instructionsBtn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
 }
 
 /* Trash bin */
@@ -224,6 +234,62 @@ body {
   transition: opacity 0.2s ease;
   z-index: 3000;
 }
+
+/* Instructions Paper */
+#instructionsPaper {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 500px;
+  background: white;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 3px 3px 10px rgba(0,0,0,0.5);
+  z-index: 3001;
+  display: none;
+  font-family: 'Brush Script MT', cursive;
+}
+
+#instructionsPaper.visible {
+  display: block;
+}
+
+#instructionsPaper h1 {
+  font-family: 'Brush Script MT', cursive;
+  font-size: 36px;
+  margin: 0 0 5px 0;
+  text-align: center;
+}
+
+#instructionsPaper .subtitle {
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 25px;
+  font-style: italic;
+}
+
+#instructionsPaper ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#instructionsPaper li {
+  margin: 12px 0;
+  padding-left: 25px;
+  position: relative;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+#instructionsPaper li:before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  font-size: 20px;
+}
 </style>
 </head>
 <body>
@@ -234,6 +300,7 @@ body {
   <audio id="background3" src="sounds/background3.mp3" loop></audio>
   <audio id="binSound" src="sounds/bin.mp3"></audio>
   <audio id="traySound" src="sounds/tray.mp3"></audio>
+  <audio id="paperSound" src="sounds/paper.mp3"></audio>
 
   <button id="muteBtn">Mute</button>
 
@@ -253,13 +320,13 @@ body {
 
   <div id="tray">
     <div id="trayItems">
-      <div class="draggable pure-item" style="top:20px; left:20px;">
+      <div class="draggable pure-item" style="top:10px; left:20px;">
         <img src="images/peachtea.webp" alt="Peach Tea" class="pure">
       </div>
-      <div class="draggable pure-item" style="top:20px; left:130px;">
+      <div class="draggable pure-item" style="top:10px; left:130px;">
         <img src="images/laces.png" alt="Laces" class="pure" style="width:135px;">
       </div>
-      <div class="draggable pure-item" style="top:20px; left:235px;">
+      <div class="draggable pure-item" style="top:10px; left:235px;">
         <img src="images/sliders.webp" alt="Sliders" class="pure">
       </div>
     </div>
@@ -276,6 +343,7 @@ body {
       <button id="prevTrack">⏮</button>
       <button id="nextTrack">⏭</button>
     </div>
+    <button id="instructionsBtn" style="margin-top:10px;">📋</button>
   </div>
 
   <div id="trashBin">🗑️</div>
@@ -292,6 +360,18 @@ body {
   </div>
 
   <div id="tooltip"></div>
+
+  <div id="instructionsPaper">
+    <h1>Instructions</h1>
+    <p class="subtitle">(click anywhere to escape)</p>
+    <ul>
+      <li>Click anywhere to drag items</li>
+      <li>Pull open the tray to find more items</li>
+      <li>Pull items to the bin to get rid of them</li>
+      <li>Reload the page to reset everything</li>
+      <li>Use the music player in left menu to change music</li>
+    </ul>
+  </div>
 </div>
 
 <script>
@@ -308,7 +388,9 @@ const darkModeBtn = document.getElementById('darkModeBtn');
 const trashBin = document.getElementById('trashBin');
 const binSound = document.getElementById('binSound');
 const traySound = document.getElementById('traySound');
+const paperSound = document.getElementById('paperSound');
 const tooltip = document.getElementById('tooltip');
+const instructionsPaper = document.getElementById('instructionsPaper');
 
 // Music
 const musicTracks = [document.getElementById('background'), document.getElementById('background2'), document.getElementById('background3')];
@@ -431,6 +513,32 @@ burgerMenu.addEventListener('click', () => {
 
 darkModeBtn.addEventListener('click', () => {
   darkOverlay.style.opacity = darkOverlay.style.opacity==='1'?0:1;
+});
+
+document.getElementById('instructionsBtn').addEventListener('click', () => {
+  paperSound.currentTime=0;
+  paperSound.play();
+  instructionsPaper.classList.add('visible');
+  darkOverlay.style.opacity = 1;
+  darkOverlay.style.pointerEvents = 'auto';
+});
+
+instructionsPaper.addEventListener('click', () => {
+  paperSound.currentTime=0;
+  paperSound.play();
+  instructionsPaper.classList.remove('visible');
+  darkOverlay.style.opacity = 0;
+  darkOverlay.style.pointerEvents = 'none';
+});
+
+darkOverlay.addEventListener('click', () => {
+  if(instructionsPaper.classList.contains('visible')){
+    paperSound.currentTime=0;
+    paperSound.play();
+    instructionsPaper.classList.remove('visible');
+    darkOverlay.style.opacity = 0;
+    darkOverlay.style.pointerEvents = 'none';
+  }
 });
 </script>
 </body>
