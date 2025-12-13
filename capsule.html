@@ -204,18 +204,6 @@ body {
   z-index: 450;
 }
 
-/* Envelope */
-#envelope {
-  position: fixed;
-  bottom: 38%;
-  right: 52%;
-  width: 70px;
-  height: auto;
-  display: block;
-  cursor: default;
-  z-index: 460;
-}
-
 /* Tooltip */
 #tooltip {
   position: fixed;
@@ -235,8 +223,6 @@ body {
 <div id="container">
   <!-- Audio -->
   <audio id="background" src="sounds/background.mp3" loop></audio>
-  <audio id="background2" src="sounds/background2.mp3" loop></audio>
-  <audio id="background3" src="sounds/background3.mp3" loop></audio>
   <audio id="pickup" src="sounds/pickup.mp3"></audio>
   <audio id="binSound" src="sounds/bin.mp3"></audio>
   <audio id="traySound" src="sounds/tray.mp3"></audio>
@@ -266,19 +252,12 @@ body {
   <div id="burgerMenu">☰</div>
   <div id="burgerMenuContent">
     <button id="darkModeBtn">🌙 Dark Mode</button>
-    <div style="display:flex; justify-content:center; gap:4px;">
-      <button id="prevTrack">⏮</button>
-      <button id="nextTrack">⏭</button>
-    </div>
   </div>
 
   <div id="trashBin">🗑️</div>
 
   <!-- Table -->
   <img src="images/table.webp" id="table">
-
-  <!-- Envelope -->
-  <img src="images/envelope.png" id="envelope">
 
   <!-- Tooltip -->
   <div id="tooltip"></div>
@@ -299,33 +278,19 @@ window.addEventListener('DOMContentLoaded', () => {
   const trashBin = document.getElementById('trashBin');
   const tooltip = document.getElementById('tooltip');
   const table = document.getElementById('table');
-  const envelope = document.getElementById('envelope');
   const binSound = document.getElementById('binSound');
   const traySound = document.getElementById('traySound');
-
-  let darkModeActive = false;
-
-  const musicTracks = [
-    document.getElementById('background'),
-    document.getElementById('background2'),
-    document.getElementById('background3')
-  ];
-  let currentTrackIndex = 0;
+  const background = document.getElementById('background');
 
   requestAnimationFrame(()=>container.classList.add('visible'));
 
-  // Play music on first user interaction
-  document.addEventListener('click', () => {
-    musicTracks.forEach(track=>{
-      if(track.paused) track.play().catch(()=>{});
-      track.volume = 0.6;
-      track.loop = true;
-    });
-  }, {once:true});
+  // Play background music once page loads
+  background.volume = 0.6;
+  background.play().catch(()=>{});
 
   muteBtn.addEventListener('click', ()=>{
-    musicTracks.forEach(track=>track.muted=!track.muted);
-    muteBtn.textContent = musicTracks[0].muted ? 'Unmute':'Mute';
+    background.muted = !background.muted;
+    muteBtn.textContent = background.muted ? 'Unmute':'Mute';
   });
 
   trayTab.addEventListener('click', ()=>{
@@ -340,41 +305,7 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   darkModeBtn.addEventListener('click', ()=>{
-    darkModeActive=!darkModeActive;
-    darkOverlay.style.opacity = darkModeActive?1:0;
-  });
-
-  function fadeOutIn(outTrack, inTrack){
-    const step = 0.05;
-    const interval = setInterval(()=>{
-      if(outTrack.volume>0){
-        outTrack.volume -= step;
-      } else {
-        clearInterval(interval);
-        outTrack.pause();
-        outTrack.currentTime=0;
-        inTrack.volume=0;
-        inTrack.currentTime=0;
-        inTrack.play().then(()=>{
-          const fadeIn = setInterval(()=>{
-            if(inTrack.volume<0.6) inTrack.volume+=step;
-            else clearInterval(fadeIn);
-          },50);
-        });
-      }
-    },50);
-  }
-
-  document.getElementById('nextTrack').addEventListener('click', ()=>{
-    const nextIndex=(currentTrackIndex+1)%musicTracks.length;
-    fadeOutIn(musicTracks[currentTrackIndex], musicTracks[nextIndex]);
-    currentTrackIndex=nextIndex;
-  });
-
-  document.getElementById('prevTrack').addEventListener('click', ()=>{
-    const prevIndex=(currentTrackIndex-1+musicTracks.length)%musicTracks.length;
-    fadeOutIn(musicTracks[currentTrackIndex], musicTracks[prevIndex]);
-    currentTrackIndex=prevIndex;
+    darkOverlay.style.opacity = darkOverlay.style.opacity==1 ? 0 : 1;
   });
 
   function makeDraggable(item){
@@ -387,22 +318,19 @@ window.addEventListener('DOMContentLoaded', () => {
       const rect = item.getBoundingClientRect();
       offsetX = e.clientX - rect.left;
       offsetY = e.clientY - rect.top;
-
-      const parentBeforeRect = rect;
       document.body.appendChild(item);
-      item.style.left = parentBeforeRect.left + 'px';
-      item.style.top = parentBeforeRect.top + 'px';
+      item.style.left = rect.left + 'px';
+      item.style.top = rect.top + 'px';
       item.style.zIndex = 1000;
       item.style.transition = 'transform 0s';
-
       lastX = e.clientX;
       lastY = e.clientY;
 
       function onMouseMove(e){
         const dx = e.clientX - lastX;
         const dy = e.clientY - lastY;
-        const speed = Math.min(Math.sqrt(dx*dx + dy*dy) * 0.2, 10);
-        item.style.transform = `rotate(${(Math.random()*2-1)*speed}deg) scale(1.05)`;
+        const tilt = Math.max(Math.min(dx*0.2, 5), -5); // tilt depends on horizontal drag
+        item.style.transform = `rotate(${tilt}deg) scale(1.05)`;
         item.style.left = (e.clientX - offsetX) + 'px';
         item.style.top = (e.clientY - offsetY) + 'px';
         lastX = e.clientX;
@@ -459,7 +387,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
   setupTooltip(document.getElementById('peachTea'),'I love peach tea');
   setupTooltip(table,'a sturdy wooden table');
-  setupTooltip(envelope,'an envelope full of texts');
 
 });
 </script>
