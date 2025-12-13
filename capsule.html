@@ -196,7 +196,7 @@ body {
   position: fixed;
   bottom: 10%;
   right: 12%;
-  width: 234px; /* 30% increase from 180px */
+  width: 234px; /* 150px * 1.3 = 195? Actually 180px original increased 30% = 234px */
   cursor: default;
   z-index: 450;
 }
@@ -240,8 +240,8 @@ body {
       <div class="draggable pure-item" style="top:20px; left:20px;">
         <img src="images/peachtea.webp" alt="Peach Tea" class="pure">
       </div>
-      <div class="draggable pure-item" style="top:20px; left:200px;">
-        <img src="images/laces.png" alt="Laces" class="pure">
+      <div class="draggable pure-item" style="top:20px; left:190px;">
+        <img src="images/laces.png" alt="Laces" class="pure" style="width:135px;">
       </div>
     </div>
   </div>
@@ -298,14 +298,7 @@ function fadeOutInTrack(direction){
   let next = musicTracks[nextIndex];
   let vol = 0.6;
   let fadeOut = setInterval(()=>{
-    if(current.volume>0.05){ current.volume -=0.05; } 
-    else { 
-      clearInterval(fadeOut); 
-      current.pause(); current.currentTime=0; 
-      next.volume=0; 
-      next.play(); fadeIn(next); 
-      currentTrack=nextIndex; 
-    }
+    if(current.volume>0.05){ current.volume -=0.05; } else { clearInterval(fadeOut); current.pause(); current.currentTime=0; next.volume=0; next.play(); fadeIn(next); currentTrack=nextIndex; }
   },50);
 }
 
@@ -315,13 +308,77 @@ function fadeIn(track){
   },50);
 }
 
-// Tooltip delay
-let tooltipTimeout;
+// Tooltip and draggable
+function setupTooltip(img,text){
+  let timeout;
+  img.addEventListener('mouseenter',()=>{ timeout=setTimeout(()=>{ tooltip.textContent=text; tooltip.style.opacity=1; },250); });
+  img.addEventListener('mouseleave',()=>{ clearTimeout(timeout); tooltip.style.opacity=0; });
+  img.addEventListener('mousemove',(e)=>{ tooltip.style.left=(e.clientX+15)+'px'; tooltip.style.top=(e.clientY+15)+'px'; });
+}
 
-// Fade in container
-window.addEventListener('DOMContentLoaded', () => {
-  requestAnimationFrame(()=>container.classList.add('visible'));
-});
+const trayItemImgs = document.querySelectorAll('.pure-item img.pure');
+setupTooltip(trayItemImgs[0],'I love peach tea');
+setupTooltip(trayItemImgs[1],'I ate these all the time as a child');
+
+function makeDraggable(item){
+  let offsetX, offsetY,lastX=0,lastY=0;
+  item.addEventListener('mousedown', e=>{
+    e.preventDefault();
+    pickupSound.currentTime=0;
+    pickupSound.play();
+    const rect = item.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+    lastX = e.clientX; lastY = e.clientY;
+    const bodyRect = document.body.getBoundingClientRect();
+    item.style.left = (rect.left - bodyRect.left)+'px';
+    item.style.top = (rect.top - bodyRect.top)+'px';
+    item.style.position = 'absolute';
+    item.style.zIndex=1000;
+    item.style.transition="transform 0s";
+    if(item.parentElement!==document.body) document.body.appendChild(item);
+    function onMouseMove(e){
+      const dx = e.clientX - lastX;
+      const dy = e.clientY - lastY;
+      const swing = Math.min(Math.sqrt(dx*dx+dy*dy)*0.2,5);
+      let scale=1.05;
+      const binRect = trashBin.getBoundingClientRect();
+      if(e.clientX>=binRect.left && e.clientX<=binRect.right && e.clientY>=binRect.top && e.clientY<=binRect.bottom){ scale=0.85; }
+      item.style.transform=`rotate(${swing}deg) scale(${scale})`;
+      item.style.left=(e.clientX - offsetX)+'px';
+      item.style.top=(e.clientY - offsetY)+'px';
+      lastX = e.clientX; lastY = e.clientY;
+    }
+    function onMouseUp(e){
+      document.removeEventListener('mousemove',onMouseMove);
+      item.style.transition="transform 0.2s ease";
+      item.style.transform="scale(1) rotate(0deg)";
+      const trayRect = tray.getBoundingClientRect();
+      if(e.clientY>trayRect.top){
+        trayItems.appendChild(item);
+        const trayRectNew = trayItems.getBoundingClientRect();
+        item.style.left=(e.clientX - trayRectNew.left - offsetX)+'px';
+        item.style.top=(e.clientY - trayRectNew.top - offsetY)+'px';
+      }
+      const binRect = trashBin.getBoundingClientRect();
+      if(e.clientX>=binRect.left && e.clientX<=binRect.right && e.clientY>=binRect.top && e.clientY<=binRect.bottom){
+        binSound.currentTime=0; binSound.play();
+        item.remove();
+      }
+    }
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp,{once:true});
+  });
+  item.ondragstart=()=>false;
+}
+
+document.querySelectorAll('.draggable').forEach(makeDraggable);
+
+// Tooltip for table
+const table = document.getElementById('table');
+setupTooltip(table,'a strong sturdy table');
+
+window.addEventListener('DOMContentLoaded', () => { requestAnimationFrame(()=>container.classList.add('visible')); });
 
 muteBtn.addEventListener('click', () => {
   musicTracks.forEach(track => track.muted = !track.muted);
@@ -342,99 +399,6 @@ burgerMenu.addEventListener('click', () => {
 darkModeBtn.addEventListener('click', () => {
   darkOverlay.style.opacity = darkOverlay.style.opacity==='1'?0:1;
 });
-
-// Tooltip for tray items
-function setupTooltip(item, text){
-  item.addEventListener('mouseenter', e=>{
-    tooltipTimeout=setTimeout(()=>{
-      tooltip.textContent=text;
-      tooltip.style.opacity=1;
-    },50);
-  });
-  item.addEventListener('mouseleave', e=>{
-    clearTimeout(tooltipTimeout);
-    tooltip.style.opacity=0;
-  });
-  item.addEventListener('mousemove', e=>{
-    tooltip.style.left=(e.clientX+15)+'px';
-    tooltip.style.top=(e.clientY+15)+'px';
-  });
-}
-
-const trayItemImgs = document.querySelectorAll('.pure-item img.pure');
-setupTooltip(trayItemImgs[0],'I love peach tea');
-setupTooltip(trayItemImgs[1],'I ate these all the time as a child');
-
-// Drag and drop
-function makeDraggable(item){
-  let offsetX, offsetY,lastX=0,lastY=0;
-  item.addEventListener('mousedown', e=>{
-    e.preventDefault();
-    pickupSound.currentTime=0;
-    pickupSound.play();
-
-    const rect = item.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
-    lastX = e.clientX; lastY = e.clientY;
-
-    const bodyRect = document.body.getBoundingClientRect();
-    item.style.left = (rect.left - bodyRect.left)+'px';
-    item.style.top = (rect.top - bodyRect.top)+'px';
-    item.style.position = 'absolute';
-    item.style.zIndex=1000;
-    item.style.transition="transform 0s";
-
-    if(item.parentElement!==document.body) document.body.appendChild(item);
-
-    function onMouseMove(e){
-      const dx = e.clientX - lastX;
-      const dy = e.clientY - lastY;
-      const swing = Math.min(Math.sqrt(dx*dx+dy*dy)*0.2,5);
-      let scale=1.05;
-
-      const binRect = trashBin.getBoundingClientRect();
-      if(e.clientX>=binRect.left && e.clientX<=binRect.right && e.clientY>=binRect.top && e.clientY<=binRect.bottom){
-        scale=0.85;
-      }
-
-      item.style.transform=`rotate(${swing}deg) scale(${scale})`;
-      item.style.left=(e.clientX - offsetX)+'px';
-      item.style.top=(e.clientY - offsetY)+'px';
-      lastX = e.clientX; lastY = e.clientY;
-    }
-
-    function onMouseUp(e){
-      document.removeEventListener('mousemove',onMouseMove);
-      item.style.transition="transform 0.2s ease";
-      item.style.transform="scale(1) rotate(0deg)";
-
-      const trayRect = tray.getBoundingClientRect();
-      if(e.clientY>trayRect.top){
-        trayItems.appendChild(item);
-        const trayRectNew = trayItems.getBoundingClientRect();
-        item.style.left=(e.clientX - trayRectNew.left - offsetX)+'px';
-        item.style.top=(e.clientY - trayRectNew.top - offsetY)+'px';
-      }
-
-      const binRect = trashBin.getBoundingClientRect();
-      if(e.clientX>=binRect.left && e.clientX<=binRect.right && e.clientY>=binRect.top && e.clientY<=binRect.bottom){
-        binSound.currentTime=0; binSound.play();
-        item.remove();
-      }
-    }
-
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp,{once:true});
-  });
-  item.ondragstart=()=>false;
-}
-
-document.querySelectorAll('.draggable').forEach(makeDraggable);
-
-// Tooltip for table
-const table = document.getElementById('table');
-setupTooltip(table,'a strong sturdy table');
 </script>
 </body>
 </html>
