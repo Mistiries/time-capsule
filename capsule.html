@@ -224,7 +224,7 @@ body {
 /* Envelope */
 #envelope {
   position: fixed;
-  bottom: 28%;
+  bottom: 24%;
   right: 22%;
   width: 100px;
   cursor: pointer;
@@ -396,6 +396,7 @@ body {
   <audio id="binSound" src="sounds/bin.mp3"></audio>
   <audio id="traySound" src="sounds/tray.mp3"></audio>
   <audio id="paperSound" src="sounds/paper.mp3"></audio>
+  <audio id="paper2Sound" src="sounds/paper2.mp3"></audio>
 
   <button id="muteBtn">Mute Music</button>
 
@@ -436,8 +437,8 @@ body {
       <div class="draggable pure-item" style="top:10px; left:625px;">
         <img src="images/robin.png" alt="Robin" class="pure" style="width:135px;">
       </div>
-      <div class="draggable pure-item" style="top:10px; left:760px;">
-        <img src="images/lethal.webp" alt="Lethal" class="pure" style="width:135px;">
+      <div class="draggable pure-item" style="top:10px; left:750px;">
+        <img src="images/lethal.webp" alt="Lethal" class="pure" style="width:120px;">
       </div>
     </div>
   </div>
@@ -465,11 +466,11 @@ body {
   <img src="images/envelope.webp" id="envelope">
 
   <!-- New desk images -->
-  <div class="draggable pure-item" style="top:35%; left:50%;">
-    <img src="images/image2.jpg" alt="Memory 2" class="pure" style="width:131px;">
+  <div class="draggable pure-item" style="top:28%; left:40%;">
+    <img src="images/image2.jpg" alt="Memory 2" class="pure" style="width:144px;">
   </div>
-  <div class="draggable pure-item" style="top:35%; left:50%; transform: rotate(-8deg);">
-    <img src="images/image1.jpg" alt="Memory 1" class="pure" style="width:131px;">
+  <div class="draggable pure-item" style="top:28%; left:40%; transform: rotate(-8deg);">
+    <img src="images/image1.jpg" alt="Memory 1" class="pure" style="width:144px;">
   </div>
   <div class="draggable pure-item" style="top:400px; left:400px;">
     <img src="images/sticker1.jpeg" alt="Sticker" class="pure" style="width:114px;">
@@ -526,12 +527,15 @@ const binSound = document.getElementById('binSound');
 const traySound = document.getElementById('traySound');
 const paperSound = document.getElementById('paperSound');
 paperSound.volume = 0.6;
+const paper2Sound = document.getElementById('paper2Sound');
+paper2Sound.volume = 0.55;
 const tooltip = document.getElementById('tooltip');
 const instructionsPaper = document.getElementById('instructionsPaper');
 const imageViewer = document.getElementById('imageViewer');
 const viewerImg = document.getElementById('viewerImg');
 const letterViewer = document.getElementById('letterViewer');
 const pageItem = document.getElementById('pageItem');
+let darkModeEnabled = false;
 
 // Music
 const musicTracks = [document.getElementById('background'), document.getElementById('background2'), document.getElementById('background3')];
@@ -577,21 +581,31 @@ setupTooltip(trayItemImgs[7],'the one time we played lethal company');
 setupTooltip(trayItemImgs[8],'the day you got my first letter');
 setupTooltip(trayItemImgs[9],'the day you got my first letter');
 setupTooltip(trayItemImgs[10],'us');
+setupTooltip(pageItem,'a letter');
 
 function makeDraggable(item){
   let offsetX, offsetY,lastX=0,lastY=0;
   let isDragging = false;
   let dragStartTime = 0;
-  item.addEventListener('mousedown', e=>{
+  
+  function handleStart(e){
+    const touch = e.touches ? e.touches[0] : e;
     e.preventDefault();
     isDragging = false;
     dragStartTime = Date.now();
-    pickupSound.currentTime=0;
-    pickupSound.play();
+    
+    const img = item.querySelector('img');
+    const isPageItem = img && img.id === 'pageItem';
+    
+    if(!isPageItem){
+      pickupSound.currentTime=0;
+      pickupSound.play();
+    }
+    
     const rect = item.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
-    lastX = e.clientX; lastY = e.clientY;
+    offsetX = touch.clientX - rect.left;
+    offsetY = touch.clientY - rect.top;
+    lastX = touch.clientX; lastY = touch.clientY;
     const bodyRect = document.body.getBoundingClientRect();
     item.style.left = (rect.left - bodyRect.left)+'px';
     item.style.top = (rect.top - bodyRect.top)+'px';
@@ -602,33 +616,44 @@ function makeDraggable(item){
     item.style.transition="transform 0s";
     item.style.transform="scale(1) rotate(0deg)";
     if(item.parentElement!==document.body) document.body.appendChild(item);
-    function onMouseMove(e){
-      const dx = e.clientX - lastX;
-      const dy = e.clientY - lastY;
-      if(Math.abs(dx) > 3 || Math.abs(dy) > 3) isDragging = true;
+    
+    function handleMove(e){
+      const touch = e.touches ? e.touches[0] : e;
+      const dx = touch.clientX - lastX;
+      const dy = touch.clientY - lastY;
+      if(Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+        isDragging = true;
+        if(isPageItem && !pickupSound.playing){
+          pickupSound.currentTime=0;
+          pickupSound.play();
+        }
+      }
       const swing = Math.min(Math.sqrt(dx*dx+dy*dy)*0.2,5);
       let scale=1.05;
       const binRect = trashBin.getBoundingClientRect();
-      if(e.clientX>=binRect.left && e.clientX<=binRect.right && e.clientY>=binRect.top && e.clientY<=binRect.bottom){ scale=0.85; }
+      if(touch.clientX>=binRect.left && touch.clientX<=binRect.right && touch.clientY>=binRect.top && touch.clientY<=binRect.bottom){ scale=0.85; }
       item.style.transform=`rotate(${swing}deg) scale(${scale})`;
-      item.style.left=(e.clientX - offsetX)+'px';
-      item.style.top=(e.clientY - offsetY)+'px';
-      lastX = e.clientX; lastY = e.clientY;
+      item.style.left=(touch.clientX - offsetX)+'px';
+      item.style.top=(touch.clientY - offsetY)+'px';
+      lastX = touch.clientX; lastY = touch.clientY;
     }
-    function onMouseUp(e){
-      document.removeEventListener('mousemove',onMouseMove);
+    
+    function handleEnd(e){
+      const touch = e.changedTouches ? e.changedTouches[0] : e;
+      document.removeEventListener('mousemove',handleMove);
+      document.removeEventListener('touchmove',handleMove);
       item.style.transition="transform 0.2s ease";
       item.style.transform="scale(1) rotate(0deg)";
       const trayRect = tray.getBoundingClientRect();
-      if(e.clientY>trayRect.top){
+      if(touch.clientY>trayRect.top){
         trayItems.appendChild(item);
         const trayRectNew = trayItems.getBoundingClientRect();
-        item.style.left=(e.clientX - trayRectNew.left - offsetX)+'px';
-        item.style.top=(e.clientY - trayRectNew.top - offsetY)+'px';
+        item.style.left=(touch.clientX - trayRectNew.left - offsetX)+'px';
+        item.style.top=(touch.clientY - trayRectNew.top - offsetY)+'px';
       }
       item.style.zIndex = item.dataset.originalZIndex;
       const binRect = trashBin.getBoundingClientRect();
-      if(e.clientX>=binRect.left && e.clientX<=binRect.right && e.clientY>=binRect.top && e.clientY<=binRect.bottom){
+      if(touch.clientX>=binRect.left && touch.clientX<=binRect.right && touch.clientY>=binRect.top && touch.clientY<=binRect.bottom){
         binSound.currentTime=0; binSound.play();
         item.remove();
       }
@@ -637,8 +662,8 @@ function makeDraggable(item){
       if(!isDragging && Date.now() - dragStartTime < 200){
         const img = item.querySelector('img');
         if(img && img.id === 'pageItem'){
-          paperSound.currentTime=0;
-          paperSound.play();
+          paper2Sound.currentTime=0;
+          paper2Sound.play();
           letterViewer.classList.add('visible');
           darkOverlay.style.opacity = 1;
           darkOverlay.style.pointerEvents = 'auto';
@@ -655,9 +680,15 @@ function makeDraggable(item){
         }
       }
     }
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp,{once:true});
-  });
+    
+    document.addEventListener('mousemove', handleMove);
+    document.addEventListener('touchmove', handleMove, {passive: false});
+    document.addEventListener('mouseup', handleEnd, {once:true});
+    document.addEventListener('touchend', handleEnd, {once:true});
+  }
+  
+  item.addEventListener('mousedown', handleStart);
+  item.addEventListener('touchstart', handleStart, {passive: false});
   item.ondragstart=()=>false;
 }
 
