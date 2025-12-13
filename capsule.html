@@ -465,11 +465,11 @@ body {
   <!-- Envelope -->
   <img src="images/envelope.webp" id="envelope">
 
-  <!-- New desk images -->
-  <div class="draggable pure-item" style="top:28%; left:40%;">
+  <!-- New desk images - moved left and up -->
+  <div class="draggable pure-item" style="top:18%; left:28%;">
     <img src="images/image2.jpg" alt="Memory 2" class="pure" style="width:144px;">
   </div>
-  <div class="draggable pure-item" style="top:28%; left:40%; transform: rotate(-8deg);">
+  <div class="draggable pure-item" style="top:18%; left:28%; transform: rotate(-8deg);">
     <img src="images/image1.jpg" alt="Memory 1" class="pure" style="width:144px;">
   </div>
   <div class="draggable pure-item" style="top:400px; left:400px;">
@@ -528,7 +528,7 @@ const traySound = document.getElementById('traySound');
 const paperSound = document.getElementById('paperSound');
 paperSound.volume = 0.6;
 const paper2Sound = document.getElementById('paper2Sound');
-paper2Sound.volume = 0.55;
+paper2Sound.volume = 0.5;
 const tooltip = document.getElementById('tooltip');
 const instructionsPaper = document.getElementById('instructionsPaper');
 const imageViewer = document.getElementById('imageViewer');
@@ -584,9 +584,10 @@ setupTooltip(trayItemImgs[10],'us');
 setupTooltip(pageItem,'a letter');
 
 function makeDraggable(item){
-  let offsetX, offsetY,lastX=0,lastY=0;
+  let offsetX, offsetY, lastX=0, lastY=0;
   let isDragging = false;
   let dragStartTime = 0;
+  let startX = 0, startY = 0;
   
   function handleStart(e){
     const touch = e.touches ? e.touches[0] : e;
@@ -605,7 +606,11 @@ function makeDraggable(item){
     const rect = item.getBoundingClientRect();
     offsetX = touch.clientX - rect.left;
     offsetY = touch.clientY - rect.top;
-    lastX = touch.clientX; lastY = touch.clientY;
+    lastX = touch.clientX; 
+    lastY = touch.clientY;
+    startX = touch.clientX;
+    startY = touch.clientY;
+    
     const bodyRect = document.body.getBoundingClientRect();
     item.style.left = (rect.left - bodyRect.left)+'px';
     item.style.top = (rect.top - bodyRect.top)+'px';
@@ -621,44 +626,63 @@ function makeDraggable(item){
       const touch = e.touches ? e.touches[0] : e;
       const dx = touch.clientX - lastX;
       const dy = touch.clientY - lastY;
-      if(Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+      const totalDx = touch.clientX - startX;
+      const totalDy = touch.clientY - startY;
+      
+      if(Math.abs(totalDx) > 3 || Math.abs(totalDy) > 3) {
         isDragging = true;
         if(isPageItem && !pickupSound.playing){
           pickupSound.currentTime=0;
           pickupSound.play();
         }
       }
+      
       const swing = Math.min(Math.sqrt(dx*dx+dy*dy)*0.2,5);
       let scale=1.05;
       const binRect = trashBin.getBoundingClientRect();
-      if(touch.clientX>=binRect.left && touch.clientX<=binRect.right && touch.clientY>=binRect.top && touch.clientY<=binRect.bottom){ scale=0.85; }
+      if(touch.clientX>=binRect.left && touch.clientX<=binRect.right && touch.clientY>=binRect.top && touch.clientY<=binRect.bottom){ 
+        scale=0.85; 
+      }
       item.style.transform=`rotate(${swing}deg) scale(${scale})`;
       item.style.left=(touch.clientX - offsetX)+'px';
       item.style.top=(touch.clientY - offsetY)+'px';
-      lastX = touch.clientX; lastY = touch.clientY;
+      lastX = touch.clientX; 
+      lastY = touch.clientY;
     }
     
     function handleEnd(e){
       const touch = e.changedTouches ? e.changedTouches[0] : e;
       document.removeEventListener('mousemove',handleMove);
       document.removeEventListener('touchmove',handleMove);
+      document.removeEventListener('mouseup', handleEnd);
+      document.removeEventListener('touchend', handleEnd);
+      
       item.style.transition="transform 0.2s ease";
       item.style.transform="scale(1) rotate(0deg)";
+      
+      // Check if dropped in tray
       const trayRect = tray.getBoundingClientRect();
-      if(touch.clientY>trayRect.top){
-        trayItems.appendChild(item);
+      if(touch.clientY > trayRect.top && tray.classList.contains('open')){
+        if(item.parentElement !== trayItems) {
+          trayItems.appendChild(item);
+        }
         const trayRectNew = trayItems.getBoundingClientRect();
         item.style.left=(touch.clientX - trayRectNew.left - offsetX)+'px';
         item.style.top=(touch.clientY - trayRectNew.top - offsetY)+'px';
       }
+      
       item.style.zIndex = item.dataset.originalZIndex;
+      
+      // Check if dropped in trash
       const binRect = trashBin.getBoundingClientRect();
       if(touch.clientX>=binRect.left && touch.clientX<=binRect.right && touch.clientY>=binRect.top && touch.clientY<=binRect.bottom){
-        binSound.currentTime=0; binSound.play();
+        binSound.currentTime=0; 
+        binSound.play();
         item.remove();
+        return;
       }
       
-      // Check if it was a click (not a drag) and has an image
+      // Check if it was a click (not a drag)
       if(!isDragging && Date.now() - dragStartTime < 200){
         const img = item.querySelector('img');
         if(img && img.id === 'pageItem'){
@@ -683,8 +707,8 @@ function makeDraggable(item){
     
     document.addEventListener('mousemove', handleMove);
     document.addEventListener('touchmove', handleMove, {passive: false});
-    document.addEventListener('mouseup', handleEnd, {once:true});
-    document.addEventListener('touchend', handleEnd, {once:true});
+    document.addEventListener('mouseup', handleEnd);
+    document.addEventListener('touchend', handleEnd);
   }
   
   item.addEventListener('mousedown', handleStart);
@@ -761,49 +785,3 @@ darkModeBtn.addEventListener('click', () => {
 document.getElementById('instructionsBtn').addEventListener('click', () => {
   paperSound.currentTime=0;
   paperSound.play();
-  instructionsPaper.classList.add('visible');
-  darkOverlay.style.opacity = 1;
-  darkOverlay.style.pointerEvents = 'auto';
-});
-
-instructionsPaper.addEventListener('click', () => {
-  paperSound.currentTime=0;
-  paperSound.play();
-  instructionsPaper.classList.remove('visible');
-  darkOverlay.style.opacity = 0;
-  darkOverlay.style.pointerEvents = 'none';
-});
-
-darkOverlay.addEventListener('click', () => {
-  if(instructionsPaper.classList.contains('visible')){
-    paperSound.currentTime=0;
-    paperSound.play();
-    instructionsPaper.classList.remove('visible');
-    darkOverlay.style.opacity = 0;
-    darkOverlay.style.pointerEvents = 'none';
-  } else if(imageViewer.classList.contains('visible')){
-    imageViewer.classList.remove('visible');
-    darkOverlay.style.opacity = 0;
-    darkOverlay.style.pointerEvents = 'none';
-  } else if(letterViewer.classList.contains('visible')){
-    letterViewer.classList.remove('visible');
-    darkOverlay.style.opacity = 0;
-    darkOverlay.style.pointerEvents = 'none';
-  }
-});
-
-imageViewer.addEventListener('click', () => {
-  imageViewer.classList.remove('visible');
-  darkOverlay.style.opacity = 0;
-  darkOverlay.style.pointerEvents = 'none';
-});
-
-letterViewer.addEventListener('click', () => {
-  letterViewer.classList.remove('visible');
-  darkOverlay.style.opacity = 0;
-  darkOverlay.style.pointerEvents = 'none';
-});
-</script>
-</body>
-</html>
-
