@@ -243,6 +243,9 @@ body {
       <div class="draggable pure-item" style="top:20px; left:190px;">
         <img src="images/laces.png" alt="Laces" class="pure" style="width:135px;">
       </div>
+      <div class="draggable pure-item" style="top:20px; left:345px;">
+        <img src="images/sliders.webp" alt="Sliders" class="pure">
+      </div>
     </div>
   </div>
 
@@ -324,9 +327,10 @@ function setupTooltip(img,text){
 const trayItemImgs = document.querySelectorAll('.pure-item img.pure');
 setupTooltip(trayItemImgs[0],'I love peach tea');
 setupTooltip(trayItemImgs[1],'I ate these all the time as a child');
+setupTooltip(trayItemImgs[2],'you prefer sliders over shoes any day');
 // New desk images tooltip
-setupTooltip(trayItemImgs[2],'the day you got your first letter');
-setupTooltip(trayItemImgs[3],'another memory');
+setupTooltip(trayItemImgs[3],'the day you got your first letter');
+setupTooltip(trayItemImgs[4],'the day you got your first letter');
 
 function makeDraggable(item){
   let offsetX, offsetY,lastX=0,lastY=0;
