@@ -310,4 +310,142 @@ window.addEventListener('DOMContentLoaded', () => {
   ];
   let currentTrackIndex = 0;
 
-  reque
+  requestAnimationFrame(()=>container.classList.add('visible'));
+  musicTracks.forEach(track=>{ track.loop=true; track.volume=0.6; });
+  musicTracks[0].play().catch(()=>{});
+
+  muteBtn.addEventListener('click', ()=>{
+    musicTracks.forEach(track=>track.muted=!track.muted);
+    muteBtn.textContent = musicTracks[0].muted ? 'Unmute':'Mute';
+  });
+
+  trayTab.addEventListener('click', ()=>{
+    const isOpen = tray.classList.toggle('open');
+    trayTab.textContent = isOpen ? '▼':'▲';
+    traySound.currentTime=0;
+    traySound.play();
+  });
+
+  burgerMenu.addEventListener('click', ()=>{
+    burgerContent.style.left = burgerContent.style.left==='0px'?'-200px':'0px';
+  });
+
+  darkModeBtn.addEventListener('click', ()=>{
+    darkModeActive=!darkModeActive;
+    darkOverlay.style.opacity = darkModeActive?1:0;
+  });
+
+  function fadeOutIn(outTrack, inTrack){
+    const step = 0.05;
+    const interval = setInterval(()=>{
+      if(outTrack.volume>0){
+        outTrack.volume -= step;
+      } else {
+        clearInterval(interval);
+        outTrack.pause();
+        outTrack.currentTime=0;
+        inTrack.volume=0;
+        inTrack.currentTime=0;
+        inTrack.play().then(()=>{
+          const fadeIn = setInterval(()=>{
+            if(inTrack.volume<0.6) inTrack.volume+=step;
+            else clearInterval(fadeIn);
+          },50);
+        });
+      }
+    },50);
+  }
+
+  document.getElementById('nextTrack').addEventListener('click', ()=>{
+    const nextIndex=(currentTrackIndex+1)%musicTracks.length;
+    fadeOutIn(musicTracks[currentTrackIndex], musicTracks[nextIndex]);
+    currentTrackIndex=nextIndex;
+  });
+
+  document.getElementById('prevTrack').addEventListener('click', ()=>{
+    const prevIndex=(currentTrackIndex-1+musicTracks.length)%musicTracks.length;
+    fadeOutIn(musicTracks[currentTrackIndex], musicTracks[prevIndex]);
+    currentTrackIndex=prevIndex;
+  });
+
+  function makeDraggable(item){
+    let offsetX, offsetY, lastX, lastY;
+    item.addEventListener('mousedown', e=>{
+      e.preventDefault();
+      pickupSound.currentTime=0;
+      pickupSound.play();
+      const rect=item.getBoundingClientRect();
+      offsetX=e.clientX-rect.left;
+      offsetY=e.clientY-rect.top;
+      lastX=e.clientX;
+      lastY=e.clientY;
+      item.style.zIndex=1000;
+      item.style.transition='transform 0s';
+      document.body.appendChild(item);
+
+      function onMouseMove(e){
+        const dx=e.clientX-lastX;
+        const dy=e.clientY-lastY;
+        const swing=Math.min(Math.sqrt(dx*dx+dy*dy)*0.2,5);
+        item.style.transform=`rotate(${swing}deg) scale(1.05)`;
+        item.style.left=(e.clientX-offsetX)+'px';
+        item.style.top=(e.clientY-offsetY)+'px';
+        lastX=e.clientX;
+        lastY=e.clientY;
+      }
+
+      function onMouseUp(e){
+        document.removeEventListener('mousemove', onMouseMove);
+        item.style.transition='transform 0.2s ease';
+        item.style.transform='scale(1) rotate(0deg)';
+
+        const trayRect=trayItems.getBoundingClientRect();
+        if(e.clientY>tray.getBoundingClientRect().top){
+          trayItems.appendChild(item);
+          item.style.left=(e.clientX-offsetX-trayRect.left)+'px';
+          item.style.top=(e.clientY-offsetY-trayRect.top)+'px';
+        }
+
+        const binRect=trashBin.getBoundingClientRect();
+        if(e.clientX>=binRect.left && e.clientX<=binRect.right &&
+           e.clientY>=binRect.top && e.clientY<=binRect.bottom){
+          binSound.currentTime=0;
+          binSound.play();
+          item.remove();
+        }
+      }
+
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp, {once:true});
+    });
+    item.ondragstart=()=>false;
+  }
+
+  document.querySelectorAll('.draggable').forEach(makeDraggable);
+
+  function setupTooltip(element, text){
+    let timeout;
+    element.addEventListener('mouseenter', ()=>{
+      timeout=setTimeout(()=>{
+        tooltip.textContent=text;
+        tooltip.style.opacity=1;
+      },50);
+    });
+    element.addEventListener('mouseleave', ()=>{
+      clearTimeout(timeout);
+      tooltip.style.opacity=0;
+    });
+    element.addEventListener('mousemove', e=>{
+      tooltip.style.left=(e.clientX+15)+'px';
+      tooltip.style.top=(e.clientY+15)+'px';
+    });
+  }
+
+  setupTooltip(document.getElementById('peachTea'),'I love peach tea');
+  setupTooltip(table,'a sturdy wooden table');
+  setupTooltip(envelope,'an envelope full of texts');
+
+});
+</script>
+</body>
+</html>
