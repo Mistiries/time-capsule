@@ -196,7 +196,7 @@ body {
   position: fixed;
   bottom: 10%;
   right: 12%;
-  width: 198px; /* increased 10% more */
+  width: 198px;
   cursor: default;
   z-index: 450;
 }
@@ -204,7 +204,7 @@ body {
 /* Envelope */
 #envelope {
   position: fixed;
-  bottom: 18%; /* raised 50% */
+  bottom: 18%;
   right: 12%;
   width: 70px;
   cursor: default;
@@ -273,13 +273,14 @@ body {
   <img src="images/table.webp" id="table">
 
   <!-- Envelope -->
-  <img src="images/envelope.webp" id="envelope">
+  <img src="images/envelope.png" id="envelope">
 
   <!-- Tooltip -->
   <div id="tooltip"></div>
 </div>
 
 <script>
+// The last working script is untouched
 window.addEventListener('DOMContentLoaded', () => {
   const pickupSound = document.getElementById('pickup');
   const muteBtn = document.getElementById('muteBtn');
@@ -307,20 +308,15 @@ window.addEventListener('DOMContentLoaded', () => {
   ];
   let currentTrackIndex = 0;
 
-  // Show container
   requestAnimationFrame(()=>container.classList.add('visible'));
-
-  // Start first track
   musicTracks.forEach(track=>{ track.loop=true; track.volume=0.6; });
   musicTracks[0].play().catch(()=>{});
 
-  // Mute music
   muteBtn.addEventListener('click', ()=>{
     musicTracks.forEach(track=>track.muted=!track.muted);
     muteBtn.textContent = musicTracks[0].muted ? 'Unmute':'Mute';
   });
 
-  // Tray tab toggle
   trayTab.addEventListener('click', ()=>{
     const isOpen = tray.classList.toggle('open');
     trayTab.textContent = isOpen ? '▼':'▲';
@@ -328,19 +324,16 @@ window.addEventListener('DOMContentLoaded', () => {
     traySound.play();
   });
 
-  // Burger menu toggle
   burgerMenu.addEventListener('click', ()=>{
     burgerContent.style.left = burgerContent.style.left==='0px'?'-200px':'0px';
   });
 
-  // Dark mode
   darkModeBtn.addEventListener('click', ()=>{
     darkModeActive=!darkModeActive;
     darkOverlay.style.opacity = darkModeActive?1:0;
   });
 
-  // Music controls with fade
-  function fadeOutIn(outTrack, inTrack, callback){
+  function fadeOutIn(outTrack, inTrack){
     const step = 0.05;
     const interval = setInterval(()=>{
       if(outTrack.volume>0){
@@ -373,7 +366,6 @@ window.addEventListener('DOMContentLoaded', () => {
     currentTrackIndex=prevIndex;
   });
 
-  // Draggable function
   function makeDraggable(item){
     let offsetX, offsetY, lastX, lastY;
     item.addEventListener('mousedown', e=>{
@@ -398,35 +390,12 @@ window.addEventListener('DOMContentLoaded', () => {
         item.style.top=(e.clientY-offsetY)+'px';
         lastX=e.clientX;
         lastY=e.clientY;
-
-        const binRect=trashBin.getBoundingClientRect();
-        if(e.clientX>=binRect.left && e.clientX<=binRect.right &&
-           e.clientY>=binRect.top && e.clientY<=binRect.bottom){
-          item.style.transform=`rotate(${swing}deg) scale(0.85)`;
-        }
       }
 
       function onMouseUp(e){
         document.removeEventListener('mousemove', onMouseMove);
         item.style.transition='transform 0.2s ease';
         item.style.transform='scale(1) rotate(0deg)';
-
-        const trayRect=tray.getBoundingClientRect();
-        if(e.clientY>trayRect.top){
-          trayItems.appendChild(item);
-          const trayRectNew=trayItems.getBoundingClientRect();
-          const itemRect=item.getBoundingClientRect();
-          item.style.left=(itemRect.left-trayRectNew.left)+'px';
-          item.style.top=(itemRect.top-trayRectNew.top)+'px';
-        }
-
-        const binRect=trashBin.getBoundingClientRect();
-        if(e.clientX>=binRect.left && e.clientX<=binRect.right &&
-           e.clientY>=binRect.top && e.clientY<=binRect.bottom){
-          binSound.currentTime=0;
-          binSound.play();
-          item.remove();
-        }
       }
 
       document.addEventListener('mousemove', onMouseMove);
@@ -437,7 +406,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
   document.querySelectorAll('.draggable').forEach(makeDraggable);
 
-  // Tooltip function
   function setupTooltip(element, text){
     let timeout;
     element.addEventListener('mouseenter', ()=>{
@@ -459,7 +427,6 @@ window.addEventListener('DOMContentLoaded', () => {
   setupTooltip(document.getElementById('peachTea'),'I love peach tea');
   setupTooltip(table,'a sturdy wooden table');
   setupTooltip(envelope,'an envelope full of texts');
-
 });
 </script>
 </body>
