@@ -224,7 +224,7 @@ body {
 /* Envelope */
 #envelope {
   position: fixed;
-  bottom: 24%;
+  bottom: 34%;
   right: 22%;
   width: 100px;
   cursor: pointer;
@@ -466,14 +466,22 @@ body {
   <img src="images/envelope.webp" id="envelope">
 
   <!-- New desk images - moved left and up -->
-  <div class="draggable pure-item" style="top:18%; left:28%;">
+  <div class="draggable pure-item" style="top:10%; left:32%;">
     <img src="images/image2.jpg" alt="Memory 2" class="pure" style="width:144px;">
   </div>
-  <div class="draggable pure-item" style="top:18%; left:28%; transform: rotate(-8deg);">
+  <div class="draggable pure-item" style="top:10%; left:32%; transform: rotate(-8deg);">
     <img src="images/image1.jpg" alt="Memory 1" class="pure" style="width:144px;">
   </div>
-  <div class="draggable pure-item" style="top:400px; left:400px;">
+  <div class="draggable pure-item" style="top:480px; left:380px;">
     <img src="images/sticker1.jpg" alt="Sticker" class="pure" style="width:114px;">
+  </div>
+  
+  <!-- Cat and Computer images -->
+  <div class="draggable pure-item" style="top:5%; left:75%;">
+    <img src="images/cat.jpg" alt="Cat" class="pure" style="width:144px;">
+  </div>
+  <div class="draggable pure-item" style="top:58%; left:48%;">
+    <img src="images/computer.jpg" alt="Computer" class="pure" style="width:150px;">
   </div>
   
   <!-- Page -->
@@ -528,7 +536,7 @@ const traySound = document.getElementById('traySound');
 const paperSound = document.getElementById('paperSound');
 paperSound.volume = 0.6;
 const paper2Sound = document.getElementById('paper2Sound');
-paper2Sound.volume = 0.5;
+paper2Sound.volume = 0.3;
 const tooltip = document.getElementById('tooltip');
 const instructionsPaper = document.getElementById('instructionsPaper');
 const imageViewer = document.getElementById('imageViewer');
@@ -581,6 +589,8 @@ setupTooltip(trayItemImgs[7],'the one time we played lethal company');
 setupTooltip(trayItemImgs[8],'the day you got my first letter');
 setupTooltip(trayItemImgs[9],'the day you got my first letter');
 setupTooltip(trayItemImgs[10],'us');
+setupTooltip(trayItemImgs[11],'the cute cat that sat on your lap');
+setupTooltip(trayItemImgs[12],'the day i made the photo collage on my laptop');
 setupTooltip(pageItem,'a letter');
 
 function makeDraggable(item){
