@@ -238,13 +238,13 @@ body {
   <div id="tray">
     <div id="trayItems">
       <div class="draggable pure-item" style="top:20px; left:20px;">
-        <img src="images/peachtea.jpg" alt="Peach Tea" class="pure">
+        <img src="images/peachtea.webp" alt="Peach Tea" class="pure">
       </div>
       <div class="draggable pure-item" style="top:20px; left:190px;">
-        <img src="images/laces.jpg" alt="Laces" class="pure" style="width:135px;">
+        <img src="images/laces.png" alt="Laces" class="pure" style="width:135px;">
       </div>
       <div class="draggable pure-item" style="top:20px; left:330px;">
-        <img src="images/sliders.jpg" alt="Sliders" class="pure" style="width:135px;">
+        <img src="images/sliders.png" alt="Sliders" class="pure" style="width:135px;">
       </div>
     </div>
   </div>
@@ -264,14 +264,6 @@ body {
 
   <!-- Table -->
   <img src="images/table.webp" id="table">
-
-  <!-- Desk images -->
-  <div class="draggable pure-item" style="top:35%; left:50%;">
-    <img src="images/image1.jpg" alt="Memory 1" class="pure" style="width:120px;">
-  </div>
-  <div class="draggable pure-item" style="top:35%; left:60%;">
-    <img src="images/image2.jpg" alt="Memory 2" class="pure" style="width:120px;">
-  </div>
 
   <div id="tooltip"></div>
 </div>
@@ -305,7 +297,6 @@ function fadeOutInTrack(direction){
   let current = musicTracks[currentTrack];
   let nextIndex = (currentTrack + direction + musicTracks.length) % musicTracks.length;
   let next = musicTracks[nextIndex];
-  let vol = 0.6;
   let fadeOut = setInterval(()=>{ 
     if(current.volume>0.05){ current.volume -=0.05; } else { 
       clearInterval(fadeOut); 
@@ -337,11 +328,6 @@ const trayItemImgs = document.querySelectorAll('#trayItems .pure-item img.pure')
 setupTooltip(trayItemImgs[0],'the day you got my first letter');
 setupTooltip(trayItemImgs[1],'the day you got my first letter');
 setupTooltip(trayItemImgs[2],'you prefer sliders over shoes any day');
-
-// Desk images tooltip
-const deskImgs = document.querySelectorAll('.draggable.pure-item img.pure');
-setupTooltip(deskImgs[deskImgs.length-2], 'the day you got my first letter');
-setupTooltip(deskImgs[deskImgs.length-1], 'the day you got my first letter');
 
 function makeDraggable(item){
   let offsetX, offsetY,lastX=0,lastY=0;
