@@ -238,21 +238,19 @@ body {
   <div id="tray">
     <div id="trayItems">
       <div class="draggable pure-item" style="top:20px; left:20px;">
-        <img src="images/peachtea.webp" alt="Peach Tea" class="pure">
+        <img src="images/peachtea.jpg" alt="Peach Tea" class="pure">
       </div>
       <div class="draggable pure-item" style="top:20px; left:190px;">
-        <img src="images/laces.png" alt="Laces" class="pure" style="width:135px;">
+        <img src="images/laces.jpg" alt="Laces" class="pure" style="width:135px;">
       </div>
       <div class="draggable pure-item" style="top:20px; left:330px;">
-        <img src="images/sliders.webp" alt="Sliders" class="pure" style="width:135px;">
+        <img src="images/sliders.jpg" alt="Sliders" class="pure" style="width:135px;">
       </div>
     </div>
   </div>
 
   <div id="trayTab">▲</div>
-
   <div id="darkModeOverlay"></div>
-
   <div id="burgerMenu">☰</div>
   <div id="burgerMenuContent">
     <button id="darkModeBtn">🌙 Dark Mode</button>
@@ -267,7 +265,7 @@ body {
   <!-- Table -->
   <img src="images/table.webp" id="table">
 
-  <!-- New desk images -->
+  <!-- Desk images -->
   <div class="draggable pure-item" style="top:35%; left:50%;">
     <img src="images/image1.jpg" alt="Memory 1" class="pure" style="width:120px;">
   </div>
@@ -308,11 +306,23 @@ function fadeOutInTrack(direction){
   let nextIndex = (currentTrack + direction + musicTracks.length) % musicTracks.length;
   let next = musicTracks[nextIndex];
   let vol = 0.6;
-  let fadeOut = setInterval(()=>{ if(current.volume>0.05){ current.volume -=0.05; } else { clearInterval(fadeOut); current.pause(); current.currentTime=0; next.volume=0; next.play(); fadeIn(next); currentTrack=nextIndex; } },50);
+  let fadeOut = setInterval(()=>{ 
+    if(current.volume>0.05){ current.volume -=0.05; } else { 
+      clearInterval(fadeOut); 
+      current.pause(); 
+      current.currentTime=0; 
+      next.volume=0; 
+      next.play(); 
+      fadeIn(next); 
+      currentTrack=nextIndex; 
+    } 
+  },50);
 }
 
 function fadeIn(track){
-  let fadeIn = setInterval(()=>{ if(track.volume<0.6){ track.volume +=0.05; } else { clearInterval(fadeIn); } },50);
+  let fadeIn = setInterval(()=>{
+    if(track.volume<0.6){ track.volume +=0.05; } else { clearInterval(fadeIn); }
+  },50);
 }
 
 // Tooltip and draggable
@@ -323,11 +333,15 @@ function setupTooltip(img,text){
   img.addEventListener('mousemove',(e)=>{ tooltip.style.left=(e.clientX+15)+'px'; tooltip.style.top=(e.clientY+15)+'px'; });
 }
 
-// Setup tooltip for tray items
-const trayItemImgs = document.querySelectorAll('.pure-item img.pure');
-setupTooltip(trayItemImgs[0],'I love peach tea');
-setupTooltip(trayItemImgs[1],'I ate these all the time as a child');
+const trayItemImgs = document.querySelectorAll('#trayItems .pure-item img.pure');
+setupTooltip(trayItemImgs[0],'the day you got my first letter');
+setupTooltip(trayItemImgs[1],'the day you got my first letter');
 setupTooltip(trayItemImgs[2],'you prefer sliders over shoes any day');
+
+// Desk images tooltip
+const deskImgs = document.querySelectorAll('.draggable.pure-item img.pure');
+setupTooltip(deskImgs[deskImgs.length-2], 'the day you got my first letter');
+setupTooltip(deskImgs[deskImgs.length-1], 'the day you got my first letter');
 
 function makeDraggable(item){
   let offsetX, offsetY,lastX=0,lastY=0;
