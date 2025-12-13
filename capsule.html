@@ -224,8 +224,8 @@ body {
 /* Envelope */
 #envelope {
   position: fixed;
-  bottom: 10%;
-  right: 12%;
+  bottom: 18%;
+  right: 18%;
   width: 100px;
   cursor: pointer;
   z-index: 451;
@@ -234,12 +234,46 @@ body {
 /* Letter images */
 .letter-img {
   position: absolute;
-  width: 100px;
+  width: 150px;
   cursor: grab;
   user-select: none;
   box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
   transition: transform 0.2s ease;
-  z-index: 400;
+  z-index: 452;
+}
+
+/* Image viewer */
+#imageViewer {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 80vw;
+  max-height: 70vh;
+  z-index: 3001;
+  display: none;
+}
+
+#imageViewer.visible {
+  display: block;
+}
+
+#imageViewer img {
+  max-width: 100%;
+  max-height: 60vh;
+  display: block;
+  box-shadow: 3px 3px 10px rgba(0,0,0,0.5);
+}
+
+#imageViewer .escape-note {
+  background: white;
+  padding: 10px;
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+  margin-top: 10px;
+  border-radius: 5px;
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
 }
 
 /* Tooltip */
@@ -361,6 +395,9 @@ body {
       <div class="draggable pure-item" style="top:10px; left:565px;">
         <img src="images/hollowknight.png" alt="Hollow Knight" class="pure">
       </div>
+      <div class="draggable pure-item" style="top:10px; left:670px; transform: rotate(4deg);">
+        <img src="images/silksong.png" alt="Silksong" class="pure">
+      </div>
     </div>
   </div>
 
@@ -402,12 +439,19 @@ body {
     <ul>
       <li>Drag any item around (apart from some)</li>
       <li>Pull open the tray to find more items</li>
+      <li>You can store items in the tray too</li>
       <li>Pull items to the bin to get rid of them</li>
       <li>Reload the page to reset everything</li>
       <li>Use the music player in left menu to change music</li>
       <li>Hover over items to see notes</li>
       <li>Click the envelope to open it, and click again to tidy up</li>
+      <li>Click on images to view them</li>
     </ul>
+  </div>
+
+  <div id="imageViewer">
+    <img id="viewerImg" src="">
+    <div class="escape-note">Click anywhere to escape</div>
   </div>
 </div>
 
@@ -429,6 +473,8 @@ const paperSound = document.getElementById('paperSound');
 paperSound.volume = 0.6;
 const tooltip = document.getElementById('tooltip');
 const instructionsPaper = document.getElementById('instructionsPaper');
+const imageViewer = document.getElementById('imageViewer');
+const viewerImg = document.getElementById('viewerImg');
 
 // Music
 const musicTracks = [document.getElementById('background'), document.getElementById('background2'), document.getElementById('background3')];
@@ -468,14 +514,19 @@ setupTooltip(trayItemImgs[2],'you prefer sliders over shoes any day');
 setupTooltip(trayItemImgs[3],'badminton; my fav sport');
 setupTooltip(trayItemImgs[4],'Shaw no more 💔');
 setupTooltip(trayItemImgs[5],'Hornet figurine');
+setupTooltip(trayItemImgs[6],'Silksong when?');
 // New desk images tooltip
-setupTooltip(trayItemImgs[6],'the day you got my first letter');
 setupTooltip(trayItemImgs[7],'the day you got my first letter');
+setupTooltip(trayItemImgs[8],'the day you got my first letter');
 
 function makeDraggable(item){
   let offsetX, offsetY,lastX=0,lastY=0;
+  let isDragging = false;
+  let dragStartTime = 0;
   item.addEventListener('mousedown', e=>{
     e.preventDefault();
+    isDragging = false;
+    dragStartTime = Date.now();
     pickupSound.currentTime=0;
     pickupSound.play();
     const rect = item.getBoundingClientRect();
@@ -495,6 +546,7 @@ function makeDraggable(item){
     function onMouseMove(e){
       const dx = e.clientX - lastX;
       const dy = e.clientY - lastY;
+      if(Math.abs(dx) > 3 || Math.abs(dy) > 3) isDragging = true;
       const swing = Math.min(Math.sqrt(dx*dx+dy*dy)*0.2,5);
       let scale=1.05;
       const binRect = trashBin.getBoundingClientRect();
@@ -520,6 +572,17 @@ function makeDraggable(item){
       if(e.clientX>=binRect.left && e.clientX<=binRect.right && e.clientY>=binRect.top && e.clientY<=binRect.bottom){
         binSound.currentTime=0; binSound.play();
         item.remove();
+      }
+      
+      // Check if it was a click (not a drag) and has an image
+      if(!isDragging && Date.now() - dragStartTime < 200){
+        const img = item.querySelector('img');
+        if(img && (img.classList.contains('pure') || item.classList.contains('letter-img'))){
+          viewerImg.src = img.src;
+          imageViewer.classList.add('visible');
+          darkOverlay.style.opacity = 1;
+          darkOverlay.style.pointerEvents = 'auto';
+        }
       }
     }
     document.addEventListener('mousemove', onMouseMove);
@@ -617,7 +680,17 @@ darkOverlay.addEventListener('click', () => {
     instructionsPaper.classList.remove('visible');
     darkOverlay.style.opacity = 0;
     darkOverlay.style.pointerEvents = 'none';
+  } else if(imageViewer.classList.contains('visible')){
+    imageViewer.classList.remove('visible');
+    darkOverlay.style.opacity = 0;
+    darkOverlay.style.pointerEvents = 'none';
   }
+});
+
+imageViewer.addEventListener('click', () => {
+  imageViewer.classList.remove('visible');
+  darkOverlay.style.opacity = 0;
+  darkOverlay.style.pointerEvents = 'none';
 });
 </script>
 </body>
