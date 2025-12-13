@@ -38,11 +38,11 @@ body {
 }
 
 .draggable img {
+  width: 100%;
   display: block;
   border-radius: 0;
 }
 
-/* Tray item adjustments */
 .draggable.pure-item {
   background: transparent !important;
   padding: 0 !important;
@@ -52,9 +52,9 @@ body {
 }
 
 .draggable img.pure {
-  width: 60px;  /* smaller, fits tray nicely */
-  height: auto;
+  width: 150px;
   display: block;
+  border-radius: 0;
 }
 
 .draggable p {
@@ -209,7 +209,9 @@ body {
 <body>
 <div id="container">
   <audio id="pickup" src="sounds/pickup.mp3"></audio>
-  <audio id="background" src="sounds/background.mp3" autoplay></audio>
+  <audio id="background" src="sounds/background.mp3" loop></audio>
+  <audio id="background2" src="sounds/background2.mp3" loop></audio>
+  <audio id="background3" src="sounds/background3.mp3" loop></audio>
   <audio id="binSound" src="sounds/bin.mp3"></audio>
   <audio id="traySound" src="sounds/tray.mp3"></audio>
 
@@ -238,6 +240,10 @@ body {
   <div id="burgerMenu">☰</div>
   <div id="burgerMenuContent">
     <button id="darkModeBtn">🌙 Dark Mode</button>
+    <div id="musicControls" style="display:flex;justify-content:center;margin-top:10px;">
+      <button id="prevTrack">⏮</button>
+      <button id="nextTrack">⏭</button>
+    </div>
   </div>
 
   <div id="trashBin">🗑️</div>
@@ -246,12 +252,8 @@ body {
 </div>
 
 <script>
-// Basic sound references
 const pickupSound = document.getElementById('pickup');
-const background = document.getElementById('background');
-const binSound = document.getElementById('binSound');
-const traySound = document.getElementById('traySound');
-
+const muteBtn = document.getElementById('muteBtn');
 const container = document.getElementById('container');
 const tray = document.getElementById('tray');
 const trayItems = document.getElementById('trayItems');
@@ -261,33 +263,93 @@ const burgerMenu = document.getElementById('burgerMenu');
 const burgerContent = document.getElementById('burgerMenuContent');
 const darkModeBtn = document.getElementById('darkModeBtn');
 const trashBin = document.getElementById('trashBin');
+const binSound = document.getElementById('binSound');
+const traySound = document.getElementById('traySound');
 const tooltip = document.getElementById('tooltip');
 
-window.addEventListener('DOMContentLoaded', ()=>{
+// Music
+const musicTracks = [document.getElementById('background'), document.getElementById('background2'), document.getElementById('background3')];
+let currentTrack = 0;
+musicTracks.forEach(track => { track.volume=0.6; });
+musicTracks[currentTrack].play();
+
+document.getElementById('nextTrack').addEventListener('click', ()=>{
+  fadeOutInTrack(1);
+});
+document.getElementById('prevTrack').addEventListener('click', ()=>{
+  fadeOutInTrack(-1);
+});
+
+function fadeOutInTrack(direction){
+  let current = musicTracks[currentTrack];
+  let nextIndex = (currentTrack + direction + musicTracks.length) % musicTracks.length;
+  let next = musicTracks[nextIndex];
+  let vol = 0.6;
+  let fadeOut = setInterval(()=>{
+    if(current.volume>0.05){ current.volume -=0.05; } else { clearInterval(fadeOut); current.pause(); current.currentTime=0; next.volume=0; next.play(); fadeIn(next); currentTrack=nextIndex; }
+  },50);
+}
+
+function fadeIn(track){
+  let fadeIn = setInterval(()=>{
+    if(track.volume<0.6){ track.volume +=0.05; } else { clearInterval(fadeIn); }
+  },50);
+}
+
+// Delay for tooltip
+let tooltipTimeout;
+
+// Event listeners
+window.addEventListener('DOMContentLoaded', () => {
   requestAnimationFrame(()=>container.classList.add('visible'));
 });
 
-// Tray toggle
-trayTab.addEventListener('click', ()=>{
+muteBtn.addEventListener('click', () => {
+  musicTracks.forEach(track => track.muted = !track.muted);
+  muteBtn.textContent = musicTracks[0].muted ? 'Unmute' : 'Mute';
+});
+
+trayTab.addEventListener('click', () => {
   tray.classList.toggle('open');
-  trayTab.textContent = tray.classList.contains('open')?'▼':'▲';
+  trayTab.textContent = tray.classList.contains('open') ? '▼' : '▲';
   traySound.currentTime=0;
   traySound.play();
 });
 
-// Burger menu toggle
-burgerMenu.addEventListener('click', ()=>{
+burgerMenu.addEventListener('click', () => {
   burgerContent.style.left = burgerContent.style.left==='0px'?'-200px':'0px';
 });
 
-// Dark mode
-darkModeBtn.addEventListener('click', ()=>{
+darkModeBtn.addEventListener('click', () => {
   darkOverlay.style.opacity = darkOverlay.style.opacity==='1'?0:1;
 });
 
-// Draggable
+// Tooltip for peach tea
+const peachTea = document.querySelector('.pure-item img.pure');
+peachTea.addEventListener('mouseenter', e=>{
+  tooltipTimeout=setTimeout(()=>{
+    tooltip.style.opacity=1;
+  },250); // slightly shorter delay
+});
+peachTea.addEventListener('mouseleave', e=>{
+  clearTimeout(tooltipTimeout);
+  tooltip.style.opacity=0;
+});
+peachTea.addEventListener('mousemove', e=>{
+  const rect = peachTea.getBoundingClientRect();
+  const centerX = rect.left + rect.width/2;
+  const centerY = rect.top + rect.height/2;
+  const distX = e.clientX - centerX;
+  const distY = e.clientY - centerY;
+  if(Math.abs(distX)<rect.width/2 && Math.abs(distY)<rect.height/2){
+    tooltip.style.left = (e.clientX+15)+'px';
+    tooltip.style.top = (e.clientY+15)+'px';
+  }
+});
+
+// Drag and drop
 function makeDraggable(item){
-  let offsetX, offsetY, lastX=0, lastY=0;
+  let offsetX, offsetY,lastX=0,lastY=0;
   item.addEventListener('mousedown', e=>{
     e.preventDefault();
     pickupSound.currentTime=0;
@@ -298,9 +360,12 @@ function makeDraggable(item){
     offsetY = e.clientY - rect.top;
     lastX = e.clientX; lastY = e.clientY;
 
-    item.style.position='absolute';
+    const bodyRect = document.body.getBoundingClientRect();
+    item.style.left = (rect.left - bodyRect.left)+'px';
+    item.style.top = (rect.top - bodyRect.top)+'px';
+    item.style.position = 'absolute';
     item.style.zIndex=1000;
-    item.style.transition='transform 0s';
+    item.style.transition="transform 0s";
 
     if(item.parentElement!==document.body) document.body.appendChild(item);
 
@@ -308,58 +373,46 @@ function makeDraggable(item){
       const dx = e.clientX - lastX;
       const dy = e.clientY - lastY;
       const swing = Math.min(Math.sqrt(dx*dx+dy*dy)*0.2,5);
-      const scale = 1.05;
+      let scale=1.05;
 
-      item.style.transform = `rotate(${dx*0.2}deg) scale(${scale})`;
-      item.style.left=(e.clientX-offsetX)+'px';
-      item.style.top=(e.clientY-offsetY)+'px';
+      const binRect = trashBin.getBoundingClientRect();
+      if(e.clientX>=binRect.left && e.clientX<=binRect.right && e.clientY>=binRect.top && e.clientY<=binRect.bottom){
+        scale=0.85;
+      }
 
-      lastX=e.clientX; lastY=e.clientY;
+      item.style.transform=`rotate(${swing}deg) scale(${scale})`;
+      item.style.left=(e.clientX - offsetX)+'px';
+      item.style.top=(e.clientY - offsetY)+'px';
+      lastX = e.clientX; lastY = e.clientY;
     }
 
     function onMouseUp(e){
       document.removeEventListener('mousemove',onMouseMove);
-      item.style.transition='transform 0.2s ease';
-      item.style.transform='scale(1) rotate(0deg)';
+      item.style.transition="transform 0.2s ease";
+      item.style.transform="scale(1) rotate(0deg)";
 
       const trayRect = tray.getBoundingClientRect();
       if(e.clientY>trayRect.top){
         trayItems.appendChild(item);
         const trayRectNew = trayItems.getBoundingClientRect();
-        item.style.left=(e.clientX-trayRectNew.left-offsetX)+'px';
-        item.style.top=(e.clientY-trayRectNew.top-offsetY)+'px';
+        item.style.left=(e.clientX - trayRectNew.left - offsetX)+'px';
+        item.style.top=(e.clientY - trayRectNew.top - offsetY)+'px';
       }
 
       const binRect = trashBin.getBoundingClientRect();
-      if(e.clientX>=binRect.left && e.clientX<=binRect.right &&
-         e.clientY>=binRect.top && e.clientY<=binRect.bottom){
+      if(e.clientX>=binRect.left && e.clientX<=binRect.right && e.clientY>=binRect.top && e.clientY<=binRect.bottom){
         binSound.currentTime=0; binSound.play();
         item.remove();
       }
     }
 
-    document.addEventListener('mousemove',onMouseMove);
-    document.addEventListener('mouseup',onMouseUp,{once:true});
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp,{once:true});
   });
   item.ondragstart=()=>false;
 }
 
 document.querySelectorAll('.draggable').forEach(makeDraggable);
-
-// Tooltip
-const peachTea = document.querySelector('.pure-item img.pure');
-let tooltipTimeout;
-peachTea.addEventListener('mouseenter', ()=>{
-  tooltipTimeout = setTimeout(()=>{ tooltip.style.opacity=1; }, 250);
-});
-peachTea.addEventListener('mouseleave', ()=>{
-  clearTimeout(tooltipTimeout);
-  tooltip.style.opacity=0;
-});
-peachTea.addEventListener('mousemove', e=>{
-  tooltip.style.left=(e.clientX+15)+'px';
-  tooltip.style.top=(e.clientY+15)+'px';
-});
 </script>
 </body>
 </html>
