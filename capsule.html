@@ -63,13 +63,13 @@ body {
 }
 
 .draggable.small-tab {
-  max-width: 160px;
-  min-width: 100px;
-  padding: 6px;
+  max-width: 176px;
+  min-width: 110px;
+  padding: 7px;
 }
 
 .draggable.small-tab p {
-  font-size: 11px;
+  font-size: 12px;
 }
 
 #muteBtn {
@@ -126,7 +126,7 @@ body {
   cursor: pointer;
   font-weight: bold;
   box-shadow: 0 -2px 5px rgba(0,0,0,0.3);
-  z-index: 1001;
+  z-index: 2001;
 }
 
 #trayItems {
@@ -163,7 +163,7 @@ body {
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  z-index: 2003;
+  z-index: 2005;
 }
 
 #burgerMenuContent {
@@ -178,7 +178,7 @@ body {
   flex-direction:column;
   padding: 20px;
   box-sizing:border-box;
-  z-index: 2002;
+  z-index: 2004;
 }
 
 #burgerMenuContent button {
@@ -247,7 +247,7 @@ body {
   <div class="draggable small-tab" style="top:200px; left:900px; z-index:400;">
     <p>I'm glad this version of life's timeline existed</p>
   </div>
-  <div class="draggable small-tab" style="top:520px; left:100px; z-index:400;">
+  <div class="draggable small-tab" style="top:320px; left:100px; z-index:400;">
     <p>"I love how we just bump each others egos. I will always bump your ego to the sky, and you will do the same to me."</p>
   </div>
 
@@ -256,10 +256,10 @@ body {
       <div class="draggable pure-item" style="top:20px; left:20px;">
         <img src="images/peachtea.webp" alt="Peach Tea" class="pure">
       </div>
-      <div class="draggable pure-item" style="top:20px; left:160px;">
+      <div class="draggable pure-item" style="top:20px; left:150px;">
         <img src="images/laces.png" alt="Laces" class="pure" style="width:135px;">
       </div>
-      <div class="draggable pure-item" style="top:20px; left:285px;">
+      <div class="draggable pure-item" style="top:20px; left:270px;">
         <img src="images/sliders.webp" alt="Sliders" class="pure">
       </div>
     </div>
@@ -362,7 +362,7 @@ function makeDraggable(item){
     item.style.left = (rect.left - bodyRect.left)+'px';
     item.style.top = (rect.top - bodyRect.top)+'px';
     item.style.position = 'absolute';
-    item.style.zIndex=1000;
+    item.style.zIndex=2010;
     item.dataset.originalZIndex = item.style.zIndex || '400';
     item.style.transition="transform 0s";
     item.style.transform="scale(1) rotate(0deg)";
