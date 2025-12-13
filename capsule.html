@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -197,7 +196,7 @@ body {
   position: fixed;
   bottom: 10%;
   right: 12%;
-  width: 234px; /* 150px * 1.3 = 195? Actually 180px original increased 30% = 234px */
+  width: 234px;
   cursor: default;
   z-index: 450;
 }
@@ -238,11 +237,12 @@ body {
 
   <div id="tray">
     <div id="trayItems">
-      <div class="draggable pure-item" style="top:20px; left:20px;">
-        <img src="images/peachtea.webp" alt="Peach Tea" class="pure">
+      <!-- Fixed images -->
+      <div class="draggable pure-item" style="top:50%; left:45%;">
+        <img src="images/image1.jpg" alt="Memory 1" class="pure">
       </div>
-      <div class="draggable pure-item" style="top:20px; left:190px;">
-        <img src="images/laces.png" alt="Laces" class="pure" style="width:135px;">
+      <div class="draggable pure-item" style="top:50%; left:55%;">
+        <img src="images/image2.jpg" alt="Memory 2" class="pure">
       </div>
     </div>
   </div>
@@ -298,15 +298,11 @@ function fadeOutInTrack(direction){
   let nextIndex = (currentTrack + direction + musicTracks.length) % musicTracks.length;
   let next = musicTracks[nextIndex];
   let vol = 0.6;
-  let fadeOut = setInterval(()=>{
-    if(current.volume>0.05){ current.volume -=0.05; } else { clearInterval(fadeOut); current.pause(); current.currentTime=0; next.volume=0; next.play(); fadeIn(next); currentTrack=nextIndex; }
-  },50);
+  let fadeOut = setInterval(()=>{ if(current.volume>0.05){ current.volume -=0.05; } else { clearInterval(fadeOut); current.pause(); current.currentTime=0; next.volume=0; next.play(); fadeIn(next); currentTrack=nextIndex; } },50);
 }
 
 function fadeIn(track){
-  let fadeIn = setInterval(()=>{
-    if(track.volume<0.6){ track.volume +=0.05; } else { clearInterval(fadeIn); }
-  },50);
+  let fadeIn = setInterval(()=>{ if(track.volume<0.6){ track.volume +=0.05; } else { clearInterval(fadeIn); } },50);
 }
 
 // Tooltip and draggable
@@ -317,9 +313,9 @@ function setupTooltip(img,text){
   img.addEventListener('mousemove',(e)=>{ tooltip.style.left=(e.clientX+15)+'px'; tooltip.style.top=(e.clientY+15)+'px'; });
 }
 
+// Setup tooltip for new images
 const trayItemImgs = document.querySelectorAll('.pure-item img.pure');
-setupTooltip(trayItemImgs[0],'I love peach tea');
-setupTooltip(trayItemImgs[1],'I ate these all the time as a child');
+trayItemImgs.forEach(img => setupTooltip(img, 'the day you got your first letter'));
 
 function makeDraggable(item){
   let offsetX, offsetY,lastX=0,lastY=0;
@@ -403,3 +399,4 @@ darkModeBtn.addEventListener('click', () => {
 </script>
 </body>
 </html>
+
