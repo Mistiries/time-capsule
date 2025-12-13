@@ -221,6 +221,27 @@ body {
   z-index: 450;
 }
 
+/* Envelope */
+#envelope {
+  position: fixed;
+  bottom: 10%;
+  right: 12%;
+  width: 100px;
+  cursor: pointer;
+  z-index: 451;
+}
+
+/* Letter images */
+.letter-img {
+  position: absolute;
+  width: 100px;
+  cursor: grab;
+  user-select: none;
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+  transition: transform 0.2s ease;
+  z-index: 400;
+}
+
 /* Tooltip */
 #tooltip {
   position: fixed;
@@ -242,6 +263,8 @@ body {
   left: 50%;
   transform: translate(-50%, -50%);
   width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
   background: white;
   padding: 40px;
   border-radius: 10px;
@@ -323,19 +346,19 @@ body {
       <div class="draggable pure-item" style="top:10px; left:20px;">
         <img src="images/peachtea.webp" alt="Peach Tea" class="pure">
       </div>
-      <div class="draggable pure-item" style="top:10px; left:130px;">
+      <div class="draggable pure-item" style="top:10px; left:130px; transform: rotate(-3deg);">
         <img src="images/laces.png" alt="Laces" class="pure" style="width:135px;">
       </div>
       <div class="draggable pure-item" style="top:10px; left:235px;">
         <img src="images/sliders.webp" alt="Sliders" class="pure">
       </div>
-      <div class="draggable pure-item" style="top:10px; left:390px;">
+      <div class="draggable pure-item" style="top:10px; left:345px;">
         <img src="images/badminton.webp" alt="Badminton" class="pure">
       </div>
-      <div class="draggable pure-item" style="top:10px; left:545px;">
+      <div class="draggable pure-item" style="top:15px; left:455px; transform: rotate(5deg);">
         <img src="images/hornet.png" alt="Hornet" class="pure">
       </div>
-      <div class="draggable pure-item" style="top:10px; left:580px;">
+      <div class="draggable pure-item" style="top:10px; left:565px;">
         <img src="images/hollowknight.png" alt="Hollow Knight" class="pure">
       </div>
     </div>
@@ -359,6 +382,9 @@ body {
 
   <!-- Table -->
   <img src="images/table.webp" id="table">
+  
+  <!-- Envelope -->
+  <img src="images/envelope.webp" id="envelope">
 
   <!-- New desk images -->
   <div class="draggable pure-item" style="top:35%; left:50%;">
@@ -374,11 +400,13 @@ body {
     <h1>Instructions</h1>
     <p class="subtitle">(click anywhere to escape)</p>
     <ul>
-      <li>Click anywhere to drag items</li>
+      <li>Drag any item around (apart from some)</li>
       <li>Pull open the tray to find more items</li>
       <li>Pull items to the bin to get rid of them</li>
       <li>Reload the page to reset everything</li>
       <li>Use the music player in left menu to change music</li>
+      <li>Hover over items to see notes</li>
+      <li>Click the envelope to open it, and click again to tidy up</li>
     </ul>
   </div>
 </div>
@@ -505,6 +533,44 @@ document.querySelectorAll('.draggable').forEach(makeDraggable);
 // Tooltip for table
 const table = document.getElementById('table');
 setupTooltip(table,'a strong sturdy table');
+
+// Envelope functionality
+const envelope = document.getElementById('envelope');
+setupTooltip(envelope,'an envelope full of texts');
+let lettersOut = false;
+let letterElements = [];
+
+// Create letter images
+const letterFiles = ['text (1).jpg','text (2).jpg','text (3).jpg','text (4).jpg','text (5).jpg','text (6).jpg','text (7).jpg','text (9).jpg','text (10).jpg','text (11).jpg','text (12).jpg','text (13).jpg','text (14).jpg'];
+
+envelope.addEventListener('click', () => {
+  paperSound.currentTime = 0;
+  paperSound.play();
+  
+  if (!lettersOut) {
+    // Create and show letters
+    const envelopeRect = envelope.getBoundingClientRect();
+    letterFiles.forEach((file, index) => {
+      const letterDiv = document.createElement('div');
+      letterDiv.className = 'letter-img';
+      const img = document.createElement('img');
+      img.src = `images/letter/${file}`;
+      img.style.width = '100%';
+      letterDiv.appendChild(img);
+      letterDiv.style.left = (envelopeRect.left - 120) + 'px';
+      letterDiv.style.top = (envelopeRect.top + index * 2) + 'px';
+      document.body.appendChild(letterDiv);
+      letterElements.push(letterDiv);
+      makeDraggable(letterDiv);
+    });
+    lettersOut = true;
+  } else {
+    // Remove all letters
+    letterElements.forEach(el => el.remove());
+    letterElements = [];
+    lettersOut = false;
+  }
+});
 
 window.addEventListener('DOMContentLoaded', () => { requestAnimationFrame(()=>container.classList.add('visible')); });
 
