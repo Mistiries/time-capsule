@@ -218,14 +218,14 @@ body {
   right: 12%;
   width: 234px;
   cursor: default;
-  z-index: 450;
+  z-index: 400;
 }
 
 /* Envelope */
 #envelope {
   position: fixed;
-  bottom: 18%;
-  right: 18%;
+  bottom: 22%;
+  right: 22%;
   width: 100px;
   cursor: pointer;
   z-index: 451;
@@ -239,7 +239,7 @@ body {
   user-select: none;
   box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
   transition: transform 0.2s ease;
-  z-index: 452;
+  z-index: 455;
 }
 
 /* Image viewer */
@@ -359,7 +359,7 @@ body {
   <audio id="traySound" src="sounds/tray.mp3"></audio>
   <audio id="paperSound" src="sounds/paper.mp3"></audio>
 
-  <button id="muteBtn">Mute</button>
+  <button id="muteBtn">Mute Music</button>
 
   <!-- Memory tabs -->
   <div class="draggable" style="top:20px; left:20px; z-index:400;">
@@ -395,8 +395,8 @@ body {
       <div class="draggable pure-item" style="top:10px; left:565px;">
         <img src="images/hollowknight.png" alt="Hollow Knight" class="pure">
       </div>
-      <div class="draggable pure-item" style="top:10px; left:670px; transform: rotate(4deg);">
-        <img src="images/silksong.png" alt="Silksong" class="pure">
+      <div class="draggable pure-item" style="top:10px; left:675px;">
+        <img src="images/robin.png" alt="Robin" class="pure">
       </div>
     </div>
   </div>
@@ -430,6 +430,9 @@ body {
   <div class="draggable pure-item" style="top:35%; left:50%; transform: rotate(-8deg);">
     <img src="images/image1.jpg" alt="Memory 1" class="pure" style="width:120px;">
   </div>
+  <div class="draggable pure-item" style="top:400px; left:400px;">
+    <img src="images/sticker1.jpeg" alt="Sticker" class="pure" style="width:114px;">
+  </div>
 
   <div id="tooltip"></div>
 
@@ -438,8 +441,7 @@ body {
     <p class="subtitle">(click anywhere to escape)</p>
     <ul>
       <li>Drag any item around (apart from some)</li>
-      <li>Pull open the tray to find more items</li>
-      <li>You can store items in the tray too</li>
+      <li>Pull open the tray to find more items and store items</li>
       <li>Pull items to the bin to get rid of them</li>
       <li>Reload the page to reset everything</li>
       <li>Use the music player in left menu to change music</li>
@@ -514,10 +516,11 @@ setupTooltip(trayItemImgs[2],'you prefer sliders over shoes any day');
 setupTooltip(trayItemImgs[3],'badminton; my fav sport');
 setupTooltip(trayItemImgs[4],'Shaw no more 💔');
 setupTooltip(trayItemImgs[5],'Hornet figurine');
-setupTooltip(trayItemImgs[6],'Silksong when?');
+setupTooltip(trayItemImgs[6],'the game that started it all');
 // New desk images tooltip
 setupTooltip(trayItemImgs[7],'the day you got my first letter');
 setupTooltip(trayItemImgs[8],'the day you got my first letter');
+setupTooltip(trayItemImgs[9],'us');
 
 function makeDraggable(item){
   let offsetX, offsetY,lastX=0,lastY=0;
@@ -577,7 +580,12 @@ function makeDraggable(item){
       // Check if it was a click (not a drag) and has an image
       if(!isDragging && Date.now() - dragStartTime < 200){
         const img = item.querySelector('img');
-        if(img && (img.classList.contains('pure') || item.classList.contains('letter-img'))){
+        if(img && item.classList.contains('letter-img')){
+          viewerImg.src = img.src;
+          imageViewer.classList.add('visible');
+          darkOverlay.style.opacity = 1;
+          darkOverlay.style.pointerEvents = 'auto';
+        } else if(img && img.classList.contains('pure') && (img.alt === 'Memory 1' || img.alt === 'Memory 2')){
           viewerImg.src = img.src;
           imageViewer.classList.add('visible');
           darkOverlay.style.opacity = 1;
@@ -621,7 +629,7 @@ envelope.addEventListener('click', () => {
       img.style.width = '100%';
       letterDiv.appendChild(img);
       letterDiv.style.left = (envelopeRect.left - 120) + 'px';
-      letterDiv.style.top = (envelopeRect.top + index * 2) + 'px';
+      letterDiv.style.top = (envelopeRect.top - 50 + index * 2) + 'px';
       document.body.appendChild(letterDiv);
       letterElements.push(letterDiv);
       makeDraggable(letterDiv);
@@ -639,7 +647,7 @@ window.addEventListener('DOMContentLoaded', () => { requestAnimationFrame(()=>co
 
 muteBtn.addEventListener('click', () => {
   musicTracks.forEach(track => track.muted = !track.muted);
-  muteBtn.textContent = musicTracks[0].muted ? 'Unmute' : 'Mute';
+  muteBtn.textContent = musicTracks[0].muted ? 'Unmute Music' : 'Mute Music';
 });
 
 trayTab.addEventListener('click', () => {
