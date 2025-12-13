@@ -196,7 +196,7 @@ body {
   position: fixed;
   bottom: 10%;
   right: 12%;
-  width: 234px; /* 150px * 1.3 = 195? Actually 180px original increased 30% = 234px */
+  width: 234px; 
   cursor: default;
   z-index: 450;
 }
@@ -213,6 +213,25 @@ body {
   opacity: 0;
   transition: opacity 0.2s ease;
   z-index: 2010;
+}
+
+/* Images in space */
+#spaceImages img {
+  position: absolute;
+  width: 180px;
+  transform: rotate(-5deg);
+  cursor: grab;
+}
+#spaceImages img:nth-child(2) {
+  z-index: 1;
+  transform: rotate(8deg);
+  left: 30px;
+  top: 30px;
+}
+#spaceImages img:nth-child(1) {
+  z-index: 2;
+  left: 50px;
+  top: 50px;
 }
 </style>
 </head>
@@ -263,6 +282,12 @@ body {
 
   <!-- Table -->
   <img src="images/table.webp" id="table">
+
+  <!-- Images in space -->
+  <div id="spaceImages">
+    <img src="images/image2.jpg" alt="Image 2">
+    <img src="images/image1.jpg" alt="Image 1">
+  </div>
 
   <div id="tooltip"></div>
 </div>
@@ -320,6 +345,10 @@ const trayItemImgs = document.querySelectorAll('.pure-item img.pure');
 setupTooltip(trayItemImgs[0],'I love peach tea');
 setupTooltip(trayItemImgs[1],'I ate these all the time as a child');
 
+const spaceImgs = document.querySelectorAll('#spaceImages img');
+spaceImgs.forEach(img => setupTooltip(img,'they day you got my first letter'));
+spaceImgs.forEach(img => makeDraggable(img));
+
 function makeDraggable(item){
   let offsetX, offsetY,lastX=0,lastY=0;
   item.addEventListener('mousedown', e=>{
@@ -372,9 +401,7 @@ function makeDraggable(item){
   item.ondragstart=()=>false;
 }
 
-document.querySelectorAll('.draggable').forEach(makeDraggable);
-
-// Tooltip for table
+// Table tooltip
 const table = document.getElementById('table');
 setupTooltip(table,'a strong sturdy table');
 
