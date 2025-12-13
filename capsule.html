@@ -246,13 +246,15 @@ body {
       <div class="draggable pure-item" style="top:20px; left:330px;">
         <img src="images/sliders.webp" alt="Sliders" class="pure" style="width:135px;">
       </div>
-      <div class="draggable pure-item" style="top:20px; left:470px;">
-        <img src="images/image1.jpg" alt="Image 1" class="pure" style="width:135px;">
-      </div>
-      <div class="draggable pure-item" style="top:20px; left:610px;">
-        <img src="images/image2.jpg" alt="Image 2" class="pure" style="width:135px;">
-      </div>
     </div>
+  </div>
+
+  <!-- Desk area images -->
+  <div class="draggable pure-item" style="top:40%; left:60%; transform: rotate(-15deg); z-index:200;">
+    <img src="images/image1.jpg" alt="Image 1" class="pure" style="width:150px;">
+  </div>
+  <div class="draggable pure-item" style="top:42%; left:62%; transform: rotate(10deg); z-index:201;">
+    <img src="images/image2.jpg" alt="Image 2" class="pure" style="width:150px;">
   </div>
 
   <div id="trayTab">▲</div>
@@ -330,12 +332,16 @@ function setupTooltip(img,text){
   img.addEventListener('mousemove',(e)=>{ tooltip.style.left=(e.clientX+15)+'px'; tooltip.style.top=(e.clientY+15)+'px'; });
 }
 
+// Tray items tooltips
 const trayItemImgs = document.querySelectorAll('#trayItems .pure-item img.pure');
 setupTooltip(trayItemImgs[0],'I love peach tea');
 setupTooltip(trayItemImgs[1],'I ate these all the time as a kid');
 setupTooltip(trayItemImgs[2],'you prefer sliders over shoes any day');
-setupTooltip(trayItemImgs[3],'the day you got my first letter');
-setupTooltip(trayItemImgs[4],'the day you got my first letter');
+
+// Desk images tooltips
+const deskImgs = document.querySelectorAll('body > .draggable.pure-item');
+setupTooltip(deskImgs[0],'the day you got my first letter');
+setupTooltip(deskImgs[1],'the day you got my first letter');
 
 function makeDraggable(item){
   let offsetX, offsetY,lastX=0,lastY=0;
@@ -371,7 +377,7 @@ function makeDraggable(item){
       item.style.transition="transform 0.2s ease";
       item.style.transform="scale(1) rotate(0deg)";
       const trayRect = tray.getBoundingClientRect();
-      if(e.clientY>trayRect.top){
+      if(e.clientY>trayRect.top && item.parentElement===document.body){
         trayItems.appendChild(item);
         const trayRectNew = trayItems.getBoundingClientRect();
         item.style.left=(e.clientX - trayRectNew.left - offsetX)+'px';
