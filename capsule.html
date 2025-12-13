@@ -54,26 +54,6 @@ body {
 .draggable img.pure {
   width: 150px;
   display: block;
-  border-radius: 0;
-}
-
-.draggable p {
-  margin: 5px 0 0 0;
-  font-size: 14px;
-}
-
-#muteBtn {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  z-index: 2002;
-  padding: 8px 12px;
-  background: rgba(255,255,255,0.85);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-  box-shadow: 2px 2px 6px rgba(0,0,0,0.5);
 }
 
 #tray {
@@ -86,18 +66,17 @@ body {
   background: rgba(240,240,240,0.9);
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
-  box-shadow: 0 -3px 10px rgba(0,0,0,0.3);
   transition: transform 0.5s ease;
   z-index: 500;
-  display: flex;
-  justify-content: flex-start;
-  align-items: flex-start;
   padding: 10px;
-  overflow: visible;
 }
 
-#tray.open {
-  transform: translateY(0);
+#tray.open { transform: translateY(0); }
+
+#trayItems {
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 #trayTab {
@@ -114,94 +93,25 @@ body {
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  font-weight: bold;
-  box-shadow: 0 -2px 5px rgba(0,0,0,0.3);
   z-index: 1001;
 }
 
-#trayItems {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
-/* Dark Mode Overlay */
-#darkModeOverlay {
-  position: fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background-color: rgba(0,0,0,0.55);
-  pointer-events:none;
-  opacity:0;
-  transition: opacity 0.3s ease;
-  z-index: 2005;
-}
-
-/* Burger Menu */
-#burgerMenu {
-  position: fixed;
-  top: 50%;
-  left: 0;
-  transform: translateY(-50%);
-  width: 36px;
-  height: 36px;
-  background: white;
-  border-radius: 5px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  z-index: 2003;
-}
-
-#burgerMenuContent {
-  position: fixed;
-  top:0;
-  left:-200px;
-  width:200px;
-  height:100%;
-  background: rgba(255,255,255,0.95);
-  transition: left 0.3s ease;
-  display:flex;
-  flex-direction:column;
-  padding: 20px;
-  box-sizing:border-box;
-  z-index: 2002;
-}
-
-#burgerMenuContent button {
-  margin: 10px 0;
-  padding: 8px;
-  cursor:pointer;
-  background:white;
-  border:none;
-  box-shadow: 0 0 5px rgba(0,0,0,0.3);
-}
-
-/* Trash bin */
 #trashBin {
   position: fixed;
   bottom: 5%;
   right: 5%;
   font-size: 48px;
-  cursor: pointer;
   z-index: 2000;
-  transition: transform 0.3s ease;
 }
 
-/* Table */
 #table {
   position: fixed;
   bottom: 10%;
   right: 12%;
   width: 234px;
-  cursor: default;
   z-index: 450;
 }
 
-/* Tooltip */
 #tooltip {
   position: fixed;
   pointer-events: none;
@@ -212,215 +122,81 @@ body {
   border-radius: 4px;
   opacity: 0;
   transition: opacity 0.2s ease;
-  z-index: 2010;
+  z-index: 3000;
 }
 </style>
 </head>
+
 <body>
 <div id="container">
-  <audio id="pickup" src="sounds/pickup.mp3"></audio>
-  <audio id="background" src="sounds/background.mp3" loop></audio>
-  <audio id="background2" src="sounds/background2.mp3" loop></audio>
-  <audio id="background3" src="sounds/background3.mp3" loop></audio>
-  <audio id="binSound" src="sounds/bin.mp3"></audio>
-  <audio id="traySound" src="sounds/tray.mp3"></audio>
 
-  <button id="muteBtn">Mute</button>
+<audio id="pickup" src="sounds/pickup.mp3"></audio>
+<audio id="background" src="sounds/background.mp3" loop></audio>
+<audio id="background2" src="sounds/background2.mp3" loop></audio>
+<audio id="background3" src="sounds/background3.mp3" loop></audio>
+<audio id="binSound" src="sounds/bin.mp3"></audio>
+<audio id="traySound" src="sounds/tray.mp3"></audio>
 
-  <!-- Memory tabs -->
-  <div class="draggable" style="top:20px; left:20px;">
-    <p>This is our time capsule. It reminds us of what is and has been.</p>
-  </div>
-  <div class="draggable" style="top:100px; left:20px;">
-    <p>Created on the 12th December, 2025.</p>
-  </div>
-
-  <div id="tray">
-    <div id="trayItems">
-      <div class="draggable pure-item" style="top:20px; left:20px;">
-        <img src="images/peachtea.webp" alt="Peach Tea" class="pure">
-      </div>
-      <div class="draggable pure-item" style="top:20px; left:190px;">
-        <img src="images/laces.png" alt="Laces" class="pure" style="width:135px;">
-      </div>
-      <div class="draggable pure-item" style="top:20px; left:330px;">
-        <img src="images/sliders.webp" alt="Sliders" class="pure" style="width:135px;">
-      </div>
+<!-- Tray -->
+<div id="tray">
+  <div id="trayItems">
+    <div class="draggable pure-item" style="top:20px; left:20px;">
+      <img id="peachTea" src="images/peachtea.webp" class="pure">
+    </div>
+    <div class="draggable pure-item" style="top:20px; left:190px;">
+      <img id="laces" src="images/laces.png" class="pure" style="width:135px;">
     </div>
   </div>
+</div>
 
-  <!-- Desk area images -->
-  <div class="draggable pure-item" style="top:40%; left:60%; transform: rotate(-15deg); z-index:200;">
-    <img src="images/image1.jpg" alt="Image 1" class="pure" style="width:150px;">
-  </div>
-  <div class="draggable pure-item" style="top:42%; left:62%; transform: rotate(10deg); z-index:201;">
-    <img src="images/image2.jpg" alt="Image 2" class="pure" style="width:150px;">
-  </div>
+<div id="trayTab">▲</div>
 
-  <div id="trayTab">▲</div>
-  <div id="darkModeOverlay"></div>
-  <div id="burgerMenu">☰</div>
-  <div id="burgerMenuContent">
-    <button id="darkModeBtn">🌙 Dark Mode</button>
-    <div id="musicControls" style="display:flex;justify-content:center;margin-top:10px;">
-      <button id="prevTrack">⏮</button>
-      <button id="nextTrack">⏭</button>
-    </div>
-  </div>
+<!-- Desk images -->
+<div class="draggable pure-item" style="top:35%; left:55%; transform:rotate(-12deg);">
+  <img id="image1" src="images/image1.jpg" class="pure" style="width:130px;">
+</div>
 
-  <div id="trashBin">🗑️</div>
+<div class="draggable pure-item" style="top:38%; left:60%; transform:rotate(8deg);">
+  <img id="image2" src="images/image2.jpg" class="pure" style="width:130px;">
+</div>
 
-  <!-- Table -->
-  <img src="images/table.webp" id="table">
+<img src="images/table.webp" id="table">
+<div id="trashBin">🗑️</div>
+<div id="tooltip"></div>
 
-  <div id="tooltip"></div>
 </div>
 
 <script>
-const pickupSound = document.getElementById('pickup');
-const muteBtn = document.getElementById('muteBtn');
-const container = document.getElementById('container');
-const tray = document.getElementById('tray');
-const trayItems = document.getElementById('trayItems');
-const trayTab = document.getElementById('trayTab');
-const darkOverlay = document.getElementById('darkModeOverlay');
-const burgerMenu = document.getElementById('burgerMenu');
-const burgerContent = document.getElementById('burgerMenuContent');
-const darkModeBtn = document.getElementById('darkModeBtn');
-const trashBin = document.getElementById('trashBin');
-const binSound = document.getElementById('binSound');
-const traySound = document.getElementById('traySound');
 const tooltip = document.getElementById('tooltip');
+const container = document.getElementById('container');
 
-// Music
-const musicTracks = [document.getElementById('background'), document.getElementById('background2'), document.getElementById('background3')];
-let currentTrack = 0;
-musicTracks.forEach(track => { track.volume=0.6; });
-musicTracks[currentTrack].play();
-
-document.getElementById('nextTrack').addEventListener('click', ()=>{ fadeOutInTrack(1); });
-document.getElementById('prevTrack').addEventListener('click', ()=>{ fadeOutInTrack(-1); });
-
-function fadeOutInTrack(direction){
-  let current = musicTracks[currentTrack];
-  let nextIndex = (currentTrack + direction + musicTracks.length) % musicTracks.length;
-  let next = musicTracks[nextIndex];
-  let fadeOut = setInterval(()=>{ 
-    if(current.volume>0.05){ current.volume -=0.05; } else { 
-      clearInterval(fadeOut); 
-      current.pause(); 
-      current.currentTime=0; 
-      next.volume=0; 
-      next.play(); 
-      fadeIn(next); 
-      currentTrack=nextIndex; 
-    } 
-  },50);
-}
-
-function fadeIn(track){
-  let fadeIn = setInterval(()=>{
-    if(track.volume<0.6){ track.volume +=0.05; } else { clearInterval(fadeIn); }
-  },50);
-}
-
-// Tooltip and draggable
-function setupTooltip(img,text){
-  let timeout;
-  img.addEventListener('mouseenter',()=>{ timeout=setTimeout(()=>{ tooltip.textContent=text; tooltip.style.opacity=1; },250); });
-  img.addEventListener('mouseleave',()=>{ clearTimeout(timeout); tooltip.style.opacity=0; });
-  img.addEventListener('mousemove',(e)=>{ tooltip.style.left=(e.clientX+15)+'px'; tooltip.style.top=(e.clientY+15)+'px'; });
-}
-
-// Tray items tooltips
-const trayItemImgs = document.querySelectorAll('#trayItems .pure-item img.pure');
-setupTooltip(trayItemImgs[0],'I love peach tea');
-setupTooltip(trayItemImgs[1],'I ate these all the time as a kid');
-setupTooltip(trayItemImgs[2],'you prefer sliders over shoes any day');
-
-// Desk images tooltips
-const deskImgs = document.querySelectorAll('body > .draggable.pure-item');
-setupTooltip(deskImgs[0],'the day you got my first letter');
-setupTooltip(deskImgs[1],'the day you got my first letter');
-
-function makeDraggable(item){
-  let offsetX, offsetY,lastX=0,lastY=0;
-  item.addEventListener('mousedown', e=>{
-    e.preventDefault();
-    pickupSound.currentTime=0;
-    pickupSound.play();
-    const rect = item.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
-    lastX = e.clientX; lastY = e.clientY;
-    const bodyRect = document.body.getBoundingClientRect();
-    item.style.left = (rect.left - bodyRect.left)+'px';
-    item.style.top = (rect.top - bodyRect.top)+'px';
-    item.style.position = 'absolute';
-    item.style.zIndex=1000;
-    item.style.transition="transform 0s";
-    if(item.parentElement!==document.body) document.body.appendChild(item);
-    function onMouseMove(e){
-      const dx = e.clientX - lastX;
-      const dy = e.clientY - lastY;
-      const swing = Math.min(Math.sqrt(dx*dx+dy*dy)*0.2,5);
-      let scale=1.05;
-      const binRect = trashBin.getBoundingClientRect();
-      if(e.clientX>=binRect.left && e.clientX<=binRect.right && e.clientY>=binRect.top && e.clientY<=binRect.bottom){ scale=0.85; }
-      item.style.transform=`rotate(${swing}deg) scale(${scale})`;
-      item.style.left=(e.clientX - offsetX)+'px';
-      item.style.top=(e.clientY - offsetY)+'px';
-      lastX = e.clientX; lastY = e.clientY;
-    }
-    function onMouseUp(e){
-      document.removeEventListener('mousemove',onMouseMove);
-      item.style.transition="transform 0.2s ease";
-      item.style.transform="scale(1) rotate(0deg)";
-      const trayRect = tray.getBoundingClientRect();
-      if(e.clientY>trayRect.top && item.parentElement===document.body){
-        trayItems.appendChild(item);
-        const trayRectNew = trayItems.getBoundingClientRect();
-        item.style.left=(e.clientX - trayRectNew.left - offsetX)+'px';
-        item.style.top=(e.clientY - trayRectNew.top - offsetY)+'px';
-      }
-      const binRect = trashBin.getBoundingClientRect();
-      if(e.clientX>=binRect.left && e.clientX<=binRect.right && e.clientY>=binRect.top && e.clientY<=binRect.bottom){
-        binSound.currentTime=0; binSound.play();
-        item.remove();
-      }
-    }
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp,{once:true});
+function setupTooltip(el, text) {
+  let t;
+  el.addEventListener('mouseenter', () => {
+    t = setTimeout(() => {
+      tooltip.textContent = text;
+      tooltip.style.opacity = 1;
+    }, 200);
   });
-  item.ondragstart=()=>false;
+  el.addEventListener('mouseleave', () => {
+    clearTimeout(t);
+    tooltip.style.opacity = 0;
+  });
+  el.addEventListener('mousemove', e => {
+    tooltip.style.left = e.clientX + 14 + 'px';
+    tooltip.style.top = e.clientY + 14 + 'px';
+  });
 }
 
-document.querySelectorAll('.draggable').forEach(makeDraggable);
+/* Explicit tooltips – no indexing bugs */
+setupTooltip(document.getElementById('peachTea'), 'I love peach tea');
+setupTooltip(document.getElementById('laces'), 'I ate these all the time as a child');
+setupTooltip(document.getElementById('image1'), 'the day you got my first letter');
+setupTooltip(document.getElementById('image2'), 'the day you got my first letter');
+setupTooltip(document.getElementById('table'), 'a strong sturdy table');
 
-// Tooltip for table
-const table = document.getElementById('table');
-setupTooltip(table,'a strong sturdy table');
-
-window.addEventListener('DOMContentLoaded', () => { requestAnimationFrame(()=>container.classList.add('visible')); });
-
-muteBtn.addEventListener('click', () => {
-  musicTracks.forEach(track => track.muted = !track.muted);
-  muteBtn.textContent = musicTracks[0].muted ? 'Unmute' : 'Mute';
-});
-
-trayTab.addEventListener('click', () => {
-  tray.classList.toggle('open');
-  trayTab.textContent = tray.classList.contains('open') ? '▼' : '▲';
-  traySound.currentTime=0;
-  traySound.play();
-});
-
-burgerMenu.addEventListener('click', () => {
-  burgerContent.style.left = burgerContent.style.left==='0px'?'-200px':'0px';
-});
-
-darkModeBtn.addEventListener('click', () => {
-  darkOverlay.style.opacity = darkOverlay.style.opacity==='1'?0:1;
+window.addEventListener('DOMContentLoaded', () => {
+  requestAnimationFrame(() => container.classList.add('visible'));
 });
 </script>
 </body>
