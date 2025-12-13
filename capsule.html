@@ -146,7 +146,7 @@ body {
   pointer-events:none;
   opacity:0;
   transition: opacity 0.3s ease;
-  z-index: 2005;
+  z-index: 2003;
 }
 
 /* Burger Menu */
@@ -224,7 +224,7 @@ body {
 /* Envelope */
 #envelope {
   position: fixed;
-  bottom: 34%;
+  bottom: 29%;
   right: 22%;
   width: 100px;
   cursor: pointer;
@@ -413,6 +413,9 @@ body {
   <div class="draggable small-tab" style="top:320px; left:100px; z-index:400;">
     <p>"I love how we just bump each others egos. I will always bump your ego to the sky, and you will do the same to me."</p>
   </div>
+  <div class="draggable small-tab" style="top:120px; left:550px; z-index:400;">
+    <p>you can decorate this space with the tray items!</p>
+  </div>
 
   <div id="tray">
     <div id="trayItems">
@@ -472,7 +475,7 @@ body {
   <div class="draggable pure-item" style="top:10%; left:32%; transform: rotate(-8deg);">
     <img src="images/image1.jpg" alt="Memory 1" class="pure" style="width:144px;">
   </div>
-  <div class="draggable pure-item" style="top:480px; left:380px;">
+  <div class="draggable pure-item" style="top:400px; left:380px;">
     <img src="images/sticker1.jpg" alt="Sticker" class="pure" style="width:114px;">
   </div>
   
@@ -482,6 +485,11 @@ body {
   </div>
   <div class="draggable pure-item" style="top:58%; left:48%;">
     <img src="images/computer.jpg" alt="Computer" class="pure" style="width:150px;">
+  </div>
+  
+  <!-- Bean bag -->
+  <div class="draggable pure-item" style="bottom:5%; left:3%;">
+    <img src="images/bean.png" alt="Bean Bag" class="pure" style="width:120px;">
   </div>
   
   <!-- Page -->
@@ -544,6 +552,7 @@ const viewerImg = document.getElementById('viewerImg');
 const letterViewer = document.getElementById('letterViewer');
 const pageItem = document.getElementById('pageItem');
 let darkModeEnabled = false;
+let viewerDarkOverlay = false;
 
 // Music
 const musicTracks = [document.getElementById('background'), document.getElementById('background2'), document.getElementById('background3')];
@@ -591,6 +600,7 @@ setupTooltip(trayItemImgs[9],'the day you got my first letter');
 setupTooltip(trayItemImgs[10],'us');
 setupTooltip(trayItemImgs[11],'the cute cat that sat on your lap');
 setupTooltip(trayItemImgs[12],'the day i made the photo collage on my laptop');
+setupTooltip(trayItemImgs[13],'comfy bean bag');
 setupTooltip(pageItem,'a letter');
 
 function makeDraggable(item){
@@ -699,16 +709,19 @@ function makeDraggable(item){
           paper2Sound.currentTime=0;
           paper2Sound.play();
           letterViewer.classList.add('visible');
+          viewerDarkOverlay = true;
           darkOverlay.style.opacity = 1;
           darkOverlay.style.pointerEvents = 'auto';
         } else if(img && item.classList.contains('letter-img')){
           viewerImg.src = img.src;
           imageViewer.classList.add('visible');
+          viewerDarkOverlay = true;
           darkOverlay.style.opacity = 1;
           darkOverlay.style.pointerEvents = 'auto';
-        } else if(img && img.classList.contains('pure') && (img.alt === 'Memory 1' || img.alt === 'Memory 2')){
+        } else if(img && img.classList.contains('pure') && (img.alt === 'Memory 1' || img.alt === 'Memory 2' || img.alt === 'Cat' || img.alt === 'Computer' || img.alt === 'Sticker')){
           viewerImg.src = img.src;
           imageViewer.classList.add('visible');
+          viewerDarkOverlay = true;
           darkOverlay.style.opacity = 1;
           darkOverlay.style.pointerEvents = 'auto';
         }
@@ -789,13 +802,15 @@ burgerMenu.addEventListener('click', () => {
 });
 
 darkModeBtn.addEventListener('click', () => {
-  darkOverlay.style.opacity = darkOverlay.style.opacity==='1'?0:1;
+  darkModeEnabled = !darkModeEnabled;
+  darkOverlay.style.opacity = darkModeEnabled ? 1 : 0;
 });
 
 document.getElementById('instructionsBtn').addEventListener('click', () => {
   paperSound.currentTime=0;
   paperSound.play();
   instructionsPaper.classList.add('visible');
+  viewerDarkOverlay = true;
   darkOverlay.style.opacity = 1;
   darkOverlay.style.pointerEvents = 'auto';
 });
@@ -804,7 +819,8 @@ instructionsPaper.addEventListener('click', () => {
   paperSound.currentTime=0;
   paperSound.play();
   instructionsPaper.classList.remove('visible');
-  darkOverlay.style.opacity = 0;
+  viewerDarkOverlay = false;
+  darkOverlay.style.opacity = darkModeEnabled ? 1 : 0;
   darkOverlay.style.pointerEvents = 'none';
 });
 
@@ -813,28 +829,33 @@ darkOverlay.addEventListener('click', () => {
     paperSound.currentTime=0;
     paperSound.play();
     instructionsPaper.classList.remove('visible');
-    darkOverlay.style.opacity = 0;
+    viewerDarkOverlay = false;
+    darkOverlay.style.opacity = darkModeEnabled ? 1 : 0;
     darkOverlay.style.pointerEvents = 'none';
   } else if(imageViewer.classList.contains('visible')){
     imageViewer.classList.remove('visible');
-    darkOverlay.style.opacity = 0;
+    viewerDarkOverlay = false;
+    darkOverlay.style.opacity = darkModeEnabled ? 1 : 0;
     darkOverlay.style.pointerEvents = 'none';
   } else if(letterViewer.classList.contains('visible')){
     letterViewer.classList.remove('visible');
-    darkOverlay.style.opacity = 0;
+    viewerDarkOverlay = false;
+    darkOverlay.style.opacity = darkModeEnabled ? 1 : 0;
     darkOverlay.style.pointerEvents = 'none';
   }
 });
 
 imageViewer.addEventListener('click', () => {
   imageViewer.classList.remove('visible');
-  darkOverlay.style.opacity = 0;
+  viewerDarkOverlay = false;
+  darkOverlay.style.opacity = darkModeEnabled ? 1 : 0;
   darkOverlay.style.pointerEvents = 'none';
 });
 
 letterViewer.addEventListener('click', () => {
   letterViewer.classList.remove('visible');
-  darkOverlay.style.opacity = 0;
+  viewerDarkOverlay = false;
+  darkOverlay.style.opacity = darkModeEnabled ? 1 : 0;
   darkOverlay.style.pointerEvents = 'none';
 });
 </script>
