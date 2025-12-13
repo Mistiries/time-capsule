@@ -785,3 +785,48 @@ darkModeBtn.addEventListener('click', () => {
 document.getElementById('instructionsBtn').addEventListener('click', () => {
   paperSound.currentTime=0;
   paperSound.play();
+  instructionsPaper.classList.add('visible');
+  darkOverlay.style.opacity = 1;
+  darkOverlay.style.pointerEvents = 'auto';
+});
+
+instructionsPaper.addEventListener('click', () => {
+  paperSound.currentTime=0;
+  paperSound.play();
+  instructionsPaper.classList.remove('visible');
+  darkOverlay.style.opacity = 0;
+  darkOverlay.style.pointerEvents = 'none';
+});
+
+darkOverlay.addEventListener('click', () => {
+  if(instructionsPaper.classList.contains('visible')){
+    paperSound.currentTime=0;
+    paperSound.play();
+    instructionsPaper.classList.remove('visible');
+    darkOverlay.style.opacity = 0;
+    darkOverlay.style.pointerEvents = 'none';
+  } else if(imageViewer.classList.contains('visible')){
+    imageViewer.classList.remove('visible');
+    darkOverlay.style.opacity = 0;
+    darkOverlay.style.pointerEvents = 'none';
+  } else if(letterViewer.classList.contains('visible')){
+    letterViewer.classList.remove('visible');
+    darkOverlay.style.opacity = 0;
+    darkOverlay.style.pointerEvents = 'none';
+  }
+});
+
+imageViewer.addEventListener('click', () => {
+  imageViewer.classList.remove('visible');
+  darkOverlay.style.opacity = 0;
+  darkOverlay.style.pointerEvents = 'none';
+});
+
+letterViewer.addEventListener('click', () => {
+  letterViewer.classList.remove('visible');
+  darkOverlay.style.opacity = 0;
+  darkOverlay.style.pointerEvents = 'none';
+});
+</script>
+</body>
+</html>
