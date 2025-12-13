@@ -190,8 +190,8 @@ body {
   z-index: 2000;
   transition: transform 0.3s ease;
 }
-#trashBin.hover {
-  transform: scale(0.85);
+#trashBin:hover {
+  transform: scale(0.9);
 }
 
 /* Table */
@@ -210,6 +210,8 @@ body {
   bottom: 38%;
   right: 52%;
   width: 70px;
+  height: auto;
+  display: block;
   cursor: default;
   z-index: 460;
 }
@@ -231,6 +233,7 @@ body {
 </head>
 <body>
 <div id="container">
+  <!-- Audio -->
   <audio id="background" src="sounds/background.mp3" loop></audio>
   <audio id="background2" src="sounds/background2.mp3" loop></audio>
   <audio id="background3" src="sounds/background3.mp3" loop></audio>
@@ -240,6 +243,7 @@ body {
 
   <button id="muteBtn">Mute</button>
 
+  <!-- Original memory tabs -->
   <div class="draggable" style="top:20px; left:20px;">
     <p>This is our time capsule. It reminds us of what is and has been.</p>
   </div>
@@ -256,7 +260,9 @@ body {
   </div>
 
   <div id="trayTab">▲</div>
+
   <div id="darkModeOverlay"></div>
+
   <div id="burgerMenu">☰</div>
   <div id="burgerMenuContent">
     <button id="darkModeBtn">🌙 Dark Mode</button>
@@ -267,8 +273,14 @@ body {
   </div>
 
   <div id="trashBin">🗑️</div>
+
+  <!-- Table -->
   <img src="images/table.webp" id="table">
+
+  <!-- Envelope -->
   <img src="images/envelope.png" id="envelope">
+
+  <!-- Tooltip -->
   <div id="tooltip"></div>
 </div>
 
@@ -292,6 +304,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const traySound = document.getElementById('traySound');
 
   let darkModeActive = false;
+
   const musicTracks = [
     document.getElementById('background'),
     document.getElementById('background2'),
@@ -300,8 +313,15 @@ window.addEventListener('DOMContentLoaded', () => {
   let currentTrackIndex = 0;
 
   requestAnimationFrame(()=>container.classList.add('visible'));
-  musicTracks.forEach(track=>{ track.loop=true; track.volume=0.6; });
-  musicTracks[0].play().catch(()=>{});
+
+  // Play music on first user interaction
+  document.addEventListener('click', () => {
+    musicTracks.forEach(track=>{
+      if(track.paused) track.play().catch(()=>{});
+      track.volume = 0.6;
+      track.loop = true;
+    });
+  }, {once:true});
 
   muteBtn.addEventListener('click', ()=>{
     musicTracks.forEach(track=>track.muted=!track.muted);
@@ -358,7 +378,7 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   function makeDraggable(item){
-    let offsetX, offsetY;
+    let offsetX, offsetY, lastX, lastY;
     item.addEventListener('mousedown', e=>{
       e.preventDefault();
       pickupSound.currentTime=0;
@@ -368,19 +388,25 @@ window.addEventListener('DOMContentLoaded', () => {
       offsetX = e.clientX - rect.left;
       offsetY = e.clientY - rect.top;
 
-      const parentBefore = item.parentElement;
-      const parentBeforeRect = item.getBoundingClientRect();
-
+      const parentBeforeRect = rect;
       document.body.appendChild(item);
       item.style.left = parentBeforeRect.left + 'px';
       item.style.top = parentBeforeRect.top + 'px';
       item.style.zIndex = 1000;
       item.style.transition = 'transform 0s';
-      item.style.transform = 'scale(1.05)';
+
+      lastX = e.clientX;
+      lastY = e.clientY;
 
       function onMouseMove(e){
-        item.style.left = (e.clientX - offsetX)+'px';
-        item.style.top = (e.clientY - offsetY)+'px';
+        const dx = e.clientX - lastX;
+        const dy = e.clientY - lastY;
+        const speed = Math.min(Math.sqrt(dx*dx + dy*dy) * 0.2, 10);
+        item.style.transform = `rotate(${(Math.random()*2-1)*speed}deg) scale(1.05)`;
+        item.style.left = (e.clientX - offsetX) + 'px';
+        item.style.top = (e.clientY - offsetY) + 'px';
+        lastX = e.clientX;
+        lastY = e.clientY;
       }
 
       function onMouseUp(e){
@@ -434,6 +460,7 @@ window.addEventListener('DOMContentLoaded', () => {
   setupTooltip(document.getElementById('peachTea'),'I love peach tea');
   setupTooltip(table,'a sturdy wooden table');
   setupTooltip(envelope,'an envelope full of texts');
+
 });
 </script>
 </body>
