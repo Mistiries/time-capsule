@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -49,14 +50,12 @@ body {
   min-width: 0 !important;
   max-width: none !important;
   box-shadow: none !important;
-  display: inline-block;
 }
 
 .draggable img.pure {
-  width: 195px; /* 30% bigger than original 150px */
+  width: 150px;
   display: block;
   border-radius: 0;
-  pointer-events: none; /* ensures drag is precise */
 }
 
 .draggable p {
@@ -198,7 +197,7 @@ body {
   position: fixed;
   bottom: 10%;
   right: 12%;
-  width: 234px; 
+  width: 234px; /* 150px * 1.3 = 195? Actually 180px original increased 30% = 234px */
   cursor: default;
   z-index: 450;
 }
@@ -266,14 +265,6 @@ body {
   <!-- Table -->
   <img src="images/table.webp" id="table">
 
-  <!-- New images -->
-  <div class="draggable pure-item" id="image1" style="top:40%; right:15%; transform: rotate(-8deg); z-index:460;">
-    <img src="images/image1.jpg" class="pure">
-  </div>
-  <div class="draggable pure-item" id="image2" style="top:42%; right:16%; transform: rotate(-5deg); z-index:455;">
-    <img src="images/image2.jpg" class="pure">
-  </div>
-
   <div id="tooltip"></div>
 </div>
 
@@ -307,20 +298,18 @@ function fadeOutInTrack(direction){
   let nextIndex = (currentTrack + direction + musicTracks.length) % musicTracks.length;
   let next = musicTracks[nextIndex];
   let vol = 0.6;
-  let fadeOut = setInterval(()=>{ 
-    if(current.volume>0.05){ current.volume -=0.05; } 
-    else { clearInterval(fadeOut); current.pause(); current.currentTime=0; next.volume=0; next.play(); fadeIn(next); currentTrack=nextIndex; } 
+  let fadeOut = setInterval(()=>{
+    if(current.volume>0.05){ current.volume -=0.05; } else { clearInterval(fadeOut); current.pause(); current.currentTime=0; next.volume=0; next.play(); fadeIn(next); currentTrack=nextIndex; }
   },50);
 }
 
 function fadeIn(track){
-  let fadeIn = setInterval(()=>{ 
-    if(track.volume<0.6){ track.volume +=0.05; } 
-    else { clearInterval(fadeIn); } 
+  let fadeIn = setInterval(()=>{
+    if(track.volume<0.6){ track.volume +=0.05; } else { clearInterval(fadeIn); }
   },50);
 }
 
-// Tooltip helper
+// Tooltip and draggable
 function setupTooltip(img,text){
   let timeout;
   img.addEventListener('mouseenter',()=>{ timeout=setTimeout(()=>{ tooltip.textContent=text; tooltip.style.opacity=1; },250); });
@@ -328,20 +317,10 @@ function setupTooltip(img,text){
   img.addEventListener('mousemove',(e)=>{ tooltip.style.left=(e.clientX+15)+'px'; tooltip.style.top=(e.clientY+15)+'px'; });
 }
 
-// Tray tooltips
 const trayItemImgs = document.querySelectorAll('.pure-item img.pure');
 setupTooltip(trayItemImgs[0],'I love peach tea');
 setupTooltip(trayItemImgs[1],'I ate these all the time as a child');
 
-// Image tooltips
-setupTooltip(document.getElementById('image1').querySelector('img'),'the day you got my first letter');
-setupTooltip(document.getElementById('image2').querySelector('img'),'the day you got my first letter');
-
-// Table tooltip
-const table = document.getElementById('table');
-setupTooltip(table,'a strong sturdy table');
-
-// Draggable function
 function makeDraggable(item){
   let offsetX, offsetY,lastX=0,lastY=0;
   item.addEventListener('mousedown', e=>{
@@ -363,7 +342,7 @@ function makeDraggable(item){
       const dx = e.clientX - lastX;
       const dy = e.clientY - lastY;
       const swing = Math.min(Math.sqrt(dx*dx+dy*dy)*0.2,5);
-      let scale=1; // prevent zoom
+      let scale=1.05;
       const binRect = trashBin.getBoundingClientRect();
       if(e.clientX>=binRect.left && e.clientX<=binRect.right && e.clientY>=binRect.top && e.clientY<=binRect.bottom){ scale=0.85; }
       item.style.transform=`rotate(${swing}deg) scale(${scale})`;
@@ -395,6 +374,10 @@ function makeDraggable(item){
 }
 
 document.querySelectorAll('.draggable').forEach(makeDraggable);
+
+// Tooltip for table
+const table = document.getElementById('table');
+setupTooltip(table,'a strong sturdy table');
 
 window.addEventListener('DOMContentLoaded', () => { requestAnimationFrame(()=>container.classList.add('visible')); });
 
