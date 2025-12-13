@@ -224,7 +224,7 @@ body {
 /* Envelope */
 #envelope {
   position: fixed;
-  bottom: 22%;
+  bottom: 28%;
   right: 22%;
   width: 100px;
   cursor: pointer;
@@ -274,6 +274,44 @@ body {
   margin-top: 10px;
   border-radius: 5px;
   box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+}
+
+/* Letter viewer */
+#letterViewer {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  max-height: 80vh;
+  background: white;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 3px 3px 10px rgba(0,0,0,0.5);
+  z-index: 3001;
+  display: none;
+  overflow-y: auto;
+}
+
+#letterViewer.visible {
+  display: block;
+}
+
+#letterViewer .letter-content {
+  font-family: 'Brush Script MT', cursive;
+  font-size: 20px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+#letterViewer .escape-note {
+  background: white;
+  padding: 10px;
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+  border-top: 1px solid #ddd;
+  margin-top: 20px;
 }
 
 /* Tooltip */
@@ -369,7 +407,7 @@ body {
     <p>Created on the 12th December, 2025.</p>
   </div>
   <div class="draggable small-tab" style="top:200px; left:900px; z-index:400;">
-    <p>I'm glad this version of life's timeline existed</p>
+    <p>I don't want another timeline that doesn't have you in it</p>
   </div>
   <div class="draggable small-tab" style="top:320px; left:100px; z-index:400;">
     <p>"I love how we just bump each others egos. I will always bump your ego to the sky, and you will do the same to me."</p>
@@ -386,17 +424,20 @@ body {
       <div class="draggable pure-item" style="top:10px; left:235px;">
         <img src="images/sliders.webp" alt="Sliders" class="pure">
       </div>
-      <div class="draggable pure-item" style="top:10px; left:345px;">
+      <div class="draggable pure-item" style="top:10px; left:355px;">
         <img src="images/badminton.webp" alt="Badminton" class="pure">
       </div>
       <div class="draggable pure-item" style="top:15px; left:455px; transform: rotate(5deg);">
         <img src="images/hornet.png" alt="Hornet" class="pure">
       </div>
-      <div class="draggable pure-item" style="top:10px; left:565px;">
+      <div class="draggable pure-item" style="top:10px; left:515px;">
         <img src="images/hollowknight.png" alt="Hollow Knight" class="pure">
       </div>
-      <div class="draggable pure-item" style="top:10px; left:675px;">
-        <img src="images/robin.png" alt="Robin" class="pure">
+      <div class="draggable pure-item" style="top:10px; left:625px;">
+        <img src="images/robin.png" alt="Robin" class="pure" style="width:135px;">
+      </div>
+      <div class="draggable pure-item" style="top:10px; left:760px;">
+        <img src="images/lethal.webp" alt="Lethal" class="pure" style="width:135px;">
       </div>
     </div>
   </div>
@@ -425,13 +466,18 @@ body {
 
   <!-- New desk images -->
   <div class="draggable pure-item" style="top:35%; left:50%;">
-    <img src="images/image2.jpg" alt="Memory 2" class="pure" style="width:120px;">
+    <img src="images/image2.jpg" alt="Memory 2" class="pure" style="width:131px;">
   </div>
   <div class="draggable pure-item" style="top:35%; left:50%; transform: rotate(-8deg);">
-    <img src="images/image1.jpg" alt="Memory 1" class="pure" style="width:120px;">
+    <img src="images/image1.jpg" alt="Memory 1" class="pure" style="width:131px;">
   </div>
   <div class="draggable pure-item" style="top:400px; left:400px;">
     <img src="images/sticker1.jpeg" alt="Sticker" class="pure" style="width:114px;">
+  </div>
+  
+  <!-- Page -->
+  <div class="draggable pure-item" style="top:250px; left:450px;">
+    <img src="images/page.webp" alt="Page" class="pure" id="pageItem">
   </div>
 
   <div id="tooltip"></div>
@@ -453,6 +499,13 @@ body {
 
   <div id="imageViewer">
     <img id="viewerImg" src="">
+    <div class="escape-note">Click anywhere to escape</div>
+  </div>
+  
+  <div id="letterViewer">
+    <div class="letter-content">
+      Placeholder letter text
+    </div>
     <div class="escape-note">Click anywhere to escape</div>
   </div>
 </div>
@@ -477,6 +530,8 @@ const tooltip = document.getElementById('tooltip');
 const instructionsPaper = document.getElementById('instructionsPaper');
 const imageViewer = document.getElementById('imageViewer');
 const viewerImg = document.getElementById('viewerImg');
+const letterViewer = document.getElementById('letterViewer');
+const pageItem = document.getElementById('pageItem');
 
 // Music
 const musicTracks = [document.getElementById('background'), document.getElementById('background2'), document.getElementById('background3')];
@@ -517,10 +572,11 @@ setupTooltip(trayItemImgs[3],'badminton; my fav sport');
 setupTooltip(trayItemImgs[4],'Shaw no more 💔');
 setupTooltip(trayItemImgs[5],'Hornet figurine');
 setupTooltip(trayItemImgs[6],'the game that started it all');
+setupTooltip(trayItemImgs[7],'the one time we played lethal company');
 // New desk images tooltip
-setupTooltip(trayItemImgs[7],'the day you got my first letter');
 setupTooltip(trayItemImgs[8],'the day you got my first letter');
-setupTooltip(trayItemImgs[9],'us');
+setupTooltip(trayItemImgs[9],'the day you got my first letter');
+setupTooltip(trayItemImgs[10],'us');
 
 function makeDraggable(item){
   let offsetX, offsetY,lastX=0,lastY=0;
@@ -580,7 +636,13 @@ function makeDraggable(item){
       // Check if it was a click (not a drag) and has an image
       if(!isDragging && Date.now() - dragStartTime < 200){
         const img = item.querySelector('img');
-        if(img && item.classList.contains('letter-img')){
+        if(img && img.id === 'pageItem'){
+          paperSound.currentTime=0;
+          paperSound.play();
+          letterViewer.classList.add('visible');
+          darkOverlay.style.opacity = 1;
+          darkOverlay.style.pointerEvents = 'auto';
+        } else if(img && item.classList.contains('letter-img')){
           viewerImg.src = img.src;
           imageViewer.classList.add('visible');
           darkOverlay.style.opacity = 1;
@@ -692,11 +754,21 @@ darkOverlay.addEventListener('click', () => {
     imageViewer.classList.remove('visible');
     darkOverlay.style.opacity = 0;
     darkOverlay.style.pointerEvents = 'none';
+  } else if(letterViewer.classList.contains('visible')){
+    letterViewer.classList.remove('visible');
+    darkOverlay.style.opacity = 0;
+    darkOverlay.style.pointerEvents = 'none';
   }
 });
 
 imageViewer.addEventListener('click', () => {
   imageViewer.classList.remove('visible');
+  darkOverlay.style.opacity = 0;
+  darkOverlay.style.pointerEvents = 'none';
+});
+
+letterViewer.addEventListener('click', () => {
+  letterViewer.classList.remove('visible');
   darkOverlay.style.opacity = 0;
   darkOverlay.style.pointerEvents = 'none';
 });
