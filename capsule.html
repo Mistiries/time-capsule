@@ -329,6 +329,15 @@ body {
       <div class="draggable pure-item" style="top:10px; left:235px;">
         <img src="images/sliders.webp" alt="Sliders" class="pure">
       </div>
+      <div class="draggable pure-item" style="top:10px; left:390px;">
+        <img src="images/badminton.webp" alt="Badminton" class="pure">
+      </div>
+      <div class="draggable pure-item" style="top:10px; left:545px;">
+        <img src="images/hornet.png" alt="Hornet" class="pure">
+      </div>
+      <div class="draggable pure-item" style="top:10px; left:580px;">
+        <img src="images/hollowknight.png" alt="Hollow Knight" class="pure">
+      </div>
     </div>
   </div>
 
@@ -389,6 +398,7 @@ const trashBin = document.getElementById('trashBin');
 const binSound = document.getElementById('binSound');
 const traySound = document.getElementById('traySound');
 const paperSound = document.getElementById('paperSound');
+paperSound.volume = 0.6;
 const tooltip = document.getElementById('tooltip');
 const instructionsPaper = document.getElementById('instructionsPaper');
 
@@ -427,9 +437,12 @@ const trayItemImgs = document.querySelectorAll('.pure-item img.pure');
 setupTooltip(trayItemImgs[0],'I love peach tea');
 setupTooltip(trayItemImgs[1],'I ate these all the time as a child');
 setupTooltip(trayItemImgs[2],'you prefer sliders over shoes any day');
+setupTooltip(trayItemImgs[3],'badminton; my fav sport');
+setupTooltip(trayItemImgs[4],'Shaw no more 💔');
+setupTooltip(trayItemImgs[5],'Hornet figurine');
 // New desk images tooltip
-setupTooltip(trayItemImgs[3],'the day you got my first letter');
-setupTooltip(trayItemImgs[4],'the day you got my first letter');
+setupTooltip(trayItemImgs[6],'the day you got my first letter');
+setupTooltip(trayItemImgs[7],'the day you got my first letter');
 
 function makeDraggable(item){
   let offsetX, offsetY,lastX=0,lastY=0;
