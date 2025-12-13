@@ -188,10 +188,10 @@ body {
   font-size: 48px;
   cursor: pointer;
   z-index: 2000;
-  transition: transform 0.3s ease; /* softer */
+  transition: transform 0.3s ease;
 }
 #trashBin:hover {
-  transform: scale(0.9); /* smoother shrink */
+  transform: scale(0.9);
 }
 
 /* Table */
@@ -207,8 +207,8 @@ body {
 /* Envelope (moved left 40%, up 20%) */
 #envelope {
   position: fixed;
-  bottom: 38%; /* original 18% + 20% up */
-  right: 52%;  /* original 12% + 40% left */
+  bottom: 38%;
+  right: 52%;
   width: 70px;
   cursor: default;
   z-index: 460;
@@ -283,7 +283,31 @@ body {
 </div>
 
 <script>
-// original script unchanged
-</script>
-</body>
-</html>
+window.addEventListener('DOMContentLoaded', () => {
+  const pickupSound = document.getElementById('pickup');
+  const muteBtn = document.getElementById('muteBtn');
+  const container = document.getElementById('container');
+  const tray = document.getElementById('tray');
+  const trayItems = document.getElementById('trayItems');
+  const trayTab = document.getElementById('trayTab');
+  const darkOverlay = document.getElementById('darkModeOverlay');
+  const burgerMenu = document.getElementById('burgerMenu');
+  const burgerContent = document.getElementById('burgerMenuContent');
+  const darkModeBtn = document.getElementById('darkModeBtn');
+  const trashBin = document.getElementById('trashBin');
+  const tooltip = document.getElementById('tooltip');
+  const table = document.getElementById('table');
+  const envelope = document.getElementById('envelope');
+  const binSound = document.getElementById('binSound');
+  const traySound = document.getElementById('traySound');
+
+  let darkModeActive = false;
+
+  const musicTracks = [
+    document.getElementById('background'),
+    document.getElementById('background2'),
+    document.getElementById('background3')
+  ];
+  let currentTrackIndex = 0;
+
+  reque
