@@ -256,10 +256,10 @@ body {
       <div class="draggable pure-item" style="top:20px; left:20px;">
         <img src="images/peachtea.webp" alt="Peach Tea" class="pure">
       </div>
-      <div class="draggable pure-item" style="top:20px; left:150px;">
+      <div class="draggable pure-item" style="top:20px; left:130px;">
         <img src="images/laces.png" alt="Laces" class="pure" style="width:135px;">
       </div>
-      <div class="draggable pure-item" style="top:20px; left:270px;">
+      <div class="draggable pure-item" style="top:20px; left:235px;">
         <img src="images/sliders.webp" alt="Sliders" class="pure">
       </div>
     </div>
@@ -364,7 +364,7 @@ function makeDraggable(item){
     item.style.top = (rect.top - bodyRect.top)+'px';
     item.style.position = 'absolute';
     const originalZ = item.classList.contains('pure-item') ? '450' : '400';
-    item.style.zIndex = originalZ;
+    item.style.zIndex = '2100';
     item.dataset.originalZIndex = originalZ;
     item.style.transition="transform 0s";
     item.style.transform="scale(1) rotate(0deg)";
@@ -392,6 +392,7 @@ function makeDraggable(item){
         item.style.left=(e.clientX - trayRectNew.left - offsetX)+'px';
         item.style.top=(e.clientY - trayRectNew.top - offsetY)+'px';
       }
+      item.style.zIndex = item.dataset.originalZIndex;
       const binRect = trashBin.getBoundingClientRect();
       if(e.clientX>=binRect.left && e.clientX<=binRect.right && e.clientY>=binRect.top && e.clientY<=binRect.bottom){
         binSound.currentTime=0; binSound.play();
