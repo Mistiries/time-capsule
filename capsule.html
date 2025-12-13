@@ -191,7 +191,27 @@ body {
   transition: transform 0.3s ease;
 }
 
-/* Tooltip for peach tea */
+/* Table */
+#table {
+  position: fixed;
+  bottom: 10%;
+  right: 12%;
+  width: 180px;
+  cursor: default;
+  z-index: 450;
+}
+
+/* Envelope */
+#envelope {
+  position: fixed;
+  bottom: 18%;
+  right: 12%;
+  width: 70px;
+  cursor: default;
+  z-index: 460;
+}
+
+/* Tooltip */
 #tooltip {
   position: fixed;
   pointer-events: none;
@@ -208,6 +228,8 @@ body {
 </head>
 <body>
 <div id="container">
+
+  <!-- Audio -->
   <audio id="pickup" src="sounds/pickup.mp3"></audio>
   <audio id="background" src="sounds/background.mp3" loop></audio>
   <audio id="background2" src="sounds/background2.mp3" loop></audio>
@@ -217,7 +239,7 @@ body {
 
   <button id="muteBtn">Mute</button>
 
-  <!-- Memory tabs -->
+  <!-- Memory Tabs -->
   <div class="draggable" style="top:20px; left:20px;">
     <p>This is our time capsule. It reminds us of what is and has been.</p>
   </div>
@@ -225,18 +247,26 @@ body {
     <p>Created on the 12th December, 2025.</p>
   </div>
 
+  <!-- Tray -->
   <div id="tray">
     <div id="trayItems">
+      <!-- Peach Tea -->
       <div class="draggable pure-item" style="top:20px; left:20px;">
-        <img src="images/peachtea.webp" alt="Peach Tea" class="pure">
+        <img src="images/peachtea.webp" alt="Peach Tea" class="pure" id="peachTea">
+      </div>
+      <!-- Laces -->
+      <div class="draggable pure-item" style="top:20px; left:190px;">
+        <img src="images/laces.png" alt="Laces" class="pure" id="laces">
       </div>
     </div>
   </div>
 
   <div id="trayTab">▲</div>
 
+  <!-- Dark Mode Overlay -->
   <div id="darkModeOverlay"></div>
 
+  <!-- Burger Menu -->
   <div id="burgerMenu">☰</div>
   <div id="burgerMenuContent">
     <button id="darkModeBtn">🌙 Dark Mode</button>
@@ -248,7 +278,12 @@ body {
 
   <div id="trashBin">🗑️</div>
 
-  <div id="tooltip">I love peach tea</div>
+  <!-- Table & Envelope -->
+  <img src="images/table.webp" id="table">
+  <img src="images/envelope.webp" id="envelope">
+
+  <!-- Tooltip -->
+  <div id="tooltip"></div>
 </div>
 
 <script>
@@ -270,15 +305,12 @@ const tooltip = document.getElementById('tooltip');
 // Music
 const musicTracks = [document.getElementById('background'), document.getElementById('background2'), document.getElementById('background3')];
 let currentTrack = 0;
-musicTracks.forEach(track => { track.volume=0.6; });
+musicTracks.forEach(track => track.volume=0.6);
 musicTracks[currentTrack].play();
 
-document.getElementById('nextTrack').addEventListener('click', ()=>{
-  fadeOutInTrack(1);
-});
-document.getElementById('prevTrack').addEventListener('click', ()=>{
-  fadeOutInTrack(-1);
-});
+// Music controls
+document.getElementById('nextTrack').addEventListener('click', ()=>{ fadeOutInTrack(1); });
+document.getElementById('prevTrack').addEventListener('click', ()=>{ fadeOutInTrack(-1); });
 
 function fadeOutInTrack(direction){
   let current = musicTracks[currentTrack];
@@ -286,13 +318,15 @@ function fadeOutInTrack(direction){
   let next = musicTracks[nextIndex];
   let vol = 0.6;
   let fadeOut = setInterval(()=>{
-    if(current.volume>0.05){ current.volume -=0.05; } else { clearInterval(fadeOut); current.pause(); current.currentTime=0; next.volume=0; next.play(); fadeIn(next); currentTrack=nextIndex; }
+    if(current.volume>0.05){ current.volume -=0.05; } 
+    else { clearInterval(fadeOut); current.pause(); current.currentTime=0; next.volume=0; next.play(); fadeIn(next); currentTrack=nextIndex; }
   },50);
 }
 
 function fadeIn(track){
   let fadeIn = setInterval(()=>{
-    if(track.volume<0.6){ track.volume +=0.05; } else { clearInterval(fadeIn); }
+    if(track.volume<0.6){ track.volume +=0.05; } 
+    else { clearInterval(fadeIn); }
   },50);
 }
 
@@ -300,9 +334,7 @@ function fadeIn(track){
 let tooltipTimeout;
 
 // Event listeners
-window.addEventListener('DOMContentLoaded', () => {
-  requestAnimationFrame(()=>container.classList.add('visible'));
-});
+window.addEventListener('DOMContentLoaded', () => { requestAnimationFrame(()=>container.classList.add('visible')); });
 
 muteBtn.addEventListener('click', () => {
   musicTracks.forEach(track => track.muted = !track.muted);
@@ -324,28 +356,19 @@ darkModeBtn.addEventListener('click', () => {
   darkOverlay.style.opacity = darkOverlay.style.opacity==='1'?0:1;
 });
 
-// Tooltip for peach tea
-const peachTea = document.querySelector('.pure-item img.pure');
-peachTea.addEventListener('mouseenter', e=>{
-  tooltipTimeout=setTimeout(()=>{
-    tooltip.style.opacity=1;
-  },250); // slightly shorter delay
-});
-peachTea.addEventListener('mouseleave', e=>{
-  clearTimeout(tooltipTimeout);
-  tooltip.style.opacity=0;
-});
-peachTea.addEventListener('mousemove', e=>{
-  const rect = peachTea.getBoundingClientRect();
-  const centerX = rect.left + rect.width/2;
-  const centerY = rect.top + rect.height/2;
-  const distX = e.clientX - centerX;
-  const distY = e.clientY - centerY;
-  if(Math.abs(distX)<rect.width/2 && Math.abs(distY)<rect.height/2){
-    tooltip.style.left = (e.clientX+15)+'px';
-    tooltip.style.top = (e.clientY+15)+'px';
-  }
-});
+// Tooltip function
+function addTooltip(item, text){
+  item.addEventListener('mouseenter', e => {
+    tooltipTimeout=setTimeout(()=>{ tooltip.textContent=text; tooltip.style.opacity=1; },50);
+  });
+  item.addEventListener('mouseleave', e => { clearTimeout(tooltipTimeout); tooltip.style.opacity=0; });
+  item.addEventListener('mousemove', e => { tooltip.style.left=(e.clientX+15)+'px'; tooltip.style.top=(e.clientY+15)+'px'; });
+}
+
+// Add tooltip to Peach Tea
+addTooltip(document.getElementById('peachTea'), 'I love peach tea');
+// Add tooltip to Laces
+addTooltip(document.getElementById('laces'), 'I ate these all the time as a child');
 
 // Drag and drop
 function makeDraggable(item){
@@ -412,6 +435,7 @@ function makeDraggable(item){
   item.ondragstart=()=>false;
 }
 
+// Initialize all draggables
 document.querySelectorAll('.draggable').forEach(makeDraggable);
 </script>
 </body>
