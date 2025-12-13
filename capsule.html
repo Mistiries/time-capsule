@@ -362,8 +362,9 @@ function makeDraggable(item){
     item.style.left = (rect.left - bodyRect.left)+'px';
     item.style.top = (rect.top - bodyRect.top)+'px';
     item.style.position = 'absolute';
-    item.style.zIndex=2010;
-    item.dataset.originalZIndex = item.style.zIndex || '400';
+    const originalZ = item.classList.contains('pure-item') ? '450' : '400';
+    item.style.zIndex = originalZ;
+    item.dataset.originalZIndex = originalZ;
     item.style.transition="transform 0s";
     item.style.transform="scale(1) rotate(0deg)";
     if(item.parentElement!==document.body) document.body.appendChild(item);
@@ -389,8 +390,6 @@ function makeDraggable(item){
         const trayRectNew = trayItems.getBoundingClientRect();
         item.style.left=(e.clientX - trayRectNew.left - offsetX)+'px';
         item.style.top=(e.clientY - trayRectNew.top - offsetY)+'px';
-      } else {
-        item.style.zIndex = item.dataset.originalZIndex || '400';
       }
       const binRect = trashBin.getBoundingClientRect();
       if(e.clientX>=binRect.left && e.clientX<=binRect.right && e.clientY>=binRect.top && e.clientY<=binRect.bottom){
