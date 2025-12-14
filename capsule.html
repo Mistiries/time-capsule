@@ -657,8 +657,8 @@ body.loaded::before {
       <button id="prevTrack">⏮</button>
       <button id="nextTrack">⏭</button>
     </div>
-    <button id="instructionsBtn">📋 Instructions</button>
-    <button id="cloudsBtn">🎯 Clouds</button>
+    <button id="instructionsBtn">📋</button>
+    <button id="cloudsBtn">☁️</button>
   </div>
 
   <div id="trashBin">🗑️</div>
@@ -713,7 +713,7 @@ body.loaded::before {
       <li>Click the envelope to open it, and click again to tidy up</li>
       <li>Click on images to view them</li>
       <li>Click the page to view the letter</li>
-      <li>In the 🎯, there are floating clouds with things I want written on them</li>
+      <li>In the ☁️, there are floating clouds with things I want written on them</li>
     </ul>
   </div>
 
@@ -818,15 +818,11 @@ function startMusic() {
 
 document.getElementById('nextTrack').addEventListener('click', (e)=>{ 
   e.stopPropagation();
-  pickupSound.currentTime=0;
-  pickupSound.play();
   startMusic();
   fadeOutInTrack(1); 
 });
 document.getElementById('prevTrack').addEventListener('click', (e)=>{ 
   e.stopPropagation();
-  pickupSound.currentTime=0;
-  pickupSound.play();
   startMusic();
   fadeOutInTrack(-1); 
 });
@@ -876,10 +872,12 @@ function makeDraggable(item){
   let isDragging = false;
   let dragStartTime = 0;
   let startX = 0, startY = 0;
+  let hasPlayedPickupSound = false;
   
   const editableP = item.querySelector('p[contenteditable="true"]');
   const img = item.querySelector('img');
-  const isClickableImage = img && (img.classList.contains('pure') && (img.alt === 'Memory 1' || img.alt === 'Memory 2' || img.alt === 'Cat' || img.alt === 'Computer' || img.alt === 'Sticker' || img.id === 'pageItem'));
+  const isClickableImage = img && (img.classList.contains('pure') && (img.alt === 'Memory 1' || img.alt === 'Memory 2' || img.alt === 'Cat' || img.alt === 'Computer' || img.alt === 'Sticker'));
+  const isPageOrEnvelope = img && (img.id === 'pageItem');
   
   function handleStart(e){
     if(isViewerOpen) return;
@@ -901,6 +899,7 @@ function makeDraggable(item){
     e.preventDefault();
     isDragging = false;
     dragStartTime = Date.now();
+    hasPlayedPickupSound = false;
     
     startMusic();
     
@@ -932,10 +931,6 @@ function makeDraggable(item){
       
       if(Math.abs(totalDx) > 3 || Math.abs(totalDy) > 3) {
         isDragging = true;
-        if(!pickupSound.playing){
-          pickupSound.currentTime=0;
-          pickupSound.play();
-        }
       }
       
       const swing = Math.min(Math.sqrt(dx*dx+dy*dy)*0.2,5);
@@ -984,7 +979,7 @@ function makeDraggable(item){
       }
       
       if(!isDragging && Date.now() - dragStartTime < 200 && !isViewerOpen){
-        if(isClickableImage) {
+        if(isClickableImage && !isPageOrEnvelope) {
           pickupSound.currentTime=0;
           pickupSound.play();
           item.style.transform = 'scale(0.95)';
@@ -1114,7 +1109,17 @@ document.addEventListener('click', (e) => {
 burgerMenu.addEventListener('click', (e) => {
   e.stopPropagation();
   startMusic();
-  burgerContent.classList.toggle('open');
+  pickupSound.currentTime=0;
+  pickupSound.play();
+  
+  if(burgerContent.classList.contains('open')) {
+    burgerContent.classList.remove('open');
+  } else {
+    if(isViewerOpen) {
+      closeViewer();
+    }
+    burgerContent.classList.add('open');
+  }
 });
 
 burgerContent.addEventListener('click', (e) => {
@@ -1194,7 +1199,9 @@ const cloudTexts = [
   "I want to make you more letters",
   "I want to hear about what you find interesting",
   "I want to have deep conversations about everything",
-  "I want to travel to come see you"
+  "I want to travel to come see you",
+  "I want to make you laugh",
+  "I want to see your smile"
 ];
 
 function createClouds() {
@@ -1300,8 +1307,6 @@ document.getElementById('cloudsBtn').addEventListener('click', (e) => {
   e.stopPropagation();
   if(isViewerOpen) return;
   startMusic();
-  pickupSound.currentTime=0;
-  pickupSound.play();
   isViewerOpen = true;
   createClouds();
   cloudViewer.classList.add('visible');
