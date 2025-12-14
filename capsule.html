@@ -7,15 +7,26 @@
 body {
   margin: 0;
   padding: 0;
-  background: url('images/backgroundwall.webp') no-repeat center center fixed;
-  background-size: cover;
+  background: black;
   font-family: sans-serif;
   overflow: hidden;
-  opacity: 0;
-  transition: opacity 3s ease-in;
 }
 
-body.loaded {
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url('images/backgroundwall.webp') no-repeat center center fixed;
+  background-size: cover;
+  opacity: 0;
+  transition: opacity 3s ease-in;
+  z-index: -1;
+}
+
+body.loaded::before {
   opacity: 1;
 }
 
@@ -36,7 +47,7 @@ body.loaded {
   left: 0;
   width: 100%;
   height: 100%;
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(8px);
   opacity: 0;
   transition: opacity 0.3s ease;
   pointer-events: none;
@@ -96,12 +107,14 @@ body.loaded {
 }
 
 .draggable.editable-tab {
-  cursor: text;
+  cursor: default;
+  padding: 10px;
 }
 
 .draggable.editable-tab p {
   outline: none;
   min-height: 18px;
+  cursor: text;
 }
 
 #muteBtn {
@@ -130,7 +143,7 @@ body.loaded {
   border-top-right-radius: 20px;
   box-shadow: 0 -3px 10px rgba(0,0,0,0.3);
   transition: transform 0.5s ease;
-  z-index: 500;
+  z-index: 2001;
   display: flex;
   justify-content: flex-start;
   align-items: flex-start;
@@ -274,20 +287,34 @@ body.loaded {
   z-index: 455;
 }
 
+/* Viewer animations */
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
 /* Image viewer */
 #imageViewer {
   position: fixed;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) scale(0.9);
   max-width: 80vw;
   max-height: 70vh;
   z-index: 3500;
   display: none;
+  opacity: 0;
 }
 
 #imageViewer.visible {
   display: block;
+  animation: popIn 0.2s ease forwards;
 }
 
 #imageViewer img {
@@ -313,7 +340,7 @@ body.loaded {
   position: fixed;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) scale(0.9);
   width: 600px;
   max-height: 80vh;
   background: white;
@@ -322,11 +349,13 @@ body.loaded {
   box-shadow: 3px 3px 10px rgba(0,0,0,0.5);
   z-index: 3500;
   display: none;
+  opacity: 0;
   overflow-y: auto;
 }
 
 #letterViewer.visible {
   display: block;
+  animation: popIn 0.2s ease forwards;
 }
 
 #letterViewer .letter-content {
@@ -336,14 +365,34 @@ body.loaded {
   margin-bottom: 20px;
 }
 
-#letterViewer .escape-note {
-  background: white;
+#letterViewer .letter-nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
   padding: 10px;
+  border-top: 1px solid #ddd;
+  margin-top: 20px;
+}
+
+#letterViewer .letter-nav button {
+  background: white;
+  border: 1px solid #ccc;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 20px;
+}
+
+#letterViewer .letter-nav button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+#letterViewer .escape-note {
   text-align: center;
   font-size: 14px;
   color: #666;
-  border-top: 1px solid #ddd;
-  margin-top: 20px;
 }
 
 /* Tooltip */
@@ -365,7 +414,7 @@ body.loaded {
   position: fixed;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) scale(0.9);
   width: 500px;
   max-height: 80vh;
   overflow-y: auto;
@@ -375,11 +424,13 @@ body.loaded {
   box-shadow: 3px 3px 10px rgba(0,0,0,0.5);
   z-index: 3500;
   display: none;
+  opacity: 0;
   font-family: 'Brush Script MT', cursive;
 }
 
 #instructionsPaper.visible {
   display: block;
+  animation: popIn 0.2s ease forwards;
 }
 
 #instructionsPaper h1 {
@@ -430,7 +481,7 @@ body.loaded {
   color: white;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
   opacity: 0;
-  transition: opacity 3s ease-in-out;
+  transition: opacity 0.8s ease-in-out;
   z-index: 5000;
   pointer-events: none;
 }
@@ -478,6 +529,9 @@ body.loaded {
   </div>
 
   <div id="headphonesText">Headphones recommended</div>
+  
+  <div id="containerBlur"></div>
+  <div id="darkModeOverlay"></div>
 
   <div id="tray">
     <div id="trayItems">
@@ -510,8 +564,6 @@ body.loaded {
 
   <div id="trayTab">▲</div>
 
-  <div id="darkModeOverlay"></div>
-
   <div id="burgerMenu">☰</div>
   <div id="burgerMenuContent">
     <button id="darkModeBtn">🌙 Dark Mode</button>
@@ -530,7 +582,7 @@ body.loaded {
   <!-- Envelope -->
   <img src="images/envelope.webp" id="envelope">
 
-  <!-- New desk images - moved left and up -->
+  <!-- Desk images -->
   <div class="draggable pure-item" style="top:10%; left:32%;">
     <img src="images/image2.jpg" alt="Memory 2" class="pure" style="width:144px;">
   </div>
@@ -541,7 +593,7 @@ body.loaded {
     <img src="images/sticker1.jpg" alt="Sticker" class="pure" style="width:114px;">
   </div>
   
-  <!-- Cat and Computer images -->
+  <!-- Cat and Computer -->
   <div class="draggable pure-item" style="top:5%; left:75%;">
     <img src="images/cat.jpg" alt="Cat" class="pure" style="width:144px;">
   </div>
@@ -550,7 +602,7 @@ body.loaded {
   </div>
   
   <!-- Bean bag -->
-  <div class="draggable pure-item" style="bottom:5%; left:3%;">
+  <div class="draggable pure-item" style="bottom:2%; left:3%;">
     <img src="images/bean.png" alt="Bean Bag" class="pure" style="width:180px;">
   </div>
   
@@ -573,6 +625,7 @@ body.loaded {
       <li>Hover over items to see notes</li>
       <li>Click the envelope to open it, and click again to tidy up</li>
       <li>Click on images to view them</li>
+      <li>Click the page to view the letter</li>
     </ul>
   </div>
 
@@ -582,10 +635,12 @@ body.loaded {
   </div>
   
   <div id="letterViewer">
-    <div class="letter-content">
-      Placeholder letter text
+    <div class="letter-content" id="letterContent"></div>
+    <div class="letter-nav">
+      <button id="prevPage">←</button>
+      <span class="escape-note">Click anywhere to escape</span>
+      <button id="nextPage">→</button>
     </div>
-    <div class="escape-note">Click anywhere to escape</div>
   </div>
 </div>
 
@@ -606,23 +661,56 @@ const traySound = document.getElementById('traySound');
 const paperSound = document.getElementById('paperSound');
 paperSound.volume = 0.6;
 const paper2Sound = document.getElementById('paper2Sound');
-paper2Sound.volume = 0.3;
+paper2Sound.volume = 0.2;
 const tooltip = document.getElementById('tooltip');
 const instructionsPaper = document.getElementById('instructionsPaper');
 const imageViewer = document.getElementById('imageViewer');
 const viewerImg = document.getElementById('viewerImg');
 const letterViewer = document.getElementById('letterViewer');
+const letterContent = document.getElementById('letterContent');
 const pageItem = document.getElementById('pageItem');
 const headphonesText = document.getElementById('headphonesText');
 const containerBlur = document.getElementById('containerBlur');
 let darkModeEnabled = false;
-let viewerDarkOverlay = false;
+let isViewerOpen = false;
+let currentLetterPage = 0;
+
+const letterPages = [
+  "I know this is quite a simple website, compared to what you can do, this must be like a mountain looking at a stone. However, I'm proud of it 😭 and I learnt quite a lot when I put it together. I liked looking into the code and seeing new language, and guessing which part did what.",
+  "I never knew I was capable of this. Not just this website, I mean, having an online friend. I was always afraid of people online because the ones I talked to were literal monkeys, and they weren't always nice. I didn't know that it was possible to have such a good friend online, but there's a first time for everything!",
+  "I feel sad that the letter I sent you has decided to vanish into the voids (for now), but making this made me feel better. Maybe you can suggest some ideas for this place? I want it to be both of ours, not just something I made. I hope you like it, even if it is simple."
+];
+
+function updateLetterPage() {
+  letterContent.textContent = letterPages[currentLetterPage];
+  document.getElementById('prevPage').disabled = currentLetterPage === 0;
+  document.getElementById('nextPage').disabled = currentLetterPage === letterPages.length - 1;
+}
+
+document.getElementById('prevPage').addEventListener('click', (e) => {
+  e.stopPropagation();
+  if(currentLetterPage > 0) {
+    currentLetterPage--;
+    updateLetterPage();
+    paper2Sound.currentTime = 0;
+    paper2Sound.play();
+  }
+});
+
+document.getElementById('nextPage').addEventListener('click', (e) => {
+  e.stopPropagation();
+  if(currentLetterPage < letterPages.length - 1) {
+    currentLetterPage++;
+    updateLetterPage();
+    paper2Sound.currentTime = 0;
+    paper2Sound.play();
+  }
+});
 
 // Music
 const musicTracks = [document.getElementById('background'), document.getElementById('background2'), document.getElementById('background3')];
 let currentTrack = 0;
 musicTracks.forEach(track => { track.volume=0.6; });
-musicTracks[currentTrack].play();
 
 document.getElementById('nextTrack').addEventListener('click', ()=>{ fadeOutInTrack(1); });
 document.getElementById('prevTrack').addEventListener('click', ()=>{ fadeOutInTrack(-1); });
@@ -631,7 +719,6 @@ function fadeOutInTrack(direction){
   let current = musicTracks[currentTrack];
   let nextIndex = (currentTrack + direction + musicTracks.length) % musicTracks.length;
   let next = musicTracks[nextIndex];
-  let vol = 0.6;
   let fadeOut = setInterval(()=>{ if(current.volume>0.05){ current.volume -=0.05; } else { clearInterval(fadeOut); current.pause(); current.currentTime=0; next.volume=0; next.play(); fadeIn(next); currentTrack=nextIndex; } },50);
 }
 
@@ -639,7 +726,7 @@ function fadeIn(track){
   let fadeIn = setInterval(()=>{ if(track.volume<0.6){ track.volume +=0.05; } else { clearInterval(fadeIn); } },50);
 }
 
-// Tooltip and draggable
+// Tooltip
 function setupTooltip(img,text){
   let timeout;
   img.addEventListener('mouseenter',()=>{ timeout=setTimeout(()=>{ tooltip.textContent=text; tooltip.style.opacity=1; },250); });
@@ -648,7 +735,7 @@ function setupTooltip(img,text){
   img.addEventListener('mousemove',(e)=>{ tooltip.style.left=(e.clientX+15)+'px'; tooltip.style.top=(e.clientY+15)+'px'; });
 }
 
-// Setup tooltip for tray items
+// Setup tooltips
 const trayItemImgs = document.querySelectorAll('.pure-item img.pure');
 setupTooltip(trayItemImgs[0],'I love peach tea');
 setupTooltip(trayItemImgs[1],'I ate these all the time as a child');
@@ -658,7 +745,6 @@ setupTooltip(trayItemImgs[4],'Shaw no more 💔');
 setupTooltip(trayItemImgs[5],'Hornet figurine');
 setupTooltip(trayItemImgs[6],'the game that started it all');
 setupTooltip(trayItemImgs[7],'the one time we played lethal company');
-// New desk images tooltip
 setupTooltip(trayItemImgs[8],'the day you got my first letter');
 setupTooltip(trayItemImgs[9],'the day you got my first letter');
 setupTooltip(trayItemImgs[10],'us');
@@ -666,6 +752,8 @@ setupTooltip(trayItemImgs[11],'the cute cat that sat on your lap');
 setupTooltip(trayItemImgs[12],'the day i made the photo collage on my laptop');
 setupTooltip(trayItemImgs[13],'comfy bean bag');
 setupTooltip(pageItem,'a letter');
+setupTooltip(document.getElementById('table'),'a strong sturdy table');
+setupTooltip(document.getElementById('envelope'),'an envelope full of texts');
 
 function makeDraggable(item){
   let offsetX, offsetY, lastX=0, lastY=0;
@@ -673,23 +761,18 @@ function makeDraggable(item){
   let dragStartTime = 0;
   let startX = 0, startY = 0;
   
-  // Check if this is an editable tab
   const editableP = item.querySelector('p[contenteditable="true"]');
   
   function handleStart(e){
-    // Don't start drag if clicking on editable content
-    if(editableP && e.target === editableP) {
-      return;
-    }
+    if(isViewerOpen) return;
     
-    // For editable tabs, require clicking on the background/padding area
+    if(editableP && e.target === editableP) return;
+    
     if(editableP) {
-      const rect = item.getBoundingClientRect();
       const pRect = editableP.getBoundingClientRect();
       const clickX = e.clientX || (e.touches && e.touches[0].clientX);
       const clickY = e.clientY || (e.touches && e.touches[0].clientY);
       
-      // If clicking inside the text area, don't drag
       if(clickX >= pRect.left && clickX <= pRect.right && 
          clickY >= pRect.top && clickY <= pRect.bottom) {
         return;
@@ -722,7 +805,7 @@ function makeDraggable(item){
     item.style.top = (rect.top - bodyRect.top)+'px';
     item.style.position = 'absolute';
     const originalZ = item.classList.contains('pure-item') ? '450' : '400';
-    item.style.zIndex = '1000';
+    item.style.zIndex = '2100';
     item.dataset.originalZIndex = originalZ;
     item.style.transition="transform 0s";
     item.style.transform="scale(1) rotate(0deg)";
@@ -766,7 +849,6 @@ function makeDraggable(item){
       item.style.transition="transform 0.2s ease";
       item.style.transform="scale(1) rotate(0deg)";
       
-      // Check if dropped in tray
       const trayRect = tray.getBoundingClientRect();
       if(touch.clientY > trayRect.top && tray.classList.contains('open')){
         if(item.parentElement !== trayItems) {
@@ -779,7 +861,6 @@ function makeDraggable(item){
       
       item.style.zIndex = item.dataset.originalZIndex;
       
-      // Check if dropped in trash
       const binRect = trashBin.getBoundingClientRect();
       if(touch.clientX>=binRect.left && touch.clientX<=binRect.right && touch.clientY>=binRect.top && touch.clientY<=binRect.bottom){
         binSound.currentTime=0; 
@@ -788,29 +869,30 @@ function makeDraggable(item){
         return;
       }
       
-      // Check if it was a click (not a drag)
-      if(!isDragging && Date.now() - dragStartTime < 200){
+      if(!isDragging && Date.now() - dragStartTime < 200 && !isViewerOpen){
         const img = item.querySelector('img');
         if(img && img.id === 'pageItem'){
+          isViewerOpen = true;
+          currentLetterPage = 0;
+          updateLetterPage();
           paper2Sound.currentTime=0;
           paper2Sound.play();
           letterViewer.classList.add('visible');
           containerBlur.classList.add('active');
-          viewerDarkOverlay = true;
           darkOverlay.style.opacity = 1;
           darkOverlay.style.pointerEvents = 'auto';
         } else if(img && item.classList.contains('letter-img')){
+          isViewerOpen = true;
           viewerImg.src = img.src;
           imageViewer.classList.add('visible');
           containerBlur.classList.add('active');
-          viewerDarkOverlay = true;
           darkOverlay.style.opacity = 1;
           darkOverlay.style.pointerEvents = 'auto';
         } else if(img && img.classList.contains('pure') && (img.alt === 'Memory 1' || img.alt === 'Memory 2' || img.alt === 'Cat' || img.alt === 'Computer' || img.alt === 'Sticker')){
+          isViewerOpen = true;
           viewerImg.src = img.src;
           imageViewer.classList.add('visible');
           containerBlur.classList.add('active');
-          viewerDarkOverlay = true;
           darkOverlay.style.opacity = 1;
           darkOverlay.style.pointerEvents = 'auto';
         }
@@ -830,7 +912,7 @@ function makeDraggable(item){
 
 document.querySelectorAll('.draggable').forEach(makeDraggable);
 
-// Handle editable tab
+// Editable tab handling
 document.querySelectorAll('.editable-tab p[contenteditable="true"]').forEach(p => {
   p.addEventListener('focus', function() {
     if(this.textContent === this.dataset.placeholder) {
@@ -849,26 +931,18 @@ document.querySelectorAll('.editable-tab p[contenteditable="true"]').forEach(p =
   });
 });
 
-// Tooltip for table
-const table = document.getElementById('table');
-setupTooltip(table,'a strong sturdy table');
-
-// Envelope functionality
-const envelope = document.getElementById('envelope');
-setupTooltip(envelope,'an envelope full of texts');
+// Envelope
 let lettersOut = false;
 let letterElements = [];
-
-// Create letter images
 const letterFiles = ['text (1).jpg','text (2).jpg','text (3).jpg','text (4).jpg','text (5).jpg','text (6).jpg','text (7).jpg','text (9).jpg','text (10).jpg','text (11).jpg','text (12).jpg','text (13).jpg','text (14).jpg'];
 
-envelope.addEventListener('click', () => {
+document.getElementById('envelope').addEventListener('click', () => {
+  if(isViewerOpen) return;
   paperSound.currentTime = 0;
   paperSound.play();
   
   if (!lettersOut) {
-    // Create and show letters
-    const envelopeRect = envelope.getBoundingClientRect();
+    const envelopeRect = document.getElementById('envelope').getBoundingClientRect();
     letterFiles.forEach((file, index) => {
       const letterDiv = document.createElement('div');
       letterDiv.className = 'letter-img';
@@ -884,33 +958,46 @@ envelope.addEventListener('click', () => {
     });
     lettersOut = true;
   } else {
-    // Remove all letters
     letterElements.forEach(el => el.remove());
     letterElements = [];
     lettersOut = false;
   }
 });
 
+// Close viewers
+function closeViewer() {
+  isViewerOpen = false;
+  instructionsPaper.classList.remove('visible');
+  imageViewer.classList.remove('visible');
+  letterViewer.classList.remove('visible');
+  containerBlur.classList.remove('active');
+  darkOverlay.style.opacity = darkModeEnabled ? 1 : 0;
+  darkOverlay.style.pointerEvents = darkModeEnabled ? 'auto' : 'none';
+}
+
+darkOverlay.addEventListener('click', closeViewer);
+imageViewer.addEventListener('click', closeViewer);
+letterViewer.addEventListener('click', closeViewer);
+instructionsPaper.addEventListener('click', () => {
+  paperSound.currentTime=0;
+  paperSound.play();
+  closeViewer();
+});
+
+// Initial load
 window.addEventListener('DOMContentLoaded', () => { 
-  // Start music immediately
   musicTracks[currentTrack].play();
   
-  // Show headphones text
-  requestAnimationFrame(() => {
+  setTimeout(() => {
     headphonesText.classList.add('visible');
-  });
+  }, 100);
   
-  // Start fade in after a brief moment
   setTimeout(() => {
     document.body.classList.add('loaded');
     container.classList.add('visible');
-  }, 100);
-  
-  // Fade out headphones text as page fades in
-  setTimeout(() => {
     headphonesText.classList.remove('visible');
     headphonesText.classList.add('hidden');
-  }, 3000);
+  }, 1500);
 });
 
 muteBtn.addEventListener('click', () => {
@@ -931,67 +1018,21 @@ burgerMenu.addEventListener('click', () => {
 
 darkModeBtn.addEventListener('click', () => {
   darkModeEnabled = !darkModeEnabled;
-  darkOverlay.style.opacity = darkModeEnabled ? 1 : 0;
+  if(!isViewerOpen) {
+    darkOverlay.style.opacity = darkModeEnabled ? 1 : 0;
+    darkOverlay.style.pointerEvents = darkModeEnabled ? 'auto' : 'none';
+  }
 });
 
 document.getElementById('instructionsBtn').addEventListener('click', () => {
+  if(isViewerOpen) return;
+  isViewerOpen = true;
   paperSound.currentTime=0;
   paperSound.play();
   instructionsPaper.classList.add('visible');
   containerBlur.classList.add('active');
-  viewerDarkOverlay = true;
   darkOverlay.style.opacity = 1;
   darkOverlay.style.pointerEvents = 'auto';
-});
-
-instructionsPaper.addEventListener('click', () => {
-  paperSound.currentTime=0;
-  paperSound.play();
-  instructionsPaper.classList.remove('visible');
-  containerBlur.classList.remove('active');
-  viewerDarkOverlay = false;
-  darkOverlay.style.opacity = darkModeEnabled ? 1 : 0;
-  darkOverlay.style.pointerEvents = 'none';
-});
-
-darkOverlay.addEventListener('click', () => {
-  if(instructionsPaper.classList.contains('visible')){
-    paperSound.currentTime=0;
-    paperSound.play();
-    instructionsPaper.classList.remove('visible');
-    containerBlur.classList.remove('active');
-    viewerDarkOverlay = false;
-    darkOverlay.style.opacity = darkModeEnabled ? 1 : 0;
-    darkOverlay.style.pointerEvents = 'none';
-  } else if(imageViewer.classList.contains('visible')){
-    imageViewer.classList.remove('visible');
-    containerBlur.classList.remove('active');
-    viewerDarkOverlay = false;
-    darkOverlay.style.opacity = darkModeEnabled ? 1 : 0;
-    darkOverlay.style.pointerEvents = 'none';
-  } else if(letterViewer.classList.contains('visible')){
-    letterViewer.classList.remove('visible');
-    containerBlur.classList.remove('active');
-    viewerDarkOverlay = false;
-    darkOverlay.style.opacity = darkModeEnabled ? 1 : 0;
-    darkOverlay.style.pointerEvents = 'none';
-  }
-});
-
-imageViewer.addEventListener('click', () => {
-  imageViewer.classList.remove('visible');
-  containerBlur.classList.remove('active');
-  viewerDarkOverlay = false;
-  darkOverlay.style.opacity = darkModeEnabled ? 1 : 0;
-  darkOverlay.style.pointerEvents = 'none';
-});
-
-letterViewer.addEventListener('click', () => {
-  letterViewer.classList.remove('visible');
-  containerBlur.classList.remove('active');
-  viewerDarkOverlay = false;
-  darkOverlay.style.opacity = darkModeEnabled ? 1 : 0;
-  darkOverlay.style.pointerEvents = 'none';
 });
 </script>
 </body>
