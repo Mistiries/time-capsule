@@ -194,7 +194,8 @@ body.loaded::before {
   z-index: 2600;
 }
 
-#darkModeOverlay.clickable {
+#darkModeOverlay.active {
+  opacity: 1;
   pointer-events: auto;
 }
 
@@ -217,17 +218,23 @@ body.loaded::before {
 
 #burgerMenuContent {
   position: fixed;
-  top:0;
-  left:-200px;
-  width:200px;
-  height:100%;
+  top: 50%;
+  left: -220px;
+  transform: translateY(-50%);
+  width: 200px;
   background: rgba(255,255,255,0.95);
   transition: left 0.3s ease;
-  display:flex;
-  flex-direction:column;
+  display: flex;
+  flex-direction: column;
   padding: 20px;
-  box-sizing:border-box;
+  box-sizing: border-box;
   z-index: 3009;
+  border-radius: 10px;
+  box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+}
+
+#burgerMenuContent.open {
+  left: 10px;
 }
 
 #burgerMenuContent button {
@@ -239,6 +246,7 @@ body.loaded::before {
   box-shadow: 0 0 5px rgba(0,0,0,0.3);
   font-size: 16px;
   transition: transform 0.1s ease;
+  border-radius: 5px;
 }
 
 #burgerMenuContent button:active {
@@ -246,21 +254,17 @@ body.loaded::before {
 }
 
 #instructionsBtn {
-  width: 40px;
-  height: 40px;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  align-self: center;
 }
 
 #cloudsBtn {
-  width: 40px;
-  height: 40px;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  align-self: center;
 }
 
 /* Trash bin */
@@ -515,7 +519,7 @@ body.loaded::before {
   text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
   opacity: 0;
   transition: opacity 1s ease-in-out, transform 1s ease-in-out;
-  z-index: 5000;
+  z-index: 6000;
   pointer-events: none;
 }
 
@@ -561,14 +565,13 @@ body.loaded::before {
 
 #cloudEscapeNote {
   position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: white;
-  padding: 10px 20px;
+  bottom: 10px;
+  left: 10px;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 8px 15px;
   border-radius: 5px;
   box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
-  font-size: 14px;
+  font-size: 13px;
   color: #666;
   z-index: 3501;
   display: none;
@@ -650,13 +653,12 @@ body.loaded::before {
 
   <div id="burgerMenu">☰</div>
   <div id="burgerMenuContent">
-    <button id="darkModeBtn">🌙 Dark Mode</button>
-    <div id="musicControls" style="display:flex;justify-content:center;margin-top:10px;">
+    <div id="musicControls" style="display:flex;justify-content:center;gap:10px;">
       <button id="prevTrack">⏮</button>
       <button id="nextTrack">⏭</button>
     </div>
-    <button id="instructionsBtn" style="margin-top:10px;">📋</button>
-    <button id="cloudsBtn" style="margin-top:10px;">🎯</button>
+    <button id="instructionsBtn">📋 Instructions</button>
+    <button id="cloudsBtn">🎯 Clouds</button>
   </div>
 
   <div id="trashBin">🗑️</div>
@@ -744,7 +746,6 @@ const trayTab = document.getElementById('trayTab');
 const darkOverlay = document.getElementById('darkModeOverlay');
 const burgerMenu = document.getElementById('burgerMenu');
 const burgerContent = document.getElementById('burgerMenuContent');
-const darkModeBtn = document.getElementById('darkModeBtn');
 const trashBin = document.getElementById('trashBin');
 const binSound = document.getElementById('binSound');
 const traySound = document.getElementById('traySound');
@@ -762,11 +763,11 @@ const pageItem = document.getElementById('pageItem');
 const headphonesText = document.getElementById('headphonesText');
 const containerBlur = document.getElementById('containerBlur');
 const cloudViewer = document.getElementById('cloudViewer');
-let darkModeEnabled = false;
 let isViewerOpen = false;
 let currentLetterPage = 0;
 let clouds = [];
 let animationFrameId = null;
+let musicStarted = false;
 
 const letterPages = [
   "I know this is quite a simple website, compared to what you can do, this must be like a mountain looking at a stone. However, I'm proud of it 😭 and I learnt quite a lot when I put it together. I liked looking into the code and seeing new language, and guessing which part did what.",
@@ -805,8 +806,30 @@ const musicTracks = [document.getElementById('background'), document.getElementB
 let currentTrack = 0;
 musicTracks.forEach(track => { track.volume=0.6; });
 
-document.getElementById('nextTrack').addEventListener('click', ()=>{ fadeOutInTrack(1); });
-document.getElementById('prevTrack').addEventListener('click', ()=>{ fadeOutInTrack(-1); });
+function startMusic() {
+  if(!musicStarted) {
+    musicTracks[currentTrack].play().then(() => {
+      musicStarted = true;
+    }).catch(err => {
+      console.log('Music autoplay blocked, waiting for user interaction');
+    });
+  }
+}
+
+document.getElementById('nextTrack').addEventListener('click', (e)=>{ 
+  e.stopPropagation();
+  pickupSound.currentTime=0;
+  pickupSound.play();
+  startMusic();
+  fadeOutInTrack(1); 
+});
+document.getElementById('prevTrack').addEventListener('click', (e)=>{ 
+  e.stopPropagation();
+  pickupSound.currentTime=0;
+  pickupSound.play();
+  startMusic();
+  fadeOutInTrack(-1); 
+});
 
 function fadeOutInTrack(direction){
   let current = musicTracks[currentTrack];
@@ -878,6 +901,8 @@ function makeDraggable(item){
     e.preventDefault();
     isDragging = false;
     dragStartTime = Date.now();
+    
+    startMusic();
     
     const rect = item.getBoundingClientRect();
     offsetX = touch.clientX - rect.left;
@@ -977,22 +1002,19 @@ function makeDraggable(item){
           paper2Sound.play();
           letterViewer.classList.add('visible');
           containerBlur.classList.add('active');
-          darkOverlay.style.opacity = 1;
-          darkOverlay.style.pointerEvents = 'auto';
+          darkOverlay.classList.add('active');
         } else if(img && item.classList.contains('letter-img')){
           isViewerOpen = true;
           viewerImg.src = img.src;
           imageViewer.classList.add('visible');
           containerBlur.classList.add('active');
-          darkOverlay.style.opacity = 1;
-          darkOverlay.style.pointerEvents = 'auto';
+          darkOverlay.classList.add('active');
         } else if(img && img.classList.contains('pure') && (img.alt === 'Memory 1' || img.alt === 'Memory 2' || img.alt === 'Cat' || img.alt === 'Computer' || img.alt === 'Sticker')){
           isViewerOpen = true;
           viewerImg.src = img.src;
           imageViewer.classList.add('visible');
           containerBlur.classList.add('active');
-          darkOverlay.style.opacity = 1;
-          darkOverlay.style.pointerEvents = 'auto';
+          darkOverlay.classList.add('active');
         }
       }
     }
@@ -1036,8 +1058,7 @@ const letterFiles = ['text (1).jpg','text (2).jpg','text (3).jpg','text (4).jpg'
 
 document.getElementById('envelope').addEventListener('click', () => {
   if(isViewerOpen) return;
-  pickupSound.currentTime = 0;
-  pickupSound.play();
+  startMusic();
   paperSound.currentTime = 0;
   paperSound.play();
   
@@ -1072,41 +1093,28 @@ function closeViewer() {
   letterViewer.classList.remove('visible');
   cloudViewer.classList.remove('visible');
   containerBlur.classList.remove('active');
-  darkOverlay.style.opacity = darkModeEnabled ? 1 : 0;
-  darkOverlay.style.pointerEvents = darkModeEnabled ? 'auto' : 'none';
-  if(!darkModeEnabled) {
-    darkOverlay.classList.remove('clickable');
-  }
+  darkOverlay.classList.remove('active');
   if(animationFrameId) {
     cancelAnimationFrame(animationFrameId);
     animationFrameId = null;
   }
 }
 
-darkOverlay.addEventListener('click', (e) => {
-  if(darkOverlay.classList.contains('clickable')) {
-    closeViewer();
-  }
-});
-
-// Also allow clicking on the viewers themselves to close
-document.addEventListener('click', (e) => {
-  if(isViewerOpen) {
-    if(e.target === darkOverlay || e.target === containerBlur || e.target === cloudViewer) {
-      closeViewer();
-    }
-  }
-});
+darkOverlay.addEventListener('click', closeViewer);
+containerBlur.addEventListener('click', closeViewer);
+cloudViewer.addEventListener('click', closeViewer);
 
 // Close burger menu when clicking outside
 document.addEventListener('click', (e) => {
   if(!burgerMenu.contains(e.target) && !burgerContent.contains(e.target)) {
-    burgerContent.style.left = '-200px';
+    burgerContent.classList.remove('open');
   }
 });
 
 burgerMenu.addEventListener('click', (e) => {
   e.stopPropagation();
+  startMusic();
+  burgerContent.classList.toggle('open');
 });
 
 burgerContent.addEventListener('click', (e) => {
@@ -1121,75 +1129,57 @@ letterViewer.addEventListener('click', (e) => {
     closeViewer();
   }
 });
-instructionsPaper.addEventListener('click', (e) => {
-  if(e.target === instructionsPaper || e.target.closest('.subtitle')) {
-    paperSound.currentTime=0;
-    paperSound.play();
-    closeViewer();
-  }
-});
+instructionsPaper.addEventListener('click', closeViewer);
 
 // Initial load
 window.addEventListener('DOMContentLoaded', () => { 
-  musicTracks[currentTrack].play();
+  startMusic();
   
-  // Show headphones text immediately
-  headphonesText.classList.add('visible');
+  requestAnimationFrame(() => {
+    headphonesText.classList.add('visible');
+  });
   
   setTimeout(() => {
     document.body.classList.add('loaded');
     container.classList.add('visible');
+  }, 100);
+  
+  setTimeout(() => {
     headphonesText.classList.remove('visible');
     headphonesText.classList.add('hidden');
-  }, 1200);
+  }, 2500);
 });
 
+// Try to start music on any user interaction
+document.addEventListener('click', startMusic, {once: true});
+document.addEventListener('touchstart', startMusic, {once: true});
+document.addEventListener('keydown', startMusic, {once: true});
+
 muteBtn.addEventListener('click', () => {
+  startMusic();
   musicTracks.forEach(track => track.muted = !track.muted);
   muteBtn.textContent = musicTracks[0].muted ? 'Unmute Music' : 'Mute Music';
 });
 
 trayTab.addEventListener('click', () => {
+  startMusic();
   tray.classList.toggle('open');
   trayTab.textContent = tray.classList.contains('open') ? '▼' : '▲';
   traySound.currentTime=0;
   traySound.play();
 });
 
-burgerMenu.addEventListener('click', () => {
-  burgerContent.style.left = burgerContent.style.left==='0px'?'-200px':'0px';
-  if(burgerContent.style.left === '0px') {
-    pickupSound.currentTime=0;
-    pickupSound.play();
-  }
-});
-
-darkModeBtn.addEventListener('click', () => {
-  pickupSound.currentTime=0;
-  pickupSound.play();
-  darkModeEnabled = !darkModeEnabled;
-  if(!isViewerOpen) {
-    darkOverlay.style.opacity = darkModeEnabled ? 1 : 0;
-    if(darkModeEnabled) {
-      darkOverlay.classList.add('clickable');
-    } else {
-      darkOverlay.classList.remove('clickable');
-    }
-  }
-});
-
-document.getElementById('instructionsBtn').addEventListener('click', () => {
+document.getElementById('instructionsBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
   if(isViewerOpen) return;
-  pickupSound.currentTime=0;
-  pickupSound.play();
+  startMusic();
   isViewerOpen = true;
   paperSound.currentTime=0;
   paperSound.play();
   instructionsPaper.classList.add('visible');
   containerBlur.classList.add('active');
-  darkOverlay.style.opacity = 1;
-  darkOverlay.classList.add('clickable');
-  burgerContent.style.left = '-200px';
+  darkOverlay.classList.add('active');
+  burgerContent.classList.remove('open');
 });
 
 // Cloud viewer
@@ -1236,7 +1226,6 @@ function animateClouds() {
   const now = Date.now();
   
   clouds.forEach((cloudData, i) => {
-    // Change direction every 3 seconds
     if(now >= cloudData.nextDirectionChange) {
       cloudData.vx = (Math.random() - 0.5) * 1.2;
       cloudData.vy = (Math.random() - 0.5) * 1.2;
@@ -1250,33 +1239,27 @@ function animateClouds() {
     const width = rect.width;
     const height = rect.height;
     
-    // Bounce off edges immediately with new direction
     if(cloudData.x <= 0) {
       cloudData.x = 1;
       cloudData.vx = Math.abs(cloudData.vx);
       cloudData.nextDirectionChange = now + 3000;
-      wobbleCloud(cloudData.element);
     }
     if(cloudData.x + width >= window.innerWidth) {
       cloudData.x = window.innerWidth - width - 1;
       cloudData.vx = -Math.abs(cloudData.vx);
       cloudData.nextDirectionChange = now + 3000;
-      wobbleCloud(cloudData.element);
     }
     if(cloudData.y <= 0) {
       cloudData.y = 1;
       cloudData.vy = Math.abs(cloudData.vy);
       cloudData.nextDirectionChange = now + 3000;
-      wobbleCloud(cloudData.element);
     }
     if(cloudData.y + height >= window.innerHeight) {
       cloudData.y = window.innerHeight - height - 1;
       cloudData.vy = -Math.abs(cloudData.vy);
       cloudData.nextDirectionChange = now + 3000;
-      wobbleCloud(cloudData.element);
     }
     
-    // Check collisions with other clouds
     clouds.forEach((other, j) => {
       if(i >= j) return;
       
@@ -1301,9 +1284,6 @@ function animateClouds() {
         cloudData.vy = other.vy * 0.9;
         other.vx = tempVx * 0.9;
         other.vy = tempVy * 0.9;
-        
-        wobbleCloud(cloudData.element);
-        wobbleCloud(other.element);
       }
     });
     
@@ -1316,34 +1296,19 @@ function animateClouds() {
   }
 }
 
-function wobbleCloud(element) {
-  // Removed wobble animation - clouds no longer scale on collision
-}
-
-document.getElementById('cloudsBtn').addEventListener('click', () => {
+document.getElementById('cloudsBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
   if(isViewerOpen) return;
+  startMusic();
   pickupSound.currentTime=0;
   pickupSound.play();
   isViewerOpen = true;
   createClouds();
   cloudViewer.classList.add('visible');
   containerBlur.classList.add('active');
-  darkOverlay.style.opacity = 1;
-  darkOverlay.classList.add('clickable');
-  burgerContent.style.left = '-200px';
+  darkOverlay.classList.add('active');
+  burgerContent.classList.remove('open');
   animateClouds();
-});
-
-// Music control buttons
-document.getElementById('nextTrack').addEventListener('click', ()=>{ 
-  pickupSound.currentTime=0;
-  pickupSound.play();
-  fadeOutInTrack(1); 
-});
-document.getElementById('prevTrack').addEventListener('click', ()=>{ 
-  pickupSound.currentTime=0;
-  pickupSound.play();
-  fadeOutInTrack(-1); 
 });
 </script>
 </body>
