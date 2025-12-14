@@ -297,7 +297,7 @@ body.loaded::before {
 /* Envelope */
 #envelope {
   position: fixed;
-  bottom: 25%;
+  bottom: 26%;
   right: 22%;
   width: 100px;
   cursor: pointer;
@@ -880,14 +880,6 @@ function makeDraggable(item){
     isDragging = false;
     dragStartTime = Date.now();
     
-    const img = item.querySelector('img');
-    const isPageItem = img && img.id === 'pageItem';
-    
-    if(!isPageItem){
-      pickupSound.currentTime=0;
-      pickupSound.play();
-    }
-    
     const rect = item.getBoundingClientRect();
     offsetX = touch.clientX - rect.left;
     offsetY = touch.clientY - rect.top;
@@ -916,7 +908,7 @@ function makeDraggable(item){
       
       if(Math.abs(totalDx) > 3 || Math.abs(totalDy) > 3) {
         isDragging = true;
-        if(isPageItem && !pickupSound.playing){
+        if(!pickupSound.playing){
           pickupSound.currentTime=0;
           pickupSound.play();
         }
@@ -969,6 +961,8 @@ function makeDraggable(item){
       
       if(!isDragging && Date.now() - dragStartTime < 200 && !isViewerOpen){
         if(isClickableImage) {
+          pickupSound.currentTime=0;
+          pickupSound.play();
           item.style.transform = 'scale(0.95)';
           setTimeout(() => {
             item.style.transform = 'scale(1) rotate(0deg)';
@@ -1043,6 +1037,8 @@ const letterFiles = ['text (1).jpg','text (2).jpg','text (3).jpg','text (4).jpg'
 
 document.getElementById('envelope').addEventListener('click', () => {
   if(isViewerOpen) return;
+  pickupSound.currentTime = 0;
+  pickupSound.play();
   paperSound.currentTime = 0;
   paperSound.play();
   
@@ -1094,6 +1090,15 @@ darkOverlay.addEventListener('click', (e) => {
   }
 });
 
+// Also allow clicking on the viewers themselves to close
+document.addEventListener('click', (e) => {
+  if(isViewerOpen) {
+    if(e.target === darkOverlay || e.target === containerBlur || e.target === cloudViewer) {
+      closeViewer();
+    }
+  }
+});
+
 // Close burger menu when clicking outside
 document.addEventListener('click', (e) => {
   if(!burgerMenu.contains(e.target) && !burgerContent.contains(e.target)) {
@@ -1117,19 +1122,20 @@ letterViewer.addEventListener('click', (e) => {
     closeViewer();
   }
 });
-instructionsPaper.addEventListener('click', () => {
-  paperSound.currentTime=0;
-  paperSound.play();
-  closeViewer();
+instructionsPaper.addEventListener('click', (e) => {
+  if(e.target === instructionsPaper || e.target.closest('.subtitle')) {
+    paperSound.currentTime=0;
+    paperSound.play();
+    closeViewer();
+  }
 });
 
 // Initial load
 window.addEventListener('DOMContentLoaded', () => { 
   musicTracks[currentTrack].play();
   
-  setTimeout(() => {
-    headphonesText.classList.add('visible');
-  }, 100);
+  // Show headphones text immediately
+  headphonesText.classList.add('visible');
   
   setTimeout(() => {
     document.body.classList.add('loaded');
@@ -1153,9 +1159,15 @@ trayTab.addEventListener('click', () => {
 
 burgerMenu.addEventListener('click', () => {
   burgerContent.style.left = burgerContent.style.left==='0px'?'-200px':'0px';
+  if(burgerContent.style.left === '0px') {
+    pickupSound.currentTime=0;
+    pickupSound.play();
+  }
 });
 
 darkModeBtn.addEventListener('click', () => {
+  pickupSound.currentTime=0;
+  pickupSound.play();
   darkModeEnabled = !darkModeEnabled;
   if(!isViewerOpen) {
     darkOverlay.style.opacity = darkModeEnabled ? 1 : 0;
@@ -1169,6 +1181,8 @@ darkModeBtn.addEventListener('click', () => {
 
 document.getElementById('instructionsBtn').addEventListener('click', () => {
   if(isViewerOpen) return;
+  pickupSound.currentTime=0;
+  pickupSound.play();
   isViewerOpen = true;
   paperSound.currentTime=0;
   paperSound.play();
@@ -1201,17 +1215,17 @@ function createClouds() {
     const cloud = document.createElement('div');
     cloud.className = 'cloud';
     cloud.textContent = text;
-    cloud.style.left = Math.random() * (window.innerWidth - 300) + 'px';
-    cloud.style.top = Math.random() * (window.innerHeight - 100) + 'px';
+    cloud.style.left = Math.random() * (window.innerWidth - 300) + 50 + 'px';
+    cloud.style.top = Math.random() * (window.innerHeight - 150) + 50 + 'px';
     cloudViewer.appendChild(cloud);
     
     const cloudData = {
       element: cloud,
       x: parseFloat(cloud.style.left),
       y: parseFloat(cloud.style.top),
-      vx: (Math.random() - 0.5) * 0.3,
-      vy: (Math.random() - 0.5) * 0.3,
-      nextDirectionChange: Date.now() + 5000
+      vx: (Math.random() - 0.5) * 1.2,
+      vy: (Math.random() - 0.5) * 1.2,
+      nextDirectionChange: Date.now() + 3000
     };
     
     clouds.push(cloudData);
@@ -1222,11 +1236,11 @@ function animateClouds() {
   const now = Date.now();
   
   clouds.forEach((cloudData, i) => {
-    // Change direction every 5 seconds
+    // Change direction every 3 seconds
     if(now >= cloudData.nextDirectionChange) {
-      cloudData.vx = (Math.random() - 0.5) * 0.3;
-      cloudData.vy = (Math.random() - 0.5) * 0.3;
-      cloudData.nextDirectionChange = now + 5000;
+      cloudData.vx = (Math.random() - 0.5) * 1.2;
+      cloudData.vy = (Math.random() - 0.5) * 1.2;
+      cloudData.nextDirectionChange = now + 3000;
     }
     
     cloudData.x += cloudData.vx;
@@ -1236,25 +1250,29 @@ function animateClouds() {
     const width = rect.width;
     const height = rect.height;
     
-    // Bounce off edges softly
-    if(cloudData.x < 0) {
-      cloudData.x = 0;
+    // Bounce off edges immediately with new direction
+    if(cloudData.x <= 0) {
+      cloudData.x = 1;
       cloudData.vx = Math.abs(cloudData.vx);
+      cloudData.nextDirectionChange = now + 3000;
       wobbleCloud(cloudData.element);
     }
-    if(cloudData.x + width > window.innerWidth) {
-      cloudData.x = window.innerWidth - width;
+    if(cloudData.x + width >= window.innerWidth) {
+      cloudData.x = window.innerWidth - width - 1;
       cloudData.vx = -Math.abs(cloudData.vx);
+      cloudData.nextDirectionChange = now + 3000;
       wobbleCloud(cloudData.element);
     }
-    if(cloudData.y < 0) {
-      cloudData.y = 0;
+    if(cloudData.y <= 0) {
+      cloudData.y = 1;
       cloudData.vy = Math.abs(cloudData.vy);
+      cloudData.nextDirectionChange = now + 3000;
       wobbleCloud(cloudData.element);
     }
-    if(cloudData.y + height > window.innerHeight) {
-      cloudData.y = window.innerHeight - height;
+    if(cloudData.y + height >= window.innerHeight) {
+      cloudData.y = window.innerHeight - height - 1;
       cloudData.vy = -Math.abs(cloudData.vy);
+      cloudData.nextDirectionChange = now + 3000;
       wobbleCloud(cloudData.element);
     }
     
@@ -1266,7 +1284,7 @@ function animateClouds() {
       const dx = (cloudData.x + width/2) - (other.x + otherRect.width/2);
       const dy = (cloudData.y + height/2) - (other.y + otherRect.height/2);
       const distance = Math.sqrt(dx*dx + dy*dy);
-      const minDist = (width + otherRect.width) / 2.2;
+      const minDist = (width + otherRect.width) / 2.5;
       
       if(distance < minDist) {
         const angle = Math.atan2(dy, dx);
@@ -1279,10 +1297,10 @@ function animateClouds() {
         
         const tempVx = cloudData.vx;
         const tempVy = cloudData.vy;
-        cloudData.vx = other.vx * 0.8;
-        cloudData.vy = other.vy * 0.8;
-        other.vx = tempVx * 0.8;
-        other.vy = tempVy * 0.8;
+        cloudData.vx = other.vx * 0.9;
+        cloudData.vy = other.vy * 0.9;
+        other.vx = tempVx * 0.9;
+        other.vy = tempVy * 0.9;
         
         wobbleCloud(cloudData.element);
         wobbleCloud(other.element);
