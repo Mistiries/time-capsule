@@ -194,6 +194,10 @@ body.loaded::before {
   z-index: 2600;
 }
 
+#darkModeOverlay.clickable {
+  pointer-events: auto;
+}
+
 /* Burger Menu */
 #burgerMenu {
   position: fixed;
@@ -234,9 +238,23 @@ body.loaded::before {
   border:none;
   box-shadow: 0 0 5px rgba(0,0,0,0.3);
   font-size: 16px;
+  transition: transform 0.1s ease;
+}
+
+#burgerMenuContent button:active {
+  transform: scale(0.95);
 }
 
 #instructionsBtn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+}
+
+#cloudsBtn {
   width: 40px;
   height: 40px;
   display: flex;
@@ -253,7 +271,17 @@ body.loaded::before {
   font-size: 48px;
   cursor: pointer;
   z-index: 2000;
-  transition: transform 0.3s ease;
+  transition: transform 0.1s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+#trashBin.shake {
+  animation: shake 0.3s ease;
 }
 
 /* Table */
@@ -269,11 +297,16 @@ body.loaded::before {
 /* Envelope */
 #envelope {
   position: fixed;
-  bottom: 27%;
+  bottom: 25%;
   right: 22%;
   width: 100px;
   cursor: pointer;
   z-index: 451;
+  transition: transform 0.1s ease;
+}
+
+#envelope:active {
+  transform: scale(0.95);
 }
 
 /* Letter images */
@@ -474,24 +507,76 @@ body.loaded::before {
   position: fixed;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) scale(0.8);
   font-family: 'Brush Script MT', cursive;
   font-style: italic;
   font-size: 32px;
   color: white;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
   opacity: 0;
-  transition: opacity 0.8s ease-in-out;
+  transition: opacity 1s ease-in-out, transform 1s ease-in-out;
   z-index: 5000;
   pointer-events: none;
 }
 
 #headphonesText.visible {
   opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
 }
 
 #headphonesText.hidden {
   opacity: 0;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* Cloud viewer */
+#cloudViewer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3500;
+  display: none;
+  overflow: hidden;
+}
+
+#cloudViewer.visible {
+  display: block;
+}
+
+.cloud {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50px;
+  padding: 20px 30px;
+  font-family: 'Times New Roman', serif;
+  font-size: 16px;
+  text-align: center;
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+  user-select: none;
+  max-width: 250px;
+  pointer-events: none;
+  transition: transform 0.3s ease;
+}
+
+#cloudEscapeNote {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+  font-size: 14px;
+  color: #666;
+  z-index: 3501;
+  display: none;
+}
+
+#cloudViewer.visible #cloudEscapeNote {
+  display: block;
 }
 </style>
 </head>
@@ -572,6 +657,7 @@ body.loaded::before {
       <button id="nextTrack">⏭</button>
     </div>
     <button id="instructionsBtn" style="margin-top:10px;">📋</button>
+    <button id="cloudsBtn" style="margin-top:10px;">🎯</button>
   </div>
 
   <div id="trashBin">🗑️</div>
@@ -626,6 +712,7 @@ body.loaded::before {
       <li>Click the envelope to open it, and click again to tidy up</li>
       <li>Click on images to view them</li>
       <li>Click the page to view the letter</li>
+      <li>In the 🎯, there are floating clouds with things I want written on them</li>
     </ul>
   </div>
 
@@ -641,6 +728,10 @@ body.loaded::before {
       <span class="escape-note">Click anywhere to escape</span>
       <button id="nextPage">→</button>
     </div>
+  </div>
+
+  <div id="cloudViewer">
+    <div id="cloudEscapeNote">Click anywhere to escape</div>
   </div>
 </div>
 
@@ -671,9 +762,12 @@ const letterContent = document.getElementById('letterContent');
 const pageItem = document.getElementById('pageItem');
 const headphonesText = document.getElementById('headphonesText');
 const containerBlur = document.getElementById('containerBlur');
+const cloudViewer = document.getElementById('cloudViewer');
 let darkModeEnabled = false;
 let isViewerOpen = false;
 let currentLetterPage = 0;
+let clouds = [];
+let animationFrameId = null;
 
 const letterPages = [
   "I know this is quite a simple website, compared to what you can do, this must be like a mountain looking at a stone. However, I'm proud of it 😭 and I learnt quite a lot when I put it together. I liked looking into the code and seeing new language, and guessing which part did what.",
@@ -762,6 +856,8 @@ function makeDraggable(item){
   let startX = 0, startY = 0;
   
   const editableP = item.querySelector('p[contenteditable="true"]');
+  const img = item.querySelector('img');
+  const isClickableImage = img && (img.classList.contains('pure') && (img.alt === 'Memory 1' || img.alt === 'Memory 2' || img.alt === 'Cat' || img.alt === 'Computer' || img.alt === 'Sticker' || img.id === 'pageItem'));
   
   function handleStart(e){
     if(isViewerOpen) return;
@@ -865,11 +961,20 @@ function makeDraggable(item){
       if(touch.clientX>=binRect.left && touch.clientX<=binRect.right && touch.clientY>=binRect.top && touch.clientY<=binRect.bottom){
         binSound.currentTime=0; 
         binSound.play();
+        trashBin.classList.add('shake');
+        setTimeout(() => trashBin.classList.remove('shake'), 300);
         item.remove();
         return;
       }
       
       if(!isDragging && Date.now() - dragStartTime < 200 && !isViewerOpen){
+        if(isClickableImage) {
+          item.style.transform = 'scale(0.95)';
+          setTimeout(() => {
+            item.style.transform = 'scale(1) rotate(0deg)';
+          }, 100);
+        }
+        
         const img = item.querySelector('img');
         if(img && img.id === 'pageItem'){
           isViewerOpen = true;
@@ -970,14 +1075,48 @@ function closeViewer() {
   instructionsPaper.classList.remove('visible');
   imageViewer.classList.remove('visible');
   letterViewer.classList.remove('visible');
+  cloudViewer.classList.remove('visible');
   containerBlur.classList.remove('active');
   darkOverlay.style.opacity = darkModeEnabled ? 1 : 0;
   darkOverlay.style.pointerEvents = darkModeEnabled ? 'auto' : 'none';
+  if(!darkModeEnabled) {
+    darkOverlay.classList.remove('clickable');
+  }
+  if(animationFrameId) {
+    cancelAnimationFrame(animationFrameId);
+    animationFrameId = null;
+  }
 }
 
-darkOverlay.addEventListener('click', closeViewer);
+darkOverlay.addEventListener('click', (e) => {
+  if(darkOverlay.classList.contains('clickable')) {
+    closeViewer();
+  }
+});
+
+// Close burger menu when clicking outside
+document.addEventListener('click', (e) => {
+  if(!burgerMenu.contains(e.target) && !burgerContent.contains(e.target)) {
+    burgerContent.style.left = '-200px';
+  }
+});
+
+burgerMenu.addEventListener('click', (e) => {
+  e.stopPropagation();
+});
+
+burgerContent.addEventListener('click', (e) => {
+  e.stopPropagation();
+});
+
 imageViewer.addEventListener('click', closeViewer);
-letterViewer.addEventListener('click', closeViewer);
+letterViewer.addEventListener('click', (e) => {
+  if(!e.target.closest('button')) {
+    paper2Sound.currentTime=0;
+    paper2Sound.play();
+    closeViewer();
+  }
+});
 instructionsPaper.addEventListener('click', () => {
   paperSound.currentTime=0;
   paperSound.play();
@@ -997,7 +1136,7 @@ window.addEventListener('DOMContentLoaded', () => {
     container.classList.add('visible');
     headphonesText.classList.remove('visible');
     headphonesText.classList.add('hidden');
-  }, 1500);
+  }, 1200);
 });
 
 muteBtn.addEventListener('click', () => {
@@ -1020,7 +1159,11 @@ darkModeBtn.addEventListener('click', () => {
   darkModeEnabled = !darkModeEnabled;
   if(!isViewerOpen) {
     darkOverlay.style.opacity = darkModeEnabled ? 1 : 0;
-    darkOverlay.style.pointerEvents = darkModeEnabled ? 'auto' : 'none';
+    if(darkModeEnabled) {
+      darkOverlay.classList.add('clickable');
+    } else {
+      darkOverlay.classList.remove('clickable');
+    }
   }
 });
 
@@ -1032,7 +1175,146 @@ document.getElementById('instructionsBtn').addEventListener('click', () => {
   instructionsPaper.classList.add('visible');
   containerBlur.classList.add('active');
   darkOverlay.style.opacity = 1;
-  darkOverlay.style.pointerEvents = 'auto';
+  darkOverlay.classList.add('clickable');
+  burgerContent.style.left = '-200px';
+});
+
+// Cloud viewer
+const cloudTexts = [
+  "I want to go to a restaurant with you",
+  "I want to stay up late at night and have long conversations",
+  "I want to show you the uk",
+  "I want to bring you food from the uk you've never tried",
+  "I want to die laughing with you",
+  "I want to be there for you",
+  "I want to listen to your problems",
+  "I want to make you more letters",
+  "I want to hear about what you find interesting",
+  "I want to have deep conversations about everything"
+];
+
+function createClouds() {
+  clouds = [];
+  cloudViewer.innerHTML = '<div id="cloudEscapeNote">Click anywhere to escape</div>';
+  
+  cloudTexts.forEach((text, i) => {
+    const cloud = document.createElement('div');
+    cloud.className = 'cloud';
+    cloud.textContent = text;
+    cloud.style.left = Math.random() * (window.innerWidth - 300) + 'px';
+    cloud.style.top = Math.random() * (window.innerHeight - 100) + 'px';
+    cloudViewer.appendChild(cloud);
+    
+    const cloudData = {
+      element: cloud,
+      x: parseFloat(cloud.style.left),
+      y: parseFloat(cloud.style.top),
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      nextDirectionChange: Date.now() + 5000
+    };
+    
+    clouds.push(cloudData);
+  });
+}
+
+function animateClouds() {
+  const now = Date.now();
+  
+  clouds.forEach((cloudData, i) => {
+    // Change direction every 5 seconds
+    if(now >= cloudData.nextDirectionChange) {
+      cloudData.vx = (Math.random() - 0.5) * 0.3;
+      cloudData.vy = (Math.random() - 0.5) * 0.3;
+      cloudData.nextDirectionChange = now + 5000;
+    }
+    
+    cloudData.x += cloudData.vx;
+    cloudData.y += cloudData.vy;
+    
+    const rect = cloudData.element.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    
+    // Bounce off edges softly
+    if(cloudData.x < 0) {
+      cloudData.x = 0;
+      cloudData.vx = Math.abs(cloudData.vx);
+      wobbleCloud(cloudData.element);
+    }
+    if(cloudData.x + width > window.innerWidth) {
+      cloudData.x = window.innerWidth - width;
+      cloudData.vx = -Math.abs(cloudData.vx);
+      wobbleCloud(cloudData.element);
+    }
+    if(cloudData.y < 0) {
+      cloudData.y = 0;
+      cloudData.vy = Math.abs(cloudData.vy);
+      wobbleCloud(cloudData.element);
+    }
+    if(cloudData.y + height > window.innerHeight) {
+      cloudData.y = window.innerHeight - height;
+      cloudData.vy = -Math.abs(cloudData.vy);
+      wobbleCloud(cloudData.element);
+    }
+    
+    // Check collisions with other clouds
+    clouds.forEach((other, j) => {
+      if(i >= j) return;
+      
+      const otherRect = other.element.getBoundingClientRect();
+      const dx = (cloudData.x + width/2) - (other.x + otherRect.width/2);
+      const dy = (cloudData.y + height/2) - (other.y + otherRect.height/2);
+      const distance = Math.sqrt(dx*dx + dy*dy);
+      const minDist = (width + otherRect.width) / 2.2;
+      
+      if(distance < minDist) {
+        const angle = Math.atan2(dy, dx);
+        const overlap = minDist - distance;
+        
+        cloudData.x += Math.cos(angle) * overlap * 0.5;
+        cloudData.y += Math.sin(angle) * overlap * 0.5;
+        other.x -= Math.cos(angle) * overlap * 0.5;
+        other.y -= Math.sin(angle) * overlap * 0.5;
+        
+        const tempVx = cloudData.vx;
+        const tempVy = cloudData.vy;
+        cloudData.vx = other.vx * 0.8;
+        cloudData.vy = other.vy * 0.8;
+        other.vx = tempVx * 0.8;
+        other.vy = tempVy * 0.8;
+        
+        wobbleCloud(cloudData.element);
+        wobbleCloud(other.element);
+      }
+    });
+    
+    cloudData.element.style.left = cloudData.x + 'px';
+    cloudData.element.style.top = cloudData.y + 'px';
+  });
+  
+  if(cloudViewer.classList.contains('visible')) {
+    animationFrameId = requestAnimationFrame(animateClouds);
+  }
+}
+
+function wobbleCloud(element) {
+  element.style.transform = 'scale(1.05)';
+  setTimeout(() => {
+    element.style.transform = 'scale(1)';
+  }, 300);
+}
+
+document.getElementById('cloudsBtn').addEventListener('click', () => {
+  if(isViewerOpen) return;
+  isViewerOpen = true;
+  createClouds();
+  cloudViewer.classList.add('visible');
+  containerBlur.classList.add('active');
+  darkOverlay.style.opacity = 1;
+  darkOverlay.classList.add('clickable');
+  burgerContent.style.left = '-200px';
+  animateClouds();
 });
 </script>
 </body>
