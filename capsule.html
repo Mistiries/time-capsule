@@ -392,8 +392,8 @@ body.loaded::before {
 }
 
 #letterViewer .letter-content {
-  font-family: 'Brush Script MT', cursive;
-  font-size: 20px;
+  font-family: 'Comic Sans MS', 'Segoe Print', cursive;
+  font-size: 18px;
   line-height: 1.6;
   margin-bottom: 20px;
 }
@@ -458,7 +458,7 @@ body.loaded::before {
   z-index: 3500;
   display: none;
   opacity: 0;
-  font-family: 'Brush Script MT', cursive;
+  font-family: 'Comic Sans MS', 'Segoe Print', cursive;
 }
 
 #instructionsPaper.visible {
@@ -467,7 +467,7 @@ body.loaded::before {
 }
 
 #instructionsPaper h1 {
-  font-family: 'Brush Script MT', cursive;
+  font-family: 'Comic Sans MS', 'Segoe Print', cursive;
   font-size: 36px;
   margin: 0 0 5px 0;
   text-align: center;
@@ -515,7 +515,7 @@ body.loaded::before {
   text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
   opacity: 0;
   transition: opacity 1s ease-in-out, transform 1s ease-in-out;
-  z-index: 6000;
+  z-index: 5000;
   pointer-events: none;
 }
 
@@ -557,7 +557,6 @@ body.loaded::before {
   user-select: none;
   max-width: 250px;
   pointer-events: none;
-  transition: transform 0.3s ease;
 }
 
 #cloudEscapeNote {
@@ -858,7 +857,6 @@ function makeDraggable(item){
   const editableP = item.querySelector('p[contenteditable="true"]');
   const img = item.querySelector('img');
   const isClickableImage = img && (img.classList.contains('pure') && (img.alt === 'Memory 1' || img.alt === 'Memory 2' || img.alt === 'Cat' || img.alt === 'Computer' || img.alt === 'Sticker' || img.id === 'pageItem'));
-  const hasPageOrEnvelope = img && (img.id === 'pageItem' || img.parentElement.id === 'envelope');
   
   function handleStart(e){
     if(isViewerOpen) return;
@@ -909,6 +907,10 @@ function makeDraggable(item){
       
       if(Math.abs(totalDx) > 3 || Math.abs(totalDy) > 3) {
         isDragging = true;
+        if(!pickupSound.playing){
+          pickupSound.currentTime=0;
+          pickupSound.play();
+        }
       }
       
       const swing = Math.min(Math.sqrt(dx*dx+dy*dy)*0.2,5);
@@ -958,10 +960,8 @@ function makeDraggable(item){
       
       if(!isDragging && Date.now() - dragStartTime < 200 && !isViewerOpen){
         if(isClickableImage) {
-          if(!hasPageOrEnvelope) {
-            pickupSound.currentTime=0;
-            pickupSound.play();
-          }
+          pickupSound.currentTime=0;
+          pickupSound.play();
           item.style.transform = 'scale(0.95)';
           setTimeout(() => {
             item.style.transform = 'scale(1) rotate(0deg)';
@@ -978,21 +978,21 @@ function makeDraggable(item){
           letterViewer.classList.add('visible');
           containerBlur.classList.add('active');
           darkOverlay.style.opacity = 1;
-          darkOverlay.classList.add('clickable');
+          darkOverlay.style.pointerEvents = 'auto';
         } else if(img && item.classList.contains('letter-img')){
           isViewerOpen = true;
           viewerImg.src = img.src;
           imageViewer.classList.add('visible');
           containerBlur.classList.add('active');
           darkOverlay.style.opacity = 1;
-          darkOverlay.classList.add('clickable');
+          darkOverlay.style.pointerEvents = 'auto';
         } else if(img && img.classList.contains('pure') && (img.alt === 'Memory 1' || img.alt === 'Memory 2' || img.alt === 'Cat' || img.alt === 'Computer' || img.alt === 'Sticker')){
           isViewerOpen = true;
           viewerImg.src = img.src;
           imageViewer.classList.add('visible');
           containerBlur.classList.add('active');
           darkOverlay.style.opacity = 1;
-          darkOverlay.classList.add('clickable');
+          darkOverlay.style.pointerEvents = 'auto';
         }
       }
     }
@@ -1036,6 +1036,8 @@ const letterFiles = ['text (1).jpg','text (2).jpg','text (3).jpg','text (4).jpg'
 
 document.getElementById('envelope').addEventListener('click', () => {
   if(isViewerOpen) return;
+  pickupSound.currentTime = 0;
+  pickupSound.play();
   paperSound.currentTime = 0;
   paperSound.play();
   
@@ -1071,9 +1073,9 @@ function closeViewer() {
   cloudViewer.classList.remove('visible');
   containerBlur.classList.remove('active');
   darkOverlay.style.opacity = darkModeEnabled ? 1 : 0;
-  darkOverlay.classList.remove('clickable');
-  if(darkModeEnabled) {
-    darkOverlay.classList.add('clickable');
+  darkOverlay.style.pointerEvents = darkModeEnabled ? 'auto' : 'none';
+  if(!darkModeEnabled) {
+    darkOverlay.classList.remove('clickable');
   }
   if(animationFrameId) {
     cancelAnimationFrame(animationFrameId);
@@ -1082,23 +1084,18 @@ function closeViewer() {
 }
 
 darkOverlay.addEventListener('click', (e) => {
-  if(isViewerOpen && darkOverlay.classList.contains('clickable')) {
+  if(darkOverlay.classList.contains('clickable')) {
     closeViewer();
   }
 });
 
-imageViewer.addEventListener('click', closeViewer);
-letterViewer.addEventListener('click', (e) => {
-  if(!e.target.closest('button')) {
-    paper2Sound.currentTime=0;
-    paper2Sound.play();
-    closeViewer();
+// Also allow clicking on the viewers themselves to close
+document.addEventListener('click', (e) => {
+  if(isViewerOpen) {
+    if(e.target === darkOverlay || e.target === containerBlur || e.target === cloudViewer) {
+      closeViewer();
+    }
   }
-});
-instructionsPaper.addEventListener('click', (e) => {
-  paperSound.currentTime=0;
-  paperSound.play();
-  closeViewer();
 });
 
 // Close burger menu when clicking outside
@@ -1116,23 +1113,35 @@ burgerContent.addEventListener('click', (e) => {
   e.stopPropagation();
 });
 
+imageViewer.addEventListener('click', closeViewer);
+letterViewer.addEventListener('click', (e) => {
+  if(!e.target.closest('button')) {
+    paper2Sound.currentTime=0;
+    paper2Sound.play();
+    closeViewer();
+  }
+});
+instructionsPaper.addEventListener('click', (e) => {
+  if(e.target === instructionsPaper || e.target.closest('.subtitle')) {
+    paperSound.currentTime=0;
+    paperSound.play();
+    closeViewer();
+  }
+});
+
 // Initial load
 window.addEventListener('DOMContentLoaded', () => { 
   musicTracks[currentTrack].play();
   
-  requestAnimationFrame(() => {
-    headphonesText.classList.add('visible');
-  });
+  // Show headphones text immediately
+  headphonesText.classList.add('visible');
   
   setTimeout(() => {
     document.body.classList.add('loaded');
     container.classList.add('visible');
-  }, 100);
-  
-  setTimeout(() => {
     headphonesText.classList.remove('visible');
     headphonesText.classList.add('hidden');
-  }, 2500);
+  }, 1200);
 });
 
 muteBtn.addEventListener('click', () => {
@@ -1149,9 +1158,15 @@ trayTab.addEventListener('click', () => {
 
 burgerMenu.addEventListener('click', () => {
   burgerContent.style.left = burgerContent.style.left==='0px'?'-200px':'0px';
+  if(burgerContent.style.left === '0px') {
+    pickupSound.currentTime=0;
+    pickupSound.play();
+  }
 });
 
 darkModeBtn.addEventListener('click', () => {
+  pickupSound.currentTime=0;
+  pickupSound.play();
   darkModeEnabled = !darkModeEnabled;
   if(!isViewerOpen) {
     darkOverlay.style.opacity = darkModeEnabled ? 1 : 0;
@@ -1165,6 +1180,8 @@ darkModeBtn.addEventListener('click', () => {
 
 document.getElementById('instructionsBtn').addEventListener('click', () => {
   if(isViewerOpen) return;
+  pickupSound.currentTime=0;
+  pickupSound.play();
   isViewerOpen = true;
   paperSound.currentTime=0;
   paperSound.play();
@@ -1186,7 +1203,8 @@ const cloudTexts = [
   "I want to listen to your problems",
   "I want to make you more letters",
   "I want to hear about what you find interesting",
-  "I want to have deep conversations about everything"
+  "I want to have deep conversations about everything",
+  "I want to travel to come see you"
 ];
 
 function createClouds() {
@@ -1205,8 +1223,8 @@ function createClouds() {
       element: cloud,
       x: parseFloat(cloud.style.left),
       y: parseFloat(cloud.style.top),
-      vx: (Math.random() - 0.5) * 2,
-      vy: (Math.random() - 0.5) * 2,
+      vx: (Math.random() - 0.5) * 1.2,
+      vy: (Math.random() - 0.5) * 1.2,
       nextDirectionChange: Date.now() + 3000
     };
     
@@ -1218,9 +1236,10 @@ function animateClouds() {
   const now = Date.now();
   
   clouds.forEach((cloudData, i) => {
+    // Change direction every 3 seconds
     if(now >= cloudData.nextDirectionChange) {
-      cloudData.vx = (Math.random() - 0.5) * 2;
-      cloudData.vy = (Math.random() - 0.5) * 2;
+      cloudData.vx = (Math.random() - 0.5) * 1.2;
+      cloudData.vy = (Math.random() - 0.5) * 1.2;
       cloudData.nextDirectionChange = now + 3000;
     }
     
@@ -1231,6 +1250,7 @@ function animateClouds() {
     const width = rect.width;
     const height = rect.height;
     
+    // Bounce off edges immediately with new direction
     if(cloudData.x <= 0) {
       cloudData.x = 1;
       cloudData.vx = Math.abs(cloudData.vx);
@@ -1256,6 +1276,7 @@ function animateClouds() {
       wobbleCloud(cloudData.element);
     }
     
+    // Check collisions with other clouds
     clouds.forEach((other, j) => {
       if(i >= j) return;
       
@@ -1296,14 +1317,13 @@ function animateClouds() {
 }
 
 function wobbleCloud(element) {
-  element.style.transform = 'scale(1.05)';
-  setTimeout(() => {
-    element.style.transform = 'scale(1)';
-  }, 300);
+  // Removed wobble animation - clouds no longer scale on collision
 }
 
 document.getElementById('cloudsBtn').addEventListener('click', () => {
   if(isViewerOpen) return;
+  pickupSound.currentTime=0;
+  pickupSound.play();
   isViewerOpen = true;
   createClouds();
   cloudViewer.classList.add('visible');
@@ -1312,6 +1332,18 @@ document.getElementById('cloudsBtn').addEventListener('click', () => {
   darkOverlay.classList.add('clickable');
   burgerContent.style.left = '-200px';
   animateClouds();
+});
+
+// Music control buttons
+document.getElementById('nextTrack').addEventListener('click', ()=>{ 
+  pickupSound.currentTime=0;
+  pickupSound.play();
+  fadeOutInTrack(1); 
+});
+document.getElementById('prevTrack').addEventListener('click', ()=>{ 
+  pickupSound.currentTime=0;
+  pickupSound.play();
+  fadeOutInTrack(-1); 
 });
 </script>
 </body>
