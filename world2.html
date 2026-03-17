@@ -474,13 +474,9 @@ body.loaded::before {
   100% { transform: scale(1); opacity: 1; }
 }
 
-.reaction-pill.popping {
-  animation: reactionPop 0.3s ease forwards;
-}
-
 .reaction-picker {
   position: absolute;
-  bottom: calc(100% + 6px);
+  top: calc(100% + 6px);
   right: 10px;
   background: white;
   border: 1px solid #eee;
@@ -491,7 +487,7 @@ body.loaded::before {
   box-shadow: 0 4px 16px rgba(0,0,0,0.12);
   z-index: 100;
   opacity: 0;
-  transform: scale(0.85) translateY(6px);
+  transform: scale(0.85) translateY(-6px);
   pointer-events: none;
   transition: opacity 0.15s ease, transform 0.15s ease;
 }
