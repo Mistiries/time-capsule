@@ -1208,6 +1208,7 @@ body.loaded::before {
   padding: 12px 16px;
   background: white;
   flex-shrink: 0;
+  min-height: 10px;
 }
 
 #selfieStrip {
@@ -1218,7 +1219,7 @@ body.loaded::before {
 }
 
 #selfieStrip:empty {
-  display: none;
+  min-height: 0;
 }
 
 .selfie-thumb {
@@ -1990,6 +1991,7 @@ cameraCanvas.toBlob(async (blob) => {
 
 const selfieQ = query(collection(db, 'selfies'), orderBy('timestamp', 'asc'));
 onSnapshot(selfieQ, (snapshot) => {
+  console.log('Selfie snapshot fired, docs:', snapshot.size);
   selfieStrip.innerHTML = '';
   snapshot.forEach((docSnap) => {
     const data = docSnap.data();
