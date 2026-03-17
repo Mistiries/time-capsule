@@ -1637,12 +1637,21 @@ msgEl.innerHTML = `
     const picker = msgEl.querySelector('.reaction-picker');
     const triggerBtn = msgEl.querySelector('.react-trigger-btn');
 
-    triggerBtn.addEventListener('click', (e) => {
+  triggerBtn.addEventListener('click', (e) => {
       e.stopPropagation();
+      e.preventDefault();
       const isVisible = picker.classList.contains('visible');
       document.querySelectorAll('.reaction-picker.visible').forEach(p => p.classList.remove('visible'));
       if (!isVisible) picker.classList.add('visible');
     });
+
+    triggerBtn.addEventListener('mousedown', (e) => {
+      e.stopPropagation();
+    });
+
+    triggerBtn.addEventListener('touchstart', (e) => {
+      e.stopPropagation();
+    }, { passive: true });
 
     document.addEventListener('click', () => {
       picker.classList.remove('visible');
