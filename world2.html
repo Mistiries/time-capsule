@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>World 2</title>
+<title>Time Capsule</title>
 <style>
 body {
   margin: 0;
@@ -108,6 +108,118 @@ body.loaded::before {
   font-weight: bold;
   box-shadow: 2px 2px 6px rgba(0,0,0,0.5);
 }
+
+#cupboard {
+  position: fixed;
+  bottom: 4%;
+  left: 3%;
+  width: 180px;
+  cursor: pointer;
+  z-index: 400;
+  transition: transform 0.1s ease;
+}
+
+#cupboard:active {
+  transform: scale(0.97);
+}
+
+#galleryOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.45);
+  z-index: 2500;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+#galleryOverlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#galleryTab {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.95);
+  width: 65vw;
+  max-height: 70vh;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 4px 4px 20px rgba(0,0,0,0.5);
+  z-index: 2600;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+#galleryTab.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+#galleryTab.closing {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.9);
+}
+
+#galleryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid #eee;
+  cursor: grab;
+  user-select: none;
+  border-radius: 12px 12px 0 0;
+  background: white;
+  flex-shrink: 0;
+}
+
+#galleryHeader:active {
+  cursor: grabbing;
+}
+
+#galleryTitle {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+}
+
+#galleryClose {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #666;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background 0.15s ease, transform 0.1s ease;
+  box-shadow: none;
+  margin: 0;
+}
+
+#galleryClose:hover {
+  background: #f0f0f0;
+}
+
+#galleryClose:active {
+  transform: scale(0.9);
+}
+
+#galleryContent {
+  overflow-y: auto;
+  padding: 20px;
+  flex: 1;
+  border-radius: 0 0 12px 12px;
+}
 </style>
 </head>
 <body>
@@ -117,6 +229,7 @@ body.loaded::before {
   <audio id="background2" src="sounds/background2.mp3" loop></audio>
   <audio id="background3" src="sounds/background3.mp3" loop></audio>
   <audio id="pickup" src="sounds/pickup.mp3"></audio>
+  <audio id="creakSound" src="sounds/doorcreak.mp3"></audio>
 
   <button id="muteBtn">Mute Music</button>
 
@@ -128,6 +241,20 @@ body.loaded::before {
     </div>
     <button id="portalBackBtn">🪵</button>
   </div>
+
+  <img src="images/cupboard.png" id="cupboard">
+
+  <div id="galleryOverlay"></div>
+  <div id="galleryTab">
+    <div id="galleryHeader">
+      <span id="galleryTitle">Gallery</span>
+      <button id="galleryClose">✕</button>
+    </div>
+    <div id="galleryContent">
+      <!-- images will go here later -->
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -136,6 +263,12 @@ const muteBtn = document.getElementById('muteBtn');
 const burgerMenu = document.getElementById('burgerMenu');
 const burgerContent = document.getElementById('burgerMenuContent');
 const container = document.getElementById('container');
+const cupboard = document.getElementById('cupboard');
+const creakSound = document.getElementById('creakSound');
+const galleryTab = document.getElementById('galleryTab');
+const galleryOverlay = document.getElementById('galleryOverlay');
+const galleryClose = document.getElementById('galleryClose');
+const galleryHeader = document.getElementById('galleryHeader');
 
 const musicTracks = [
   document.getElementById('background'),
@@ -145,6 +278,7 @@ const musicTracks = [
 let currentTrack = 0;
 let musicStarted = false;
 musicTracks.forEach(track => { track.volume = 0.6; });
+creakSound.volume = 0.6;
 
 function startMusic() {
   if (!musicStarted) {
@@ -234,6 +368,62 @@ document.getElementById('portalBackBtn').addEventListener('click', (e) => {
   pickupSound.play();
   burgerContent.classList.remove('open');
   window.location.href = 'capsule.html';
+});
+
+cupboard.addEventListener('click', () => {
+  startMusic();
+  creakSound.currentTime = 0;
+  creakSound.play();
+  galleryTab.classList.add('visible');
+  galleryOverlay.classList.add('active');
+});
+
+galleryClose.addEventListener('click', (e) => {
+  e.stopPropagation();
+  pickupSound.currentTime = 0;
+  pickupSound.play();
+  galleryTab.classList.add('closing');
+  galleryOverlay.classList.remove('active');
+  setTimeout(() => {
+    galleryTab.classList.remove('visible');
+    galleryTab.classList.remove('closing');
+    galleryTab.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+    galleryTab.style.top = '50%';
+    galleryTab.style.left = '50%';
+    galleryTab.style.transform = 'translate(-50%, -50%) scale(0.95)';
+  }, 250);
+});
+
+galleryOverlay.addEventListener('click', () => {
+  galleryClose.click();
+});
+
+let dragOffsetX, dragOffsetY, isDraggingGallery = false;
+
+galleryHeader.addEventListener('mousedown', (e) => {
+  if (e.target === galleryClose) return;
+  isDraggingGallery = true;
+  const rect = galleryTab.getBoundingClientRect();
+  dragOffsetX = e.clientX - rect.left;
+  dragOffsetY = e.clientY - rect.top;
+  galleryTab.style.transition = 'none';
+  galleryTab.style.transform = 'none';
+  galleryTab.style.top = rect.top + 'px';
+  galleryTab.style.left = rect.left + 'px';
+  e.preventDefault();
+});
+
+document.addEventListener('mousemove', (e) => {
+  if (!isDraggingGallery) return;
+  galleryTab.style.top = (e.clientY - dragOffsetY) + 'px';
+  galleryTab.style.left = (e.clientX - dragOffsetX) + 'px';
+});
+
+document.addEventListener('mouseup', () => {
+  isDraggingGallery = false;
+  if (!galleryTab.classList.contains('closing')) {
+    galleryTab.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+  }
 });
 
 document.addEventListener('click', startMusic, { once: true });
