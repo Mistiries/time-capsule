@@ -1686,18 +1686,20 @@ guestbookBook.addEventListener('mousedown', (e) => {
   e.preventDefault();
 });
 
-guestbookBook.addEventListener('touchstart', (e) => {
-  const touch = e.touches[0];
-  isBookDragging = true;
-  bookHasMoved = false;
-  const rect = guestbookBook.getBoundingClientRect();
-  bookDragOffsetX = touch.clientX - rect.left;
-  bookDragOffsetY = touch.clientY - rect.top;
-  bookStartX = touch.clientX;
-  bookStartY = touch.clientY;
-  guestbookBook.style.transition = 'none';
-  e.preventDefault();
-}, { passive: false });
+el.addEventListener('touchstart', (e) => {
+      const touch = e.touches[0];
+      isDraggingPile = true;
+      pileHasMoved = false;
+      pileLastX = touch.clientX;
+      const rect = el.getBoundingClientRect();
+      pileDragOffX = touch.clientX - rect.left;
+      pileDragOffY = touch.clientY - rect.top;
+      pileStartX = touch.clientX;
+      pileStartY = touch.clientY;
+      el.style.transition = 'none';
+      el.style.zIndex = 490 + i;
+      e.preventDefault();
+    }, { passive: false });
 
 let lastBookX = 0, bookSwing = 0;
 
@@ -1904,6 +1906,12 @@ const CLOUDINARY_CLOUD = 'djg7mvjal';
 const CLOUDINARY_PRESET = 'timecapsule_selfies';
 
 cameraBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  openCamera();
+});
+
+cameraBtn.addEventListener('touchend', (e) => {
+  e.preventDefault();
   e.stopPropagation();
   openCamera();
 });
@@ -2260,12 +2268,17 @@ function buildPolaroidPile(files, positions, viewerFiles) {
     let pileDragOffX, pileDragOffY, pileStartX, pileStartY, pileLastX;
     let pileSwing = 0;
 
-    const pos = positions[i % positions.length];
+   const pos = positions[i % positions.length];
     el.style.position = 'fixed';
-    el.style.right = pos[0] + '%';
-    el.style.bottom = pos[1] + '%';
     el.style.transform = `rotate(${rot}deg)`;
     el.style.zIndex = 400 + i;
+    // Convert percent to pixels immediately so drag never has to switch coordinate systems
+    const leftPx = window.innerWidth - (pos[0] / 100 * window.innerWidth) - 120;
+    const topPx = window.innerHeight - (pos[1] / 100 * window.innerHeight) - 136;
+    el.style.left = leftPx + 'px';
+    el.style.top = topPx + 'px';
+    el.style.right = 'auto';
+    el.style.bottom = 'auto';
 
     const img = document.createElement('img');
     img.src = src;
@@ -2291,12 +2304,7 @@ function buildPolaroidPile(files, positions, viewerFiles) {
       pileDragOffY = e.clientY - rect.top;
       pileStartX = e.clientX;
       pileStartY = e.clientY;
-      el.style.transition = 'none';
-      el.style.position = 'fixed';
-      el.style.left = rect.left + 'px';
-      el.style.top = rect.top + 'px';
-      el.style.right = 'auto';
-      el.style.bottom = 'auto';
+     el.style.transition = 'none';
       el.style.zIndex = 490 + i;
       e.preventDefault();
     });
