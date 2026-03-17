@@ -1080,6 +1080,15 @@ body.loaded::before {
   z-index: 400;
 }
 
+#polaroidPile2 {
+  position: fixed;
+  bottom: 4%;
+  right: 14%;
+  width: 180px;
+  height: 200px;
+  z-index: 400;
+}
+
 .polaroid {
   position: absolute;
   width: 120px;
@@ -1279,9 +1288,10 @@ body.loaded::before {
     <div id="galleryResizeHandle">⇲</div>
   </div>
 
-  <!-- Polaroid pile -->
+<!-- Polaroid pile -->
   <div id="polaroidPile"></div>
-
+  <div id="polaroidPile2"></div>
+  
   <!-- Polaroid viewer -->
   <div id="polaroidViewerOverlay"></div>
   <button id="polaroidViewerClose">✕</button>
@@ -1824,7 +1834,20 @@ msgEl.innerHTML = `
 });
 
 // Polaroids
-const polaroidFiles = [
+const polaroidFiles2 = [
+  'images/polaroids/2/IMG-20260301-WA0024.jpg',
+  'images/polaroids/2/IMG-20260109-WA0045.jpg',
+  'images/polaroids/2/Untitled159_20260115181902.png',
+  'images/polaroids/2/Snapchat-551096038.jpg',
+  'images/polaroids/2/Untitled195_20260223210042.png',
+  'images/polaroids/2/Untitled144_20260108154948.png',
+  'images/polaroids/2/Untitled167_20260209184604.png',
+  'images/polaroids/2/Untitled170_20260211190528.png',
+  'images/polaroids/2/Snapchat-1881603802~2.jpg',
+  'images/polaroids/2/IMG-20251230-WA0006~2.jpg',
+];
+
+const polaroidFiles = [const polaroidFiles = [
   'images/polaroids/IMG_20250911_150818.jpg',
   'images/polaroids/IMG_20260113_095754.jpg',
   'images/polaroids/IMG_20260115_190131.jpg',
@@ -1835,6 +1858,7 @@ const polaroidFiles = [
 ];
 
 const polaroidPile = document.getElementById('polaroidPile');
+const polaroidPile2 = document.getElementById('polaroidPile2');
 const polaroidViewerOverlay = document.getElementById('polaroidViewerOverlay');
 const polaroidViewerClose = document.getElementById('polaroidViewerClose');
 let polaroidViewerOpen = false;
@@ -1843,42 +1867,45 @@ let polaroidTopZ = 5550;
 
 const baseRotations = [-8, -3, 2, 6, -5, 1, -10];
 
-polaroidFiles.forEach((src, i) => {
-  const el = document.createElement('div');
-  el.className = 'polaroid';
-  const rot = baseRotations[i % baseRotations.length];
-  el.style.setProperty('--base-rotate', `rotate(${rot}deg)`);
-  el.style.transform = `rotate(${rot}deg)`;
-  el.style.zIndex = 400 + i;
- el.style.left = (i * 8) + 'px';
-  el.style.top = (i * -5) + 'px';
-  const img = document.createElement('img');
-  img.src = src;
-  img.loading = 'lazy';
-  el.appendChild(img);
-el.addEventListener('mouseenter', () => {
-    el.classList.add('hovered');
+function buildPolaroidPile(files, pileEl, viewerFiles) {
+  files.forEach((src, i) => {
+    const el = document.createElement('div');
+    el.className = 'polaroid';
     const rot = baseRotations[i % baseRotations.length];
-    el.style.transform = `rotate(${rot}deg) scale(1.18) translateY(-12px)`;
-  });
-  el.addEventListener('mouseleave', () => {
-    el.classList.remove('hovered');
-    const rot = baseRotations[i % baseRotations.length];
+    el.style.setProperty('--base-rotate', `rotate(${rot}deg)`);
     el.style.transform = `rotate(${rot}deg)`;
+    el.style.zIndex = 400 + i;
+    el.style.left = (i * 8) + 'px';
+    el.style.top = (i * -5) + 'px';
+    const img = document.createElement('img');
+    img.src = src;
+    img.loading = 'lazy';
+    el.appendChild(img);
+    el.addEventListener('mouseenter', () => {
+      el.classList.add('hovered');
+      el.style.transform = `rotate(${rot}deg) scale(1.18) translateY(-12px)`;
+    });
+    el.addEventListener('mouseleave', () => {
+      el.classList.remove('hovered');
+      el.style.transform = `rotate(${rot}deg)`;
+    });
+    el.addEventListener('click', () => openPolaroidViewer(viewerFiles));
+    el.addEventListener('touchend', (e) => { e.preventDefault(); openPolaroidViewer(viewerFiles); });
+    pileEl.appendChild(el);
   });
-  el.addEventListener('click', () => openPolaroidViewer());
-  el.addEventListener('touchend', (e) => { e.preventDefault(); openPolaroidViewer(); });
-  polaroidPile.appendChild(el);
-});
+}
 
-function openPolaroidViewer() {
+buildPolaroidPile(polaroidFiles, polaroidPile, polaroidFiles);
+buildPolaroidPile(polaroidFiles2, polaroidPile2, polaroidFiles2);
+
+function openPolaroidViewer(files) {
   if (polaroidViewerOpen) return;
   polaroidViewerOpen = true;
   polaroidViewerOverlay.classList.add('active');
   polaroidViewerClose.classList.add('active');
   polaroidViewerItems = [];
 
-  polaroidFiles.forEach((src, i) => {
+  files.forEach((src, i) => {
     const item = document.createElement('div');
     item.className = 'polaroid-viewer-item';
     const rot = (Math.random() - 0.5) * 24;
