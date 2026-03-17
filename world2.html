@@ -156,6 +156,8 @@ body.loaded::before {
   pointer-events: none;
   overflow: hidden;
   transition: opacity 0.25s ease, transform 0.25s ease;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 #galleryTab.visible {
@@ -233,6 +235,8 @@ body.loaded::before {
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
   display: block;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 #galleryGrid img:hover {
@@ -450,6 +454,7 @@ let isViewerOpen = false;
 // Populate gallery grid
 galleryImages.forEach((src, i) => {
   const img = document.createElement('img');
+  img.loading = 'lazy';
   img.src = src;
   img.addEventListener('click', () => openImageViewer(i));
   img.addEventListener('touchend', (e) => {
