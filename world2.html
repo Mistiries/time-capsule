@@ -1671,7 +1671,7 @@ msgEl.innerHTML = `
       });
     });
 
-    // Reaction pill click to remove
+ // Reaction pill click to remove
     msgEl.querySelectorAll('.reaction-pill').forEach(pill => {
       pill.addEventListener('click', async (e) => {
         e.stopPropagation();
@@ -1686,18 +1686,9 @@ msgEl.innerHTML = `
         }
       });
 
-      // Pop animation on new reactions
       pill.classList.add('popping');
       setTimeout(() => pill.classList.remove('popping'), 300);
     });
-
-      msgEl.querySelector('.guestbook-save-btn').addEventListener('click', async () => {
-        const newText = msgEl.querySelector('.guestbook-edit-input').value.trim();
-        if (!newText) return;
-        await updateDoc(doc(db, 'messages', id), { text: newText });
-        msgEl.classList.remove('editing');
-      });
-    }
 
     guestbookMessages.appendChild(msgEl);
   });
