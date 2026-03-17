@@ -159,7 +159,6 @@ body.loaded::before {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.25s ease, transform 0.25s ease;
-  resize: both;
   overflow: hidden;
 }
 
@@ -225,6 +224,23 @@ body.loaded::before {
   border-radius: 0 0 12px 12px;
   min-height: 0;
 }
+
+#galleryResizeHandle {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 24px;
+  height: 24px;
+  cursor: nwse-resize;
+  z-index: 10;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 4px;
+  color: #bbb;
+  font-size: 14px;
+  user-select: none;
+}
 </style>
 </head>
 <body>
@@ -258,6 +274,7 @@ body.loaded::before {
     <div id="galleryContent">
       <!-- images will go here later -->
     </div>
+    <div id="galleryResizeHandle">⇲</div>
   </div>
 
 </div>
@@ -274,6 +291,7 @@ const galleryTab = document.getElementById('galleryTab');
 const galleryOverlay = document.getElementById('galleryOverlay');
 const galleryClose = document.getElementById('galleryClose');
 const galleryHeader = document.getElementById('galleryHeader');
+const galleryResizeHandle = document.getElementById('galleryResizeHandle');
 
 const musicTracks = [
   document.getElementById('background'),
@@ -396,6 +414,8 @@ galleryClose.addEventListener('click', (e) => {
     galleryTab.style.top = '50%';
     galleryTab.style.left = '50%';
     galleryTab.style.transform = 'translate(-50%, -50%) scale(0.95)';
+    galleryTab.style.width = '65vw';
+    galleryTab.style.height = '';
   }, 250);
 });
 
@@ -403,33 +423,112 @@ galleryOverlay.addEventListener('click', () => {
   galleryClose.click();
 });
 
+// Dragging
 let dragOffsetX, dragOffsetY, isDraggingGallery = false;
 
-galleryHeader.addEventListener('mousedown', (e) => {
-  if (e.target === galleryClose) return;
+function startGalleryDrag(clientX, clientY) {
   isDraggingGallery = true;
   const rect = galleryTab.getBoundingClientRect();
-  dragOffsetX = e.clientX - rect.left;
-  dragOffsetY = e.clientY - rect.top;
+  dragOffsetX = clientX - rect.left;
+  dragOffsetY = clientY - rect.top;
   galleryTab.style.transition = 'none';
   galleryTab.style.transform = 'none';
   galleryTab.style.top = rect.top + 'px';
   galleryTab.style.left = rect.left + 'px';
-  e.preventDefault();
-});
+}
 
-document.addEventListener('mousemove', (e) => {
+function moveGallery(clientX, clientY) {
   if (!isDraggingGallery) return;
-  galleryTab.style.top = (e.clientY - dragOffsetY) + 'px';
-  galleryTab.style.left = (e.clientX - dragOffsetX) + 'px';
-});
+  galleryTab.style.top = (clientY - dragOffsetY) + 'px';
+  galleryTab.style.left = (clientX - dragOffsetX) + 'px';
+}
 
-document.addEventListener('mouseup', () => {
+function endGalleryDrag() {
   isDraggingGallery = false;
   if (!galleryTab.classList.contains('closing')) {
     galleryTab.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
   }
+}
+
+galleryHeader.addEventListener('mousedown', (e) => {
+  if (e.target === galleryClose) return;
+  startGalleryDrag(e.clientX, e.clientY);
+  e.preventDefault();
 });
+
+galleryHeader.addEventListener('touchstart', (e) => {
+  if (e.target === galleryClose) return;
+  const touch = e.touches[0];
+  startGalleryDrag(touch.clientX, touch.clientY);
+  e.preventDefault();
+}, { passive: false });
+
+document.addEventListener('mousemove', (e) => {
+  moveGallery(e.clientX, e.clientY);
+});
+
+document.addEventListener('touchmove', (e) => {
+  if (!isDraggingGallery) return;
+  const touch = e.touches[0];
+  moveGallery(touch.clientX, touch.clientY);
+  e.preventDefault();
+}, { passive: false });
+
+document.addEventListener('mouseup', endGalleryDrag);
+document.addEventListener('touchend', endGalleryDrag);
+
+// Resizing
+let isResizing = false;
+let resizeStartX, resizeStartY, resizeStartW, resizeStartH;
+
+function startResize(clientX, clientY) {
+  isResizing = true;
+  const rect = galleryTab.getBoundingClientRect();
+  resizeStartX = clientX;
+  resizeStartY = clientY;
+  resizeStartW = rect.width;
+  resizeStartH = rect.height;
+  galleryTab.style.transition = 'none';
+}
+
+function doResize(clientX, clientY) {
+  if (!isResizing) return;
+  const newW = Math.max(300, resizeStartW + (clientX - resizeStartX));
+  const newH = Math.max(200, resizeStartH + (clientY - resizeStartY));
+  galleryTab.style.width = newW + 'px';
+  galleryTab.style.height = newH + 'px';
+}
+
+function endResize() {
+  isResizing = false;
+}
+
+galleryResizeHandle.addEventListener('mousedown', (e) => {
+  startResize(e.clientX, e.clientY);
+  e.preventDefault();
+  e.stopPropagation();
+});
+
+galleryResizeHandle.addEventListener('touchstart', (e) => {
+  const touch = e.touches[0];
+  startResize(touch.clientX, touch.clientY);
+  e.preventDefault();
+  e.stopPropagation();
+}, { passive: false });
+
+document.addEventListener('mousemove', (e) => {
+  doResize(e.clientX, e.clientY);
+});
+
+document.addEventListener('touchmove', (e) => {
+  if (!isResizing) return;
+  const touch = e.touches[0];
+  doResize(touch.clientX, touch.clientY);
+  e.preventDefault();
+}, { passive: false });
+
+document.addEventListener('mouseup', endResize);
+document.addEventListener('touchend', endResize);
 
 document.addEventListener('click', startMusic, { once: true });
 document.addEventListener('touchstart', startMusic, { once: true });
