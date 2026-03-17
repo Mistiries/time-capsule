@@ -1686,6 +1686,21 @@ guestbookBook.addEventListener('mousedown', (e) => {
   e.preventDefault();
 });
 
+guestbookBook.addEventListener('touchstart', (e) => {
+  const touch = e.touches[0];
+  isBookDragging = true;
+  bookHasMoved = false;
+  const rect = guestbookBook.getBoundingClientRect();
+  bookDragOffsetX = touch.clientX - rect.left;
+  bookDragOffsetY = touch.clientY - rect.top;
+  bookStartX = touch.clientX;
+  bookStartY = touch.clientY;
+  guestbookBook.style.transition = 'none';
+  e.preventDefault();
+}, { passive: false });
+
+let lastBookX = 0, bookSwing = 0;
+
 let lastBookX = 0, bookSwing = 0;
 
 document.addEventListener('mousemove', (e) => {
@@ -2280,21 +2295,20 @@ function buildPolaroidPile(files, positions, viewerFiles) {
       if (!isDraggingPile) el.style.transform = `rotate(${currentRot}deg)`;
     });
 
-   el.addEventListener('mousedown', (e) => {
+el.addEventListener('mousedown', (e) => {
       isDraggingPile = true;
       pileHasMoved = false;
       pileLastX = e.clientX;
-      const rect = el.getBoundingClientRect();
-      pileDragOffX = e.clientX - rect.left;
-      pileDragOffY = e.clientY - rect.top;
+      pileDragOffX = 60;
+      pileDragOffY = 64;
       pileStartX = e.clientX;
       pileStartY = e.clientY;
-     el.style.transition = 'none';
+      el.style.transition = 'none';
       el.style.zIndex = 490 + i;
       e.preventDefault();
     });
 
-   el.addEventListener('touchstart', (e) => {
+  el.addEventListener('touchstart', (e) => {
       const touch = e.touches[0];
       isDraggingPile = true;
       pileHasMoved = false;
@@ -2305,11 +2319,6 @@ function buildPolaroidPile(files, positions, viewerFiles) {
       pileStartX = touch.clientX;
       pileStartY = touch.clientY;
       el.style.transition = 'none';
-      el.style.position = 'fixed';
-      el.style.left = rect.left + 'px';
-      el.style.top = rect.top + 'px';
-      el.style.right = 'auto';
-      el.style.bottom = 'auto';
       el.style.zIndex = 490 + i;
       e.preventDefault();
     }, { passive: false });
