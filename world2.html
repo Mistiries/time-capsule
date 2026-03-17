@@ -1100,11 +1100,9 @@ body.loaded::before {
   pointer-events: none;
 }
 
-.polaroid:hover {
-  transform: var(--base-rotate, rotate(0deg)) scale(1.18) translateY(-12px) !important;
+.polaroid.hovered {
   box-shadow: 4px 8px 20px rgba(0,0,0,0.5);
   z-index: 450 !important;
-  transition: transform 0.4s ease, box-shadow 0.4s ease;
 }
 
 /* Polaroid viewer */
@@ -1841,6 +1839,7 @@ const polaroidViewerOverlay = document.getElementById('polaroidViewerOverlay');
 const polaroidViewerClose = document.getElementById('polaroidViewerClose');
 let polaroidViewerOpen = false;
 let polaroidViewerItems = [];
+let polaroidTopZ = 5550;
 
 const baseRotations = [-8, -3, 2, 6, -5, 1, -10];
 
@@ -1857,6 +1856,16 @@ polaroidFiles.forEach((src, i) => {
   img.src = src;
   img.loading = 'lazy';
   el.appendChild(img);
+el.addEventListener('mouseenter', () => {
+    el.classList.add('hovered');
+    const rot = baseRotations[i % baseRotations.length];
+    el.style.transform = `rotate(${rot}deg) scale(1.18) translateY(-12px)`;
+  });
+  el.addEventListener('mouseleave', () => {
+    el.classList.remove('hovered');
+    const rot = baseRotations[i % baseRotations.length];
+    el.style.transform = `rotate(${rot}deg)`;
+  });
   el.addEventListener('click', () => openPolaroidViewer());
   el.addEventListener('touchend', (e) => { e.preventDefault(); openPolaroidViewer(); });
   polaroidPile.appendChild(el);
@@ -1891,9 +1900,10 @@ function openPolaroidViewer() {
     item.appendChild(img);
 
     // Drag
-    let isDragging = false;
+  let isDragging = false;
     let dragOffX, dragOffY, startDX, startDY;
     let currentRot = rot;
+    item._currentRot = rot;
 
     item.addEventListener('mousedown', (e) => {
       isDragging = true;
@@ -1929,14 +1939,12 @@ function openPolaroidViewer() {
       item.style.transform = `rotate(${currentRot + swing}deg)`;
     }
 
-  let topZIndex = 5550;
-
-    function onEnd(clientX) {
+function onEnd(clientX) {
       if (!isDragging) return;
       isDragging = false;
       item.classList.remove('dragging');
-      topZIndex += 1;
-      item.style.zIndex = topZIndex;
+      polaroidTopZ += 1;
+      item.style.zIndex = polaroidTopZ;
       const dx = clientX - startDX;
       const finalRot = currentRot + Math.max(-12, Math.min(12, dx * 0.05));
       currentRot = finalRot;
