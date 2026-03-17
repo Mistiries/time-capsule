@@ -1325,6 +1325,26 @@ document.getElementById('portalBtn').addEventListener('click', (e) => {
   burgerContent.classList.remove('open');
   animateClouds();
 });
+
+  // Last visited
+const lastVisit = localStorage.getItem('timecapsule_lastvisit');
+if (lastVisit) {
+  const days = Math.floor((Date.now() - parseInt(lastVisit)) / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((Date.now() - parseInt(lastVisit)) / (1000 * 60 * 60));
+  const minutes = Math.floor((Date.now() - parseInt(lastVisit)) / (1000 * 60));
+  let msg = '';
+  if (minutes < 1) msg = 'last visited just now';
+  else if (minutes < 60) msg = `last visited ${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+  else if (hours < 24) msg = `last visited ${hours} hour${hours === 1 ? '' : 's'} ago`;
+  else msg = `last visited ${days} day${days === 1 ? '' : 's'} ago`;
+  const stamp = document.createElement('div');
+  stamp.style.cssText = 'position:fixed;bottom:12px;right:12px;color:rgba(255,255,255,0.4);font-size:12px;pointer-events:none;z-index:9999;font-style:italic;';
+  stamp.textContent = msg;
+  document.body.appendChild(stamp);
+  setTimeout(() => { stamp.style.transition = 'opacity 1.5s ease'; stamp.style.opacity = '0'; }, 4000);
+}
+localStorage.setItem('timecapsule_lastvisit', Date.now().toString());
+  
 </script>
 </body>
 </html>
