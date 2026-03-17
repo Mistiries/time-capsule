@@ -153,6 +153,15 @@ body.loaded::before {
   transform: translateY(-3px);
 }
 
+@keyframes bookGlow {
+  0%, 100% { filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5)) drop-shadow(0 0 8px rgba(255,220,150,0.4)); }
+  50% { filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5)) drop-shadow(0 0 20px rgba(255,220,150,0.9)); }
+}
+
+#guestbookBook.has-unread {
+  animation: bookGlow 2s ease-in-out infinite;
+}
+
 #guestbookBook:active {
   transform: scale(0.95);
 }
@@ -282,6 +291,29 @@ body.loaded::before {
   border-bottom: 1px solid #eee;
   background: white;
   flex-shrink: 0;
+  cursor: grab;
+  user-select: none;
+}
+
+#guestbookPanelHeader:active {
+  cursor: grabbing;
+}
+
+#guestbookResizeHandle {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 24px;
+  height: 24px;
+  cursor: nwse-resize;
+  z-index: 10;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 4px;
+  color: #bbb;
+  font-size: 14px;
+  user-select: none;
 }
 
 #guestbookPanelTitle {
@@ -987,9 +1019,9 @@ body.loaded::before {
 
   <!-- Guestbook panel -->
   <div id="guestbookOverlay"></div>
-  <div id="guestbookPanel">
+<div id="guestbookPanel">
     <div id="guestbookPanelHeader">
-     <span id="guestbookPanelTitle">Our Notebook</span>
+      <span id="guestbookPanelTitle">Our Notebook</span>
       <span id="guestbookWhoAmI"></span>
       <button id="guestbookCloseBtn">✕</button>
     </div>
@@ -1000,6 +1032,7 @@ body.loaded::before {
       <textarea id="guestbookInput" placeholder="Leave a message..."></textarea>
       <button id="guestbookPostBtn">Post</button>
     </div>
+    <div id="guestbookResizeHandle">⇲</div>
   </div>
 
   <div id="instructionsOverlay"></div>
@@ -1129,6 +1162,7 @@ function openGuestbook() {
   guestbookWhoAmI.textContent = `Signed in as ${currentUser}`;
   guestbookOverlay.classList.add('active');
   guestbookPanel.classList.add('visible');
+  markAllRead();
 }
 
 function closeGuestbook() {
@@ -1236,6 +1270,132 @@ document.addEventListener('touchend', (e) => {
 
 document.getElementById('guestbookCloseBtn').addEventListener('click', closeGuestbook);
 guestbookOverlay.addEventListener('click', closeGuestbook);
+
+// Unread messages
+function checkUnread() {
+  const lastSeen = parseInt(localStorage.getItem('timecapsule_notebook_seen') || '0');
+  const q2 = query(collection(db, 'messages'), orderBy('timestamp', 'asc'));
+  onSnapshot(q2, (snapshot) => {
+    let hasUnread = false;
+    snapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      if (data.timestamp && data.name !== currentUser) {
+        const msgTime = data.timestamp.seconds * 1000;
+        if (msgTime > lastSeen) hasUnread = true;
+      }
+    });
+    if (hasUnread) {
+      guestbookBook.classList.add('has-unread');
+    } else {
+      guestbookBook.classList.remove('has-unread');
+    }
+  });
+}
+
+function markAllRead() {
+  localStorage.setItem('timecapsule_notebook_seen', Date.now().toString());
+  guestbookBook.classList.remove('has-unread');
+}
+
+checkUnread();
+
+// Guestbook panel drag
+const guestbookPanelHeader = document.getElementById('guestbookPanelHeader');
+const guestbookResizeHandle = document.getElementById('guestbookResizeHandle');
+let gbDragOffsetX = 0, gbDragOffsetY = 0, isGbDragging = false;
+let gbLastX = 0, gbSwing = 0;
+
+function startGbDrag(clientX, clientY) {
+  isGbDragging = true;
+  gbLastX = clientX;
+  const rect = guestbookPanel.getBoundingClientRect();
+  gbDragOffsetX = clientX - rect.left;
+  gbDragOffsetY = clientY - rect.top;
+  guestbookPanel.style.transition = 'none';
+  guestbookPanel.style.transform = 'none';
+  guestbookPanel.style.top = rect.top + 'px';
+  guestbookPanel.style.left = rect.left + 'px';
+}
+
+function moveGb(clientX, clientY) {
+  if (!isGbDragging) return;
+  const dx = clientX - gbLastX;
+  gbLastX = clientX;
+  const targetSwing = Math.max(-3, Math.min(3, dx * 0.15));
+  gbSwing += (targetSwing - gbSwing) * 0.25;
+  guestbookPanel.style.left = (clientX - gbDragOffsetX) + 'px';
+  guestbookPanel.style.top = (clientY - gbDragOffsetY) + 'px';
+  guestbookPanel.style.transform = `rotate(${gbSwing}deg)`;
+}
+
+function endGbDrag() {
+  isGbDragging = false;
+  gbSwing = 0;
+  guestbookPanel.style.transition = 'transform 0.3s ease';
+  guestbookPanel.style.transform = 'rotate(0deg)';
+  setTimeout(() => { guestbookPanel.style.transition = 'opacity 0.25s ease, transform 0.25s ease'; }, 300);
+}
+
+guestbookPanelHeader.addEventListener('mousedown', (e) => {
+  if (e.target === document.getElementById('guestbookCloseBtn')) return;
+  startGbDrag(e.clientX, e.clientY);
+  e.preventDefault();
+});
+
+guestbookPanelHeader.addEventListener('touchstart', (e) => {
+  if (e.target === document.getElementById('guestbookCloseBtn')) return;
+  const touch = e.touches[0];
+  startGbDrag(touch.clientX, touch.clientY);
+  e.preventDefault();
+}, { passive: false });
+
+document.addEventListener('mousemove', (e) => {
+  if (isGbDragging) moveGb(e.clientX, e.clientY);
+  if (isGbResizing) doGbResize(e.clientX, e.clientY);
+});
+
+document.addEventListener('touchmove', (e) => {
+  const touch = e.touches[0];
+  if (isGbDragging) { moveGb(touch.clientX, touch.clientY); e.preventDefault(); }
+  if (isGbResizing) { doGbResize(touch.clientX, touch.clientY); e.preventDefault(); }
+}, { passive: false });
+
+document.addEventListener('mouseup', () => { endGbDrag(); endGbResize(); });
+document.addEventListener('touchend', () => { endGbDrag(); endGbResize(); });
+
+// Guestbook panel resize
+let isGbResizing = false, gbResizeStartX, gbResizeStartY, gbResizeStartW, gbResizeStartH;
+
+function startGbResize(clientX, clientY) {
+  isGbResizing = true;
+  const rect = guestbookPanel.getBoundingClientRect();
+  gbResizeStartX = clientX; gbResizeStartY = clientY;
+  gbResizeStartW = rect.width; gbResizeStartH = rect.height;
+  guestbookPanel.style.transition = 'none';
+}
+
+function doGbResize(clientX, clientY) {
+  if (!isGbResizing) return;
+  const newW = Math.max(320, gbResizeStartW + (clientX - gbResizeStartX));
+  const newH = Math.max(300, gbResizeStartH + (clientY - gbResizeStartY));
+  guestbookPanel.style.width = newW + 'px';
+  guestbookPanel.style.height = newH + 'px';
+}
+
+function endGbResize() { isGbResizing = false; }
+
+guestbookResizeHandle.addEventListener('mousedown', (e) => {
+  startGbResize(e.clientX, e.clientY);
+  e.preventDefault();
+  e.stopPropagation();
+});
+
+guestbookResizeHandle.addEventListener('touchstart', (e) => {
+  const touch = e.touches[0];
+  startGbResize(touch.clientX, touch.clientY);
+  e.preventDefault();
+  e.stopPropagation();
+}, { passive: false });
 
 // Post message
 guestbookPostBtn.addEventListener('click', async () => {
