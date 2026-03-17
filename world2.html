@@ -1069,6 +1069,119 @@ body.loaded::before {
 #imageViewerImg.active {
   opacity: 1;
 }
+
+/* Polaroids */
+#polaroidPile {
+  position: fixed;
+  bottom: 8%;
+  right: 5%;
+  width: 140px;
+  height: 160px;
+  z-index: 400;
+}
+
+.polaroid {
+  position: absolute;
+  width: 120px;
+  background: white;
+  padding: 8px 8px 28px 8px;
+  box-shadow: 2px 4px 12px rgba(0,0,0,0.4);
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transform-origin: center bottom;
+  user-select: none;
+}
+
+.polaroid img {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  display: block;
+}
+
+.polaroid:hover {
+  transform: var(--base-rotate, rotate(0deg)) scale(1.15) translateY(-8px) !important;
+  box-shadow: 4px 8px 20px rgba(0,0,0,0.5);
+  z-index: 450 !important;
+}
+
+/* Polaroid viewer */
+#polaroidViewerOverlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.75);
+  z-index: 5500;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+
+#polaroidViewerOverlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#polaroidViewerClose {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 5600;
+  background: rgba(255,255,255,0.9);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.4);
+  color: #333;
+}
+
+#polaroidViewerClose.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#polaroidViewerClose:hover {
+  background: white;
+  transform: scale(1.1);
+}
+
+.polaroid-viewer-item {
+  position: fixed;
+  background: white;
+  padding: 12px 12px 40px 12px;
+  box-shadow: 4px 8px 24px rgba(0,0,0,0.5);
+  cursor: grab;
+  user-select: none;
+  z-index: 5550;
+  transition: box-shadow 0.15s ease;
+}
+
+.polaroid-viewer-item:active {
+  cursor: grabbing;
+}
+
+.polaroid-viewer-item img {
+  width: 220px;
+  height: 220px;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+}
+
+.polaroid-viewer-item.dragging {
+  box-shadow: 8px 16px 40px rgba(0,0,0,0.6);
+  z-index: 5600;
+}
+
 </style>
 </head>
 <body>
@@ -1164,6 +1277,13 @@ body.loaded::before {
     </div>
     <div id="galleryResizeHandle">⇲</div>
   </div>
+
+  <!-- Polaroid pile -->
+  <div id="polaroidPile"></div>
+
+  <!-- Polaroid viewer -->
+  <div id="polaroidViewerOverlay"></div>
+  <button id="polaroidViewerClose">✕</button>
 
   <div id="imageViewerOverlay"></div>
   <div id="viewerSlideContainer">
@@ -1700,6 +1820,166 @@ msgEl.innerHTML = `
     guestbookMessages.appendChild(msgEl);
   });
   guestbookMessages.scrollTop = guestbookMessages.scrollHeight;
+});
+
+// Polaroids
+const polaroidFiles = [
+  'images/polaroids/IMG_20250911_150818.jpg',
+  'images/polaroids/IMG_20260113_095754.jpg',
+  'images/polaroids/IMG_20260115_190131.jpg',
+  'images/polaroids/Snapchat-1280419576.jpg',
+  'images/polaroids/Snapchat-1866803717~2.jpg',
+  'images/polaroids/Untitled137_20251210211059.png',
+  'images/polaroids/Untitled139_20251227012728.png',
+];
+
+const polaroidPile = document.getElementById('polaroidPile');
+const polaroidViewerOverlay = document.getElementById('polaroidViewerOverlay');
+const polaroidViewerClose = document.getElementById('polaroidViewerClose');
+let polaroidViewerOpen = false;
+let polaroidViewerItems = [];
+
+const baseRotations = [-8, -3, 2, 6, -5, 1, -10];
+
+polaroidFiles.forEach((src, i) => {
+  const el = document.createElement('div');
+  el.className = 'polaroid';
+  const rot = baseRotations[i % baseRotations.length];
+  el.style.setProperty('--base-rotate', `rotate(${rot}deg)`);
+  el.style.transform = `rotate(${rot}deg)`;
+  el.style.zIndex = 400 + i;
+  el.style.left = (i * 4) + 'px';
+  el.style.top = (i * -3) + 'px';
+  const img = document.createElement('img');
+  img.src = src;
+  img.loading = 'lazy';
+  el.appendChild(img);
+  el.addEventListener('click', () => openPolaroidViewer());
+  el.addEventListener('touchend', (e) => { e.preventDefault(); openPolaroidViewer(); });
+  polaroidPile.appendChild(el);
+});
+
+function openPolaroidViewer() {
+  if (polaroidViewerOpen) return;
+  polaroidViewerOpen = true;
+  polaroidViewerOverlay.classList.add('active');
+  polaroidViewerClose.classList.add('active');
+  polaroidViewerItems = [];
+
+  polaroidFiles.forEach((src, i) => {
+    const item = document.createElement('div');
+    item.className = 'polaroid-viewer-item';
+    const rot = (Math.random() - 0.5) * 24;
+    item.style.transform = `rotate(${rot}deg)`;
+    item.dataset.baseRot = rot;
+
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
+    const spreadX = (Math.random() - 0.5) * window.innerWidth * 0.55;
+    const spreadY = (Math.random() - 0.5) * window.innerHeight * 0.4;
+    const left = Math.max(20, Math.min(window.innerWidth - 260, centerX + spreadX - 122));
+    const top = Math.max(20, Math.min(window.innerHeight - 290, centerY + spreadY - 130));
+    item.style.left = left + 'px';
+    item.style.top = top + 'px';
+    item.style.zIndex = 5550 + i;
+
+    const img = document.createElement('img');
+    img.src = src;
+    item.appendChild(img);
+
+    // Drag
+    let isDragging = false;
+    let dragOffX, dragOffY, startDX, startDY;
+    let currentRot = rot;
+
+    item.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      const rect = item.getBoundingClientRect();
+      dragOffX = e.clientX - rect.left;
+      dragOffY = e.clientY - rect.top;
+      startDX = e.clientX;
+      startDY = e.clientY;
+      item.classList.add('dragging');
+      item.style.zIndex = 5700;
+      e.preventDefault();
+    });
+
+    item.addEventListener('touchstart', (e) => {
+      const touch = e.touches[0];
+      isDragging = true;
+      const rect = item.getBoundingClientRect();
+      dragOffX = touch.clientX - rect.left;
+      dragOffY = touch.clientY - rect.top;
+      startDX = touch.clientX;
+      startDY = touch.clientY;
+      item.classList.add('dragging');
+      item.style.zIndex = 5700;
+      e.preventDefault();
+    }, { passive: false });
+
+    function onMove(clientX, clientY) {
+      if (!isDragging) return;
+      const dx = clientX - startDX;
+      const swing = Math.max(-15, Math.min(15, dx * 0.1));
+      item.style.left = (clientX - dragOffX) + 'px';
+      item.style.top = (clientY - dragOffY) + 'px';
+      item.style.transform = `rotate(${currentRot + swing}deg)`;
+    }
+
+    function onEnd(clientX) {
+      if (!isDragging) return;
+      isDragging = false;
+      item.classList.remove('dragging');
+      item.style.zIndex = 5550 + i;
+      const dx = clientX - startDX;
+      const finalRot = currentRot + Math.max(-12, Math.min(12, dx * 0.05));
+      currentRot = finalRot;
+      item.style.transition = 'transform 0.3s ease, box-shadow 0.15s ease';
+      item.style.transform = `rotate(${finalRot}deg)`;
+      setTimeout(() => { item.style.transition = 'box-shadow 0.15s ease'; }, 300);
+    }
+
+    document.addEventListener('mousemove', (e) => { onMove(e.clientX, e.clientY); });
+    document.addEventListener('touchmove', (e) => {
+      if (!isDragging) return;
+      onMove(e.touches[0].clientX, e.touches[0].clientY);
+      e.preventDefault();
+    }, { passive: false });
+    document.addEventListener('mouseup', (e) => { onEnd(e.clientX); });
+    document.addEventListener('touchend', (e) => { onEnd(e.changedTouches[0].clientX); });
+
+    document.body.appendChild(item);
+    polaroidViewerItems.push(item);
+  });
+}
+
+function closePolaroidViewer() {
+  polaroidViewerOpen = false;
+  polaroidViewerOverlay.classList.remove('active');
+  polaroidViewerClose.classList.remove('active');
+  polaroidViewerItems.forEach(item => item.remove());
+  polaroidViewerItems = [];
+}
+
+polaroidViewerClose.addEventListener('click', (e) => {
+  e.stopPropagation();
+  pickupSound.currentTime = 0;
+  pickupSound.play();
+  closePolaroidViewer();
+});
+
+polaroidViewerClose.addEventListener('touchend', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  pickupSound.currentTime = 0;
+  pickupSound.play();
+  closePolaroidViewer();
+});
+
+polaroidViewerOverlay.addEventListener('click', closePolaroidViewer);
+polaroidViewerOverlay.addEventListener('touchend', (e) => {
+  e.preventDefault();
+  closePolaroidViewer();
 });
 
 // Gallery images
