@@ -123,6 +123,19 @@ body.loaded::before {
   transform: scale(0.97);
 }
 
+#tooltip {
+  position: fixed;
+  pointer-events: none;
+  padding: 3px 6px;
+  font-size: 16px;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 3000;
+}
+
 #galleryOverlay {
   position: fixed;
   top: 0;
@@ -414,6 +427,42 @@ body.loaded::before {
   user-select: none;
 }
 
+#imageViewerClose {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 4003;
+  background: rgba(255,255,255,0.9);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.1s ease, background 0.1s ease;
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.4);
+  color: #333;
+}
+
+#imageViewerClose.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#imageViewerClose:hover {
+  background: white;
+  transform: scale(1.1);
+}
+
+#imageViewerClose:active {
+  transform: scale(0.95);
+}
+
 #viewerSlideContainer {
   position: fixed;
   top: 50%;
@@ -476,7 +525,8 @@ body.loaded::before {
     <button id="portalBackBtn">🪵</button>
   </div>
 
-  <img src="images/cupboard.png" id="cupboard">
+ <img src="images/cupboard.png" id="cupboard">
+  <div id="tooltip"></div>
 
   <div id="galleryOverlay"></div>
   <div id="galleryTab">
@@ -495,6 +545,7 @@ body.loaded::before {
   <div id="viewerSlideContainer">
     <img id="imageViewerImg" src="">
   </div>
+  <button id="imageViewerClose">✕</button>
   <div id="imageViewerNav">
     <button id="prevImg">←</button>
     <span id="imageCounter">1 / 30</span>
@@ -522,6 +573,7 @@ const imageViewerImg = document.getElementById('imageViewerImg');
 const imageViewerNav = document.getElementById('imageViewerNav');
 const viewerSlideContainer = document.getElementById('viewerSlideContainer');
 const imageCounter = document.getElementById('imageCounter');
+const imageViewerClose = document.getElementById('imageViewerClose');
 
 const musicTracks = [
   document.getElementById('background'),
@@ -686,6 +738,7 @@ function openImageViewer(index) {
   imageViewerOverlay.classList.add('active');
   viewerSlideContainer.classList.add('active');
   imageViewerNav.classList.add('active');
+  imageViewerClose.classList.add('active');
 }
 
 function closeImageViewer() {
@@ -696,6 +749,7 @@ function closeImageViewer() {
   imageViewerOverlay.classList.remove('active');
   viewerSlideContainer.classList.remove('active');
   imageViewerNav.classList.remove('active');
+  imageViewerClose.classList.remove('active');
 }
 
 document.getElementById('prevImg').addEventListener('click', (e) => {
@@ -734,6 +788,15 @@ document.addEventListener('keydown', (e) => {
 
 // Close viewer on overlay click
 imageViewerOverlay.addEventListener('click', closeImageViewer);
+imageViewerClose.addEventListener('click', (e) => {
+  e.stopPropagation();
+  closeImageViewer();
+});
+imageViewerClose.addEventListener('touchend', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  closeImageViewer();
+});
 imageViewerOverlay.addEventListener('touchend', (e) => {
   e.preventDefault();
   closeImageViewer();
@@ -861,6 +924,32 @@ viewerSlideContainer.addEventListener('touchend', (e) => {
   swipeStartX = null;
   swipeStartY = null;
 });
+
+const tooltip = document.getElementById('tooltip');
+
+function setupTooltip(el, text) {
+  let timeout;
+  el.addEventListener('mouseenter', () => {
+    timeout = setTimeout(() => {
+      tooltip.textContent = text;
+      tooltip.style.opacity = '1';
+    }, 250);
+  });
+  el.addEventListener('mouseleave', () => {
+    clearTimeout(timeout);
+    tooltip.style.opacity = '0';
+  });
+  el.addEventListener('mousedown', () => {
+    clearTimeout(timeout);
+    tooltip.style.opacity = '0';
+  });
+  el.addEventListener('mousemove', (e) => {
+    tooltip.style.left = (e.clientX + 15) + 'px';
+    tooltip.style.top = (e.clientY + 15) + 'px';
+  });
+}
+
+setupTooltip(cupboard, 'It smells like perfume in here...');
 
 function startMusic() {
   if (!musicStarted) {
