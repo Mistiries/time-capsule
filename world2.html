@@ -136,6 +136,392 @@ body.loaded::before {
   z-index: 3000;
 }
 
+/* Guestbook book object */
+#guestbookBook {
+  position: fixed;
+  bottom: 13%;
+  left: 3.5%;
+  width: 60px;
+  cursor: pointer;
+  z-index: 401;
+  transition: transform 0.15s ease;
+  filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5));
+}
+
+#guestbookBook:hover {
+  transform: translateY(-3px);
+}
+
+#guestbookBook:active {
+  transform: scale(0.95);
+}
+
+/* Name selector */
+#nameSelectorOverlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6);
+  z-index: 5000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+#nameSelectorOverlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#nameSelectorBox {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  max-width: 320px;
+  width: 90%;
+}
+
+#nameSelectorBox h2 {
+  font-size: 22px;
+  font-weight: 500;
+  color: #222;
+  margin: 0 0 8px 0;
+}
+
+#nameSelectorBox p {
+  font-size: 14px;
+  color: #888;
+  margin: 0 0 28px 0;
+}
+
+.nameBtn {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  margin: 10px 0;
+  border: 1.5px solid #eee;
+  border-radius: 10px;
+  background: white;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+  color: #333;
+  box-shadow: none;
+}
+
+.nameBtn:hover {
+  background: #f8f8f8;
+  border-color: #ccc;
+}
+
+.nameBtn:active {
+  transform: scale(0.98);
+}
+
+/* Guestbook panel */
+#guestbookOverlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.55);
+  z-index: 4500;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+#guestbookOverlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#guestbookPanel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.95);
+  width: 520px;
+  max-width: 92vw;
+  height: 70vh;
+  background: #fafafa;
+  border-radius: 16px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.35);
+  z-index: 4501;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  overflow: hidden;
+}
+
+#guestbookPanel.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+#guestbookPanel.closing {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.92);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+#guestbookPanelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 22px;
+  border-bottom: 1px solid #eee;
+  background: white;
+  flex-shrink: 0;
+}
+
+#guestbookPanelTitle {
+  font-size: 18px;
+  font-weight: 500;
+  color: #222;
+}
+
+#guestbookWhoAmI {
+  font-size: 13px;
+  color: #999;
+}
+
+#guestbookCloseBtn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #aaa;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.1s ease, background 0.1s ease;
+  box-shadow: none;
+  margin: 0;
+}
+
+#guestbookCloseBtn:hover {
+  background: #f0f0f0;
+  color: #555;
+}
+
+#guestbookMessages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.guestbook-msg {
+  background: white;
+  border-radius: 10px;
+  padding: 14px 16px;
+  border: 1px solid #eee;
+  position: relative;
+}
+
+.guestbook-msg-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #555;
+  margin-bottom: 6px;
+}
+
+.guestbook-msg-name.eleni {
+  color: #c2789a;
+}
+
+.guestbook-msg-name.achraf {
+  color: #7a9cc2;
+}
+
+.guestbook-msg-text {
+  font-size: 15px;
+  color: #222;
+  line-height: 1.5;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.guestbook-msg-date {
+  font-size: 11px;
+  color: #bbb;
+  margin-top: 8px;
+}
+
+.guestbook-msg-actions {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.guestbook-msg:hover .guestbook-msg-actions {
+  opacity: 1;
+}
+
+.msg-action-btn {
+  background: #f5f5f5;
+  border: none;
+  border-radius: 5px;
+  padding: 3px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  color: #777;
+  transition: background 0.1s ease;
+  box-shadow: none;
+  margin: 0;
+}
+
+.msg-action-btn:hover {
+  background: #ebebeb;
+}
+
+.msg-action-btn.delete {
+  color: #c0605a;
+}
+
+.msg-action-btn.delete:hover {
+  background: #fdecea;
+}
+
+#guestbookEmpty {
+  text-align: center;
+  color: #bbb;
+  font-size: 14px;
+  margin-top: 40px;
+}
+
+#guestbookComposer {
+  border-top: 1px solid #eee;
+  padding: 14px 16px;
+  background: white;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#guestbookInput {
+  width: 100%;
+  border: 1.5px solid #eee;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-family: sans-serif;
+  resize: none;
+  outline: none;
+  box-sizing: border-box;
+  color: #222;
+  transition: border-color 0.15s ease;
+  min-height: 70px;
+}
+
+#guestbookInput:focus {
+  border-color: #bbb;
+}
+
+#guestbookPostBtn {
+  align-self: flex-end;
+  background: #222;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 22px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+  box-shadow: none;
+  margin: 0;
+}
+
+#guestbookPostBtn:hover {
+  background: #444;
+}
+
+#guestbookPostBtn:active {
+  transform: scale(0.97);
+}
+
+#guestbookPostBtn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* Edit mode */
+.guestbook-msg.editing .guestbook-msg-text {
+  display: none;
+}
+
+.guestbook-edit-area {
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.guestbook-msg.editing .guestbook-edit-area {
+  display: flex;
+}
+
+.guestbook-edit-input {
+  width: 100%;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-family: sans-serif;
+  resize: none;
+  outline: none;
+  box-sizing: border-box;
+  min-height: 60px;
+}
+
+.guestbook-edit-input:focus {
+  border-color: #bbb;
+}
+
+.guestbook-edit-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.guestbook-save-btn {
+  background: #222;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  box-shadow: none;
+  margin: 0;
+}
+
+.guestbook-cancel-btn {
+  background: #f0f0f0;
+  color: #555;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  box-shadow: none;
+  margin: 0;
+}
+
 #instructionsPaper {
   position: fixed;
   top: 50%;
@@ -400,7 +786,6 @@ body.loaded::before {
   user-select: none;
 }
 
-/* Image viewer */
 #imageViewerOverlay {
   position: fixed;
   top: 0;
@@ -417,41 +802,6 @@ body.loaded::before {
 #imageViewerOverlay.active {
   opacity: 1;
   pointer-events: auto;
-}
-
-#imageViewerWrapper {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -55%);
-  z-index: 4001;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.25s ease;
-  overflow: hidden;
-  max-width: 80vw;
-  max-height: 70vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-#imageViewerWrapper.active {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-#imageViewerImg {
-  max-width: 80vw;
-  max-height: 70vh;
-  object-fit: contain;
-  border-radius: 6px;
-  box-shadow: 4px 4px 20px rgba(0,0,0,0.6);
-  display: block;
-  transition: transform 0.3s ease;
-  transform-origin: center center;
-  user-select: none;
-  -webkit-user-drag: none;
 }
 
 #imageViewerNav {
@@ -607,8 +957,48 @@ body.loaded::before {
     <button id="portalBackBtn">🪵</button>
   </div>
 
- <img src="images/cupboard.png" id="cupboard">
+  <img src="images/cupboard.png" id="cupboard">
   <div id="tooltip"></div>
+
+  <!-- Guestbook book SVG -->
+  <svg id="guestbookBook" viewBox="0 0 60 75" xmlns="http://www.w3.org/2000/svg">
+    <rect x="8" y="4" width="44" height="67" rx="3" fill="#e8e0d5"/>
+    <rect x="8" y="4" width="10" height="67" rx="2" fill="#c9bfb0"/>
+    <rect x="10" y="4" width="2" height="67" fill="#b8ad9e"/>
+    <rect x="20" y="18" width="24" height="2" rx="1" fill="#c9bfb0"/>
+    <rect x="20" y="24" width="20" height="2" rx="1" fill="#c9bfb0"/>
+    <rect x="20" y="30" width="22" height="2" rx="1" fill="#c9bfb0"/>
+    <rect x="20" y="36" width="18" height="2" rx="1" fill="#c9bfb0"/>
+    <rect x="20" y="42" width="21" height="2" rx="1" fill="#c9bfb0"/>
+    <rect x="6" y="4" width="4" height="67" rx="2" fill="#a89880"/>
+  </svg>
+
+  <!-- Name selector -->
+  <div id="nameSelectorOverlay">
+    <div id="nameSelectorBox">
+      <h2>Who are you?</h2>
+      <p>Pick your name — this device will remember you</p>
+      <button class="nameBtn" id="nameEleni">Eleni</button>
+      <button class="nameBtn" id="nameAchraf">Achraf</button>
+    </div>
+  </div>
+
+  <!-- Guestbook panel -->
+  <div id="guestbookOverlay"></div>
+  <div id="guestbookPanel">
+    <div id="guestbookPanelHeader">
+      <span id="guestbookPanelTitle">Our wall</span>
+      <span id="guestbookWhoAmI"></span>
+      <button id="guestbookCloseBtn">✕</button>
+    </div>
+    <div id="guestbookMessages">
+      <div id="guestbookEmpty">No messages yet — be the first!</div>
+    </div>
+    <div id="guestbookComposer">
+      <textarea id="guestbookInput" placeholder="Leave a message..."></textarea>
+      <button id="guestbookPostBtn">Post</button>
+    </div>
+  </div>
 
   <div id="instructionsOverlay"></div>
   <div id="instructionsPaper">
@@ -649,7 +1039,23 @@ body.loaded::before {
 
 </div>
 
-<script>
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, orderBy, query, deleteDoc, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyABA6tV0WH8rZaaOaUHqeSFxsNVao5vpC8",
+  authDomain: "time-capsule-964c8.firebaseapp.com",
+  projectId: "time-capsule-964c8",
+  storageBucket: "time-capsule-964c8.firebasestorage.app",
+  messagingSenderId: "1030157356208",
+  appId: "1:1030157356208:web:5525f855c4ee89e6d2bf75"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
 const pickupSound = document.getElementById('pickup');
 const muteBtn = document.getElementById('muteBtn');
 const burgerMenu = document.getElementById('burgerMenu');
@@ -669,6 +1075,15 @@ const imageViewerNav = document.getElementById('imageViewerNav');
 const viewerSlideContainer = document.getElementById('viewerSlideContainer');
 const imageCounter = document.getElementById('imageCounter');
 const imageViewerClose = document.getElementById('imageViewerClose');
+const guestbookBook = document.getElementById('guestbookBook');
+const nameSelectorOverlay = document.getElementById('nameSelectorOverlay');
+const guestbookOverlay = document.getElementById('guestbookOverlay');
+const guestbookPanel = document.getElementById('guestbookPanel');
+const guestbookMessages = document.getElementById('guestbookMessages');
+const guestbookInput = document.getElementById('guestbookInput');
+const guestbookPostBtn = document.getElementById('guestbookPostBtn');
+const guestbookWhoAmI = document.getElementById('guestbookWhoAmI');
+const guestbookEmpty = document.getElementById('guestbookEmpty');
 
 const musicTracks = [
   document.getElementById('background'),
@@ -680,6 +1095,150 @@ let musicStarted = false;
 musicTracks.forEach(track => { track.volume = 0.6; });
 creakSound.volume = 0.6;
 
+// Name handling
+let currentUser = localStorage.getItem('timecapsule_user') || null;
+
+function setUser(name) {
+  currentUser = name;
+  localStorage.setItem('timecapsule_user', name);
+  guestbookWhoAmI.textContent = `Signed in as ${name}`;
+  nameSelectorOverlay.classList.remove('active');
+  openGuestbook();
+}
+
+document.getElementById('nameEleni').addEventListener('click', () => setUser('Eleni'));
+document.getElementById('nameAchraf').addEventListener('click', () => setUser('Achraf'));
+
+// Guestbook
+function openGuestbookFlow() {
+  startMusic();
+  pickupSound.currentTime = 0;
+  pickupSound.play();
+  if (!currentUser) {
+    nameSelectorOverlay.classList.add('active');
+  } else {
+    openGuestbook();
+  }
+}
+
+function openGuestbook() {
+  guestbookWhoAmI.textContent = `Signed in as ${currentUser}`;
+  guestbookOverlay.classList.add('active');
+  guestbookPanel.classList.add('visible');
+}
+
+function closeGuestbook() {
+  guestbookPanel.classList.add('closing');
+  guestbookOverlay.classList.remove('active');
+  setTimeout(() => {
+    guestbookPanel.classList.remove('visible');
+    guestbookPanel.classList.remove('closing');
+  }, 200);
+}
+
+guestbookBook.addEventListener('click', openGuestbookFlow);
+guestbookBook.addEventListener('touchend', (e) => {
+  e.preventDefault();
+  openGuestbookFlow();
+});
+
+document.getElementById('guestbookCloseBtn').addEventListener('click', closeGuestbook);
+guestbookOverlay.addEventListener('click', closeGuestbook);
+
+// Post message
+guestbookPostBtn.addEventListener('click', async () => {
+  const text = guestbookInput.value.trim();
+  if (!text || !currentUser) return;
+  guestbookPostBtn.disabled = true;
+  try {
+    await addDoc(collection(db, 'messages'), {
+      name: currentUser,
+      text: text,
+      timestamp: serverTimestamp()
+    });
+    guestbookInput.value = '';
+  } catch (e) {
+    console.error('Error posting message:', e);
+  }
+  guestbookPostBtn.disabled = false;
+});
+
+guestbookInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    guestbookPostBtn.click();
+  }
+});
+
+// Listen for messages in real time
+const q = query(collection(db, 'messages'), orderBy('timestamp', 'asc'));
+onSnapshot(q, (snapshot) => {
+  guestbookMessages.innerHTML = '';
+  if (snapshot.empty) {
+    guestbookMessages.innerHTML = '<div id="guestbookEmpty">No messages yet — be the first!</div>';
+    return;
+  }
+  snapshot.forEach((docSnap) => {
+    const data = docSnap.data();
+    const id = docSnap.id;
+    const isOwn = data.name === currentUser;
+
+    const msgEl = document.createElement('div');
+    msgEl.className = 'guestbook-msg';
+    msgEl.dataset.id = id;
+
+    const date = data.timestamp ? new Date(data.timestamp.seconds * 1000) : new Date();
+    const dateStr = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+    const nameClass = data.name === 'Eleni' ? 'eleni' : 'achraf';
+
+    msgEl.innerHTML = `
+      <div class="guestbook-msg-name ${nameClass}">${data.name}</div>
+      <div class="guestbook-msg-text">${data.text}</div>
+      <div class="guestbook-edit-area">
+        <textarea class="guestbook-edit-input">${data.text}</textarea>
+        <div class="guestbook-edit-actions">
+          <button class="guestbook-cancel-btn">Cancel</button>
+          <button class="guestbook-save-btn">Save</button>
+        </div>
+      </div>
+      <div class="guestbook-msg-date">${dateStr}</div>
+      ${isOwn ? `
+      <div class="guestbook-msg-actions">
+        <button class="msg-action-btn edit-btn">Edit</button>
+        <button class="msg-action-btn delete delete-btn">Delete</button>
+      </div>` : ''}
+    `;
+
+    if (isOwn) {
+      msgEl.querySelector('.delete-btn').addEventListener('click', async () => {
+        await deleteDoc(doc(db, 'messages', id));
+      });
+
+      msgEl.querySelector('.edit-btn').addEventListener('click', () => {
+        msgEl.classList.add('editing');
+        msgEl.querySelector('.guestbook-edit-input').focus();
+      });
+
+      msgEl.querySelector('.guestbook-cancel-btn').addEventListener('click', () => {
+        msgEl.classList.remove('editing');
+        msgEl.querySelector('.guestbook-edit-input').value = data.text;
+      });
+
+      msgEl.querySelector('.guestbook-save-btn').addEventListener('click', async () => {
+        const newText = msgEl.querySelector('.guestbook-edit-input').value.trim();
+        if (!newText) return;
+        await updateDoc(doc(db, 'messages', id), { text: newText });
+        msgEl.classList.remove('editing');
+      });
+    }
+
+    guestbookMessages.appendChild(msgEl);
+  });
+  guestbookMessages.scrollTop = guestbookMessages.scrollHeight;
+});
+
+// Gallery images
 const galleryImages = [
   'images/Letter images/IMG_20250906_194806.jpg',
   'images/Letter images/IMG_20250907_143058~2.jpg',
@@ -752,20 +1311,14 @@ let zoomLevel = 1;
 let isAnimating = false;
 let panX = 0, panY = 0;
 
-// Populate gallery grid
 galleryImages.forEach((src, i) => {
   const item = document.createElement('div');
   item.className = 'gallery-item';
-
   const img = document.createElement('img');
   img.loading = 'lazy';
   img.src = galleryThumbs[i];
   img.addEventListener('click', () => openImageViewer(i));
-  img.addEventListener('touchend', (e) => {
-    e.preventDefault();
-    openImageViewer(i);
-  });
-
+  img.addEventListener('touchend', (e) => { e.preventDefault(); openImageViewer(i); });
   const dlBtn = document.createElement('a');
   dlBtn.className = 'gallery-download';
   dlBtn.href = src;
@@ -773,7 +1326,6 @@ galleryImages.forEach((src, i) => {
   dlBtn.title = 'Download';
   dlBtn.textContent = '⬇';
   dlBtn.addEventListener('click', (e) => e.stopPropagation());
-
   item.appendChild(img);
   item.appendChild(dlBtn);
   galleryGrid.appendChild(item);
@@ -786,18 +1338,14 @@ function updateCounter() {
 function slideToImage(index, direction) {
   if (isAnimating) return;
   isAnimating = true;
-  zoomLevel = 1;
-  panX = 0; panY = 0;
+  zoomLevel = 1; panX = 0; panY = 0;
   imageViewerImg.style.transition = 'none';
   imageViewerImg.style.transform = `translateX(0) scale(1)`;
-
   const outX = direction > 0 ? '-110%' : '110%';
   const inX = direction > 0 ? '110%' : '-110%';
-
   imageViewerImg.style.transition = 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease';
   imageViewerImg.style.transform = `translateX(${outX}) scale(1)`;
   imageViewerImg.style.opacity = '0';
-
   setTimeout(() => {
     currentImageIndex = ((index % galleryImages.length) + galleryImages.length) % galleryImages.length;
     imageViewerImg.style.transition = 'none';
@@ -805,7 +1353,6 @@ function slideToImage(index, direction) {
     imageViewerImg.style.opacity = '0';
     imageViewerImg.src = galleryImages[currentImageIndex];
     updateCounter();
-
     imageViewerImg.onload = () => {
       requestAnimationFrame(() => {
         imageViewerImg.style.transition = 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease';
@@ -826,9 +1373,7 @@ function openImageViewer(index) {
   imageViewerImg.style.opacity = '0';
   imageViewerImg.src = '';
   imageViewerImg.src = galleryImages[currentImageIndex];
-  imageViewerImg.onload = () => {
-    imageViewerImg.style.opacity = '1';
-  };
+  imageViewerImg.onload = () => { imageViewerImg.style.opacity = '1'; };
   updateCounter();
   imageViewerOverlay.classList.add('active');
   viewerSlideContainer.classList.add('active');
@@ -838,8 +1383,7 @@ function openImageViewer(index) {
 
 function closeImageViewer() {
   isViewerOpen = false;
-  zoomLevel = 1;
-  panX = 0; panY = 0;
+  zoomLevel = 1; panX = 0; panY = 0;
   imageViewerImg.style.transform = 'translate(0px, 0px) scale(1)';
   imageViewerOverlay.classList.remove('active');
   viewerSlideContainer.classList.remove('active');
@@ -847,61 +1391,24 @@ function closeImageViewer() {
   imageViewerClose.classList.remove('active');
 }
 
-document.getElementById('prevImg').addEventListener('click', (e) => {
-  e.stopPropagation();
-  slideToImage(currentImageIndex - 1, -1);
-});
+document.getElementById('prevImg').addEventListener('click', (e) => { e.stopPropagation(); slideToImage(currentImageIndex - 1, -1); });
+document.getElementById('nextImg').addEventListener('click', (e) => { e.stopPropagation(); slideToImage(currentImageIndex + 1, 1); });
+document.getElementById('prevImg').addEventListener('touchend', (e) => { e.preventDefault(); e.stopPropagation(); slideToImage(currentImageIndex - 1, -1); });
+document.getElementById('nextImg').addEventListener('touchend', (e) => { e.preventDefault(); e.stopPropagation(); slideToImage(currentImageIndex + 1, 1); });
 
-document.getElementById('nextImg').addEventListener('click', (e) => {
-  e.stopPropagation();
-  slideToImage(currentImageIndex + 1, 1);
-});
-
-document.getElementById('prevImg').addEventListener('touchend', (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  slideToImage(currentImageIndex - 1, -1);
-});
-
-document.getElementById('nextImg').addEventListener('touchend', (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  slideToImage(currentImageIndex + 1, 1);
-});
-
-// Keyboard navigation
 document.addEventListener('keydown', (e) => {
   if (!isViewerOpen) return;
-  if (e.key === 'ArrowRight') {
-    slideToImage(currentImageIndex + 1, 1);
-  } else if (e.key === 'ArrowLeft') {
-    slideToImage(currentImageIndex - 1, -1);
-  } else if (e.key === 'Escape') {
-    closeImageViewer();
-  }
+  if (e.key === 'ArrowRight') slideToImage(currentImageIndex + 1, 1);
+  else if (e.key === 'ArrowLeft') slideToImage(currentImageIndex - 1, -1);
+  else if (e.key === 'Escape') closeImageViewer();
 });
 
-// Close viewer on overlay click
 imageViewerOverlay.addEventListener('click', closeImageViewer);
-imageViewerClose.addEventListener('click', (e) => {
-  e.stopPropagation();
-  closeImageViewer();
-});
-imageViewerClose.addEventListener('touchend', (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  closeImageViewer();
-});
-imageViewerOverlay.addEventListener('touchend', (e) => {
-  e.preventDefault();
-  closeImageViewer();
-});
+imageViewerClose.addEventListener('click', (e) => { e.stopPropagation(); closeImageViewer(); });
+imageViewerClose.addEventListener('touchend', (e) => { e.preventDefault(); e.stopPropagation(); closeImageViewer(); });
+imageViewerOverlay.addEventListener('touchend', (e) => { e.preventDefault(); closeImageViewer(); });
+viewerSlideContainer.addEventListener('click', (e) => { e.stopPropagation(); });
 
-viewerSlideContainer.addEventListener('click', (e) => {
-  e.stopPropagation();
-});
-
-// Zoom with trackpad/mouse wheel
 let isPanning = false, panStartX = 0, panStartY = 0, panStartMouseX = 0, panStartMouseY = 0;
 
 viewerSlideContainer.addEventListener('wheel', (e) => {
@@ -918,10 +1425,8 @@ viewerSlideContainer.addEventListener('wheel', (e) => {
 viewerSlideContainer.addEventListener('mousedown', (e) => {
   if (zoomLevel <= 1) return;
   isPanning = true;
-  panStartMouseX = e.clientX;
-  panStartMouseY = e.clientY;
-  panStartX = panX;
-  panStartY = panY;
+  panStartMouseX = e.clientX; panStartMouseY = e.clientY;
+  panStartX = panX; panStartY = panY;
   imageViewerImg.style.cursor = 'grabbing';
   e.preventDefault();
 });
@@ -935,31 +1440,23 @@ document.addEventListener('mousemove', (e) => {
 });
 
 document.addEventListener('mouseup', () => {
-  if (isPanning) {
-    isPanning = false;
-    imageViewerImg.style.cursor = 'grab';
-  }
+  if (isPanning) { isPanning = false; imageViewerImg.style.cursor = 'grab'; }
 });
 
-// Pinch to zoom on touchscreen
-let lastPinchDist = null;
-let isPinching = false;
+let lastPinchDist = null, isPinching = false;
 let touchPanStartX = 0, touchPanStartY = 0, touchPanOriginX = 0, touchPanOriginY = 0;
+let swipeStartX = null, swipeStartY = null;
 
 viewerSlideContainer.addEventListener('touchstart', (e) => {
   if (e.touches.length === 2) {
     isPinching = true;
-    lastPinchDist = Math.hypot(
-      e.touches[0].clientX - e.touches[1].clientX,
-      e.touches[0].clientY - e.touches[1].clientY
-    );
-    swipeStartX = null;
-    swipeStartY = null;
+    lastPinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+    swipeStartX = null; swipeStartY = null;
   } else if (e.touches.length === 1 && zoomLevel > 1) {
-    touchPanStartX = e.touches[0].clientX;
-    touchPanStartY = e.touches[0].clientY;
-    touchPanOriginX = panX;
-    touchPanOriginY = panY;
+    touchPanStartX = e.touches[0].clientX; touchPanStartY = e.touches[0].clientY;
+    touchPanOriginX = panX; touchPanOriginY = panY;
+  } else if (e.touches.length === 1) {
+    swipeStartX = e.touches[0].clientX; swipeStartY = e.touches[0].clientY;
   }
 }, { passive: true });
 
@@ -967,10 +1464,7 @@ viewerSlideContainer.addEventListener('touchmove', (e) => {
   if (e.touches.length === 2 && lastPinchDist !== null) {
     e.preventDefault();
     isPinching = true;
-    const dist = Math.hypot(
-      e.touches[0].clientX - e.touches[1].clientX,
-      e.touches[0].clientY - e.touches[1].clientY
-    );
+    const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
     const delta = (dist - lastPinchDist) * 0.02;
     const newZoom = Math.min(Math.max(1, zoomLevel + delta), 4);
     if (newZoom === 1) { panX = 0; panY = 0; }
@@ -988,36 +1482,15 @@ viewerSlideContainer.addEventListener('touchmove', (e) => {
 }, { passive: false });
 
 viewerSlideContainer.addEventListener('touchend', (e) => {
-  if (e.touches.length < 2) {
-    lastPinchDist = null;
-    setTimeout(() => { isPinching = false; }, 100);
-  }
-});
-
-// Swipe to navigate
-let swipeStartX = null;
-let swipeStartY = null;
-
-viewerSlideContainer.addEventListener('touchstart', (e) => {
-  if (e.touches.length === 1) {
-    swipeStartX = e.touches[0].clientX;
-    swipeStartY = e.touches[0].clientY;
-  }
-}, { passive: true });
-
-viewerSlideContainer.addEventListener('touchend', (e) => {
+  if (e.touches.length < 2) { lastPinchDist = null; setTimeout(() => { isPinching = false; }, 100); }
   if (swipeStartX === null || e.changedTouches.length !== 1 || zoomLevel > 1 || isPinching) return;
   const dx = e.changedTouches[0].clientX - swipeStartX;
   const dy = e.changedTouches[0].clientY - swipeStartY;
   if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
-    if (dx < 0) {
-      slideToImage(currentImageIndex + 1, 1);
-    } else {
-      slideToImage(currentImageIndex - 1, -1);
-    }
+    if (dx < 0) slideToImage(currentImageIndex + 1, 1);
+    else slideToImage(currentImageIndex - 1, -1);
   }
-  swipeStartX = null;
-  swipeStartY = null;
+  swipeStartX = null; swipeStartY = null;
 });
 
 const tooltip = document.getElementById('tooltip');
@@ -1046,35 +1519,18 @@ instructionsPaper.addEventListener('click', () => {
 
 function setupTooltip(el, text) {
   let timeout;
-  el.addEventListener('mouseenter', () => {
-    timeout = setTimeout(() => {
-      tooltip.textContent = text;
-      tooltip.style.opacity = '1';
-    }, 250);
-  });
-  el.addEventListener('mouseleave', () => {
-    clearTimeout(timeout);
-    tooltip.style.opacity = '0';
-  });
-  el.addEventListener('mousedown', () => {
-    clearTimeout(timeout);
-    tooltip.style.opacity = '0';
-  });
-  el.addEventListener('mousemove', (e) => {
-    tooltip.style.left = (e.clientX + 15) + 'px';
-    tooltip.style.top = (e.clientY + 15) + 'px';
-  });
+  el.addEventListener('mouseenter', () => { timeout = setTimeout(() => { tooltip.textContent = text; tooltip.style.opacity = '1'; }, 250); });
+  el.addEventListener('mouseleave', () => { clearTimeout(timeout); tooltip.style.opacity = '0'; });
+  el.addEventListener('mousedown', () => { clearTimeout(timeout); tooltip.style.opacity = '0'; });
+  el.addEventListener('mousemove', (e) => { tooltip.style.left = (e.clientX + 15) + 'px'; tooltip.style.top = (e.clientY + 15) + 'px'; });
 }
 
 setupTooltip(cupboard, 'It smells like perfume in here...');
+setupTooltip(guestbookBook, 'Our wall');
 
 function startMusic() {
   if (!musicStarted) {
-    musicTracks[currentTrack].play().then(() => {
-      musicStarted = true;
-    }).catch(err => {
-      console.log('Autoplay blocked, waiting for interaction');
-    });
+    musicTracks[currentTrack].play().then(() => { musicStarted = true; }).catch(() => {});
   }
 }
 
@@ -1083,147 +1539,58 @@ function fadeOutInTrack(direction) {
   let nextIndex = (currentTrack + direction + musicTracks.length) % musicTracks.length;
   let next = musicTracks[nextIndex];
   let fadeOut = setInterval(() => {
-    if (current.volume > 0.05) {
-      current.volume -= 0.05;
-    } else {
-      clearInterval(fadeOut);
-      current.pause();
-      current.currentTime = 0;
-      next.volume = 0;
-      next.play();
-      fadeIn(next);
-      currentTrack = nextIndex;
-    }
+    if (current.volume > 0.05) { current.volume -= 0.05; }
+    else { clearInterval(fadeOut); current.pause(); current.currentTime = 0; next.volume = 0; next.play(); fadeIn(next); currentTrack = nextIndex; }
   }, 50);
 }
 
 function fadeIn(track) {
   let fi = setInterval(() => {
-    if (track.volume < 0.6) {
-      track.volume += 0.05;
-    } else {
-      clearInterval(fi);
-    }
+    if (track.volume < 0.6) { track.volume += 0.05; } else { clearInterval(fi); }
   }, 50);
 }
 
-document.getElementById('nextTrack').addEventListener('click', (e) => {
-  e.stopPropagation();
-  startMusic();
-  pickupSound.currentTime = 0;
-  pickupSound.play();
-  fadeOutInTrack(1);
-});
+document.getElementById('nextTrack').addEventListener('click', (e) => { e.stopPropagation(); startMusic(); pickupSound.currentTime = 0; pickupSound.play(); fadeOutInTrack(1); });
+document.getElementById('prevTrack').addEventListener('click', (e) => { e.stopPropagation(); startMusic(); pickupSound.currentTime = 0; pickupSound.play(); fadeOutInTrack(-1); });
 
-document.getElementById('prevTrack').addEventListener('click', (e) => {
-  e.stopPropagation();
-  startMusic();
-  pickupSound.currentTime = 0;
-  pickupSound.play();
-  fadeOutInTrack(-1);
-});
+muteBtn.addEventListener('click', () => { startMusic(); pickupSound.currentTime = 0; pickupSound.play(); musicTracks.forEach(track => track.muted = !track.muted); muteBtn.textContent = musicTracks[0].muted ? 'Unmute Music' : 'Mute Music'; });
 
-muteBtn.addEventListener('click', () => {
-  startMusic();
-  pickupSound.currentTime = 0;
-  pickupSound.play();
-  musicTracks.forEach(track => track.muted = !track.muted);
-  muteBtn.textContent = musicTracks[0].muted ? 'Unmute Music' : 'Mute Music';
-});
+burgerMenu.addEventListener('click', (e) => { e.stopPropagation(); startMusic(); pickupSound.currentTime = 0; pickupSound.play(); burgerContent.classList.toggle('open'); });
+burgerContent.addEventListener('click', (e) => { e.stopPropagation(); });
+document.addEventListener('click', (e) => { if (!burgerMenu.contains(e.target) && !burgerContent.contains(e.target)) burgerContent.classList.remove('open'); });
 
-burgerMenu.addEventListener('click', (e) => {
-  e.stopPropagation();
-  startMusic();
-  pickupSound.currentTime = 0;
-  pickupSound.play();
-  burgerContent.classList.toggle('open');
-});
+document.getElementById('portalBackBtn').addEventListener('click', (e) => { e.stopPropagation(); startMusic(); pickupSound.currentTime = 0; pickupSound.play(); burgerContent.classList.remove('open'); window.location.href = 'capsule.html'; });
 
-burgerContent.addEventListener('click', (e) => {
-  e.stopPropagation();
-});
-
-document.addEventListener('click', (e) => {
-  if (!burgerMenu.contains(e.target) && !burgerContent.contains(e.target)) {
-    burgerContent.classList.remove('open');
-  }
-});
-
-document.getElementById('portalBackBtn').addEventListener('click', (e) => {
-  e.stopPropagation();
-  startMusic();
-  pickupSound.currentTime = 0;
-  pickupSound.play();
-  burgerContent.classList.remove('open');
-  window.location.href = 'capsule.html';
-});
-
-cupboard.addEventListener('click', () => {
-  startMusic();
-  creakSound.currentTime = 0;
-  creakSound.play();
-  openGallery();
-});
-
-cupboard.addEventListener('touchend', (e) => {
-  e.preventDefault();
-  startMusic();
-  creakSound.currentTime = 0;
-  creakSound.play();
-  openGallery();
-});
+cupboard.addEventListener('click', () => { startMusic(); creakSound.currentTime = 0; creakSound.play(); openGallery(); });
+cupboard.addEventListener('touchend', (e) => { e.preventDefault(); startMusic(); creakSound.currentTime = 0; creakSound.play(); openGallery(); });
 
 function openGallery() {
   const w = Math.min(window.innerWidth * 0.65, window.innerWidth - 40);
   const h = Math.min(window.innerHeight * 0.6, window.innerHeight - 40);
   const left = (window.innerWidth - w) / 2;
   const top = (window.innerHeight - h) / 2;
-  galleryTab.style.width = w + 'px';
-  galleryTab.style.height = h + 'px';
-  galleryTab.style.left = left + 'px';
-  galleryTab.style.top = top + 'px';
-  galleryTab.style.transform = 'none';
-  galleryTab.style.transition = 'none';
-  galleryTab.style.opacity = '1';
-  galleryTab.style.pointerEvents = 'auto';
+  galleryTab.style.width = w + 'px'; galleryTab.style.height = h + 'px';
+  galleryTab.style.left = left + 'px'; galleryTab.style.top = top + 'px';
+  galleryTab.style.transform = 'none'; galleryTab.style.transition = 'none';
+  galleryTab.style.opacity = '1'; galleryTab.style.pointerEvents = 'auto';
   galleryTab.classList.add('visible');
   galleryOverlay.classList.add('active');
 }
 
-galleryClose.addEventListener('click', (e) => {
-  e.stopPropagation();
-  pickupSound.currentTime = 0;
-  pickupSound.play();
-  closeGallery();
-});
-
-galleryClose.addEventListener('touchend', (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  pickupSound.currentTime = 0;
-  pickupSound.play();
-  closeGallery();
-});
+galleryClose.addEventListener('click', (e) => { e.stopPropagation(); pickupSound.currentTime = 0; pickupSound.play(); closeGallery(); });
+galleryClose.addEventListener('touchend', (e) => { e.preventDefault(); e.stopPropagation(); pickupSound.currentTime = 0; pickupSound.play(); closeGallery(); });
 
 function closeGallery() {
   galleryTab.classList.add('closing');
   galleryOverlay.classList.remove('active');
-  setTimeout(() => {
-    galleryTab.classList.remove('visible');
-    galleryTab.classList.remove('closing');
-    galleryTab.style.opacity = '0';
-    galleryTab.style.pointerEvents = 'none';
-  }, 250);
+  setTimeout(() => { galleryTab.classList.remove('visible'); galleryTab.classList.remove('closing'); galleryTab.style.opacity = '0'; galleryTab.style.pointerEvents = 'none'; }, 250);
 }
 
 galleryOverlay.addEventListener('click', closeGallery);
-galleryOverlay.addEventListener('touchend', (e) => {
-  e.preventDefault();
-  closeGallery();
-});
+galleryOverlay.addEventListener('touchend', (e) => { e.preventDefault(); closeGallery(); });
 
-// Dragging
 let dragOffsetX = 0, dragOffsetY = 0, isDraggingGallery = false;
+let lastGalleryX = 0, currentSwing = 0;
 
 function startGalleryDrag(clientX, clientY) {
   isDraggingGallery = true;
@@ -1233,10 +1600,6 @@ function startGalleryDrag(clientX, clientY) {
   dragOffsetY = clientY - rect.top;
   galleryTab.style.transition = 'none';
 }
-
-let lastGalleryX = 0;
-
-let currentSwing = 0;
 
 function moveGallery(clientX, clientY) {
   if (!isDraggingGallery) return;
@@ -1254,89 +1617,42 @@ function endGalleryDrag() {
   currentSwing = 0;
   galleryTab.style.transition = 'transform 0.3s ease';
   galleryTab.style.transform = 'rotate(0deg)';
-  setTimeout(() => {
-    galleryTab.style.transition = 'opacity 0.25s ease';
-  }, 300);
+  setTimeout(() => { galleryTab.style.transition = 'opacity 0.25s ease'; }, 300);
 }
 
-galleryHeader.addEventListener('mousedown', (e) => {
-  if (e.target === galleryClose) return;
-  startGalleryDrag(e.clientX, e.clientY);
-  e.preventDefault();
-});
+galleryHeader.addEventListener('mousedown', (e) => { if (e.target === galleryClose) return; startGalleryDrag(e.clientX, e.clientY); e.preventDefault(); });
+galleryHeader.addEventListener('touchstart', (e) => { if (e.target === galleryClose) return; const touch = e.touches[0]; startGalleryDrag(touch.clientX, touch.clientY); e.preventDefault(); }, { passive: false });
 
-galleryHeader.addEventListener('touchstart', (e) => {
-  if (e.target === galleryClose) return;
-  const touch = e.touches[0];
-  startGalleryDrag(touch.clientX, touch.clientY);
-  e.preventDefault();
-}, { passive: false });
-
-document.addEventListener('mousemove', (e) => {
-  moveGallery(e.clientX, e.clientY);
-  doResize(e.clientX, e.clientY);
-});
-
+document.addEventListener('mousemove', (e) => { moveGallery(e.clientX, e.clientY); doResize(e.clientX, e.clientY); });
 document.addEventListener('touchmove', (e) => {
   const touch = e.touches[0];
-  if (isDraggingGallery) {
-    moveGallery(touch.clientX, touch.clientY);
-    e.preventDefault();
-  }
-  if (isResizing) {
-    doResize(touch.clientX, touch.clientY);
-    e.preventDefault();
-  }
+  if (isDraggingGallery) { moveGallery(touch.clientX, touch.clientY); e.preventDefault(); }
+  if (isResizing) { doResize(touch.clientX, touch.clientY); e.preventDefault(); }
 }, { passive: false });
 
-document.addEventListener('mouseup', () => {
-  endGalleryDrag();
-  endResize();
-});
+document.addEventListener('mouseup', () => { endGalleryDrag(); endResize(); });
+document.addEventListener('touchend', () => { endGalleryDrag(); endResize(); });
 
-document.addEventListener('touchend', () => {
-  endGalleryDrag();
-  endResize();
-});
-
-// Resizing
-let isResizing = false;
-let resizeStartX, resizeStartY, resizeStartW, resizeStartH;
+let isResizing = false, resizeStartX, resizeStartY, resizeStartW, resizeStartH;
 
 function startResize(clientX, clientY) {
   isResizing = true;
   const rect = galleryTab.getBoundingClientRect();
-  resizeStartX = clientX;
-  resizeStartY = clientY;
-  resizeStartW = rect.width;
-  resizeStartH = rect.height;
+  resizeStartX = clientX; resizeStartY = clientY;
+  resizeStartW = rect.width; resizeStartH = rect.height;
   galleryTab.style.transition = 'none';
 }
 
 function doResize(clientX, clientY) {
   if (!isResizing) return;
-  const newW = Math.max(300, resizeStartW + (clientX - resizeStartX));
-  const newH = Math.max(200, resizeStartH + (clientY - resizeStartY));
-  galleryTab.style.width = newW + 'px';
-  galleryTab.style.height = newH + 'px';
+  galleryTab.style.width = Math.max(300, resizeStartW + (clientX - resizeStartX)) + 'px';
+  galleryTab.style.height = Math.max(200, resizeStartH + (clientY - resizeStartY)) + 'px';
 }
 
-function endResize() {
-  isResizing = false;
-}
+function endResize() { isResizing = false; }
 
-galleryResizeHandle.addEventListener('mousedown', (e) => {
-  startResize(e.clientX, e.clientY);
-  e.preventDefault();
-  e.stopPropagation();
-});
-
-galleryResizeHandle.addEventListener('touchstart', (e) => {
-  const touch = e.touches[0];
-  startResize(touch.clientX, touch.clientY);
-  e.preventDefault();
-  e.stopPropagation();
-}, { passive: false });
+galleryResizeHandle.addEventListener('mousedown', (e) => { startResize(e.clientX, e.clientY); e.preventDefault(); e.stopPropagation(); });
+galleryResizeHandle.addEventListener('touchstart', (e) => { const touch = e.touches[0]; startResize(touch.clientX, touch.clientY); e.preventDefault(); e.stopPropagation(); }, { passive: false });
 
 document.addEventListener('click', startMusic, { once: true });
 document.addEventListener('touchstart', startMusic, { once: true });
@@ -1344,11 +1660,9 @@ document.addEventListener('keydown', startMusic, { once: true });
 
 window.addEventListener('DOMContentLoaded', () => {
   startMusic();
-  setTimeout(() => {
-    document.body.classList.add('loaded');
-    container.classList.add('visible');
-  }, 100);
+  setTimeout(() => { document.body.classList.add('loaded'); container.classList.add('visible'); }, 100);
 });
+
 </script>
 </body>
 </html>
