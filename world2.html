@@ -1,22 +1,252 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>World 2</title>
-  <style>
-    body {
-      background: #1a1a1a;
-      color: white;
-      font-family: sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>World 2</title>
+<style>
+body {
+  margin: 0;
+  padding: 0;
+  background: black;
+  font-family: sans-serif;
+  overflow: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url('images/darkwood.jpg') no-repeat center center fixed;
+  background-size: cover;
+  opacity: 0;
+  transition: opacity 3s ease-in;
+  z-index: -1;
+}
+
+body.loaded::before {
+  opacity: 1;
+}
+
+#container {
+  opacity: 0;
+  transition: opacity 3s ease-in;
+  position: relative;
+  width: 100%;
+  height: 100vh;
+}
+
+#container.visible {
+  opacity: 1;
+}
+
+#burgerMenu {
+  position: fixed;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  background: white;
+  border-radius: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 3010;
+}
+
+#burgerMenuContent {
+  position: fixed;
+  top: 50%;
+  left: -220px;
+  transform: translateY(-50%);
+  width: 200px;
+  background: rgba(255,255,255,0.95);
+  transition: left 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  box-sizing: border-box;
+  z-index: 3009;
+  border-radius: 10px;
+  box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+}
+
+#burgerMenuContent.open {
+  left: 10px;
+}
+
+#burgerMenuContent button {
+  margin: 10px 0;
+  padding: 8px;
+  cursor: pointer;
+  background: white;
+  border: none;
+  box-shadow: 0 0 5px rgba(0,0,0,0.3);
+  font-size: 16px;
+  transition: transform 0.1s ease;
+  border-radius: 5px;
+}
+
+#burgerMenuContent button:active {
+  transform: scale(0.95);
+}
+
+#muteBtn {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 2002;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.85);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.5);
+}
+</style>
 </head>
 <body>
-  <p>Coming soon...</p>
+
+<div id="container">
+  <audio id="background" src="sounds/background.mp3" loop></audio>
+  <audio id="background2" src="sounds/background2.mp3" loop></audio>
+  <audio id="background3" src="sounds/background3.mp3" loop></audio>
+  <audio id="pickup" src="sounds/pickup.mp3"></audio>
+
+  <button id="muteBtn">Mute Music</button>
+
+  <div id="burgerMenu">☰</div>
+  <div id="burgerMenuContent">
+    <div id="musicControls" style="display:flex;justify-content:center;gap:10px;">
+      <button id="prevTrack">⏮</button>
+      <button id="nextTrack">⏭</button>
+    </div>
+    <button id="portalBackBtn">🪵</button>
+  </div>
+</div>
+
+<script>
+const pickupSound = document.getElementById('pickup');
+const muteBtn = document.getElementById('muteBtn');
+const burgerMenu = document.getElementById('burgerMenu');
+const burgerContent = document.getElementById('burgerMenuContent');
+const container = document.getElementById('container');
+
+const musicTracks = [
+  document.getElementById('background'),
+  document.getElementById('background2'),
+  document.getElementById('background3')
+];
+let currentTrack = 0;
+let musicStarted = false;
+musicTracks.forEach(track => { track.volume = 0.6; });
+
+function startMusic() {
+  if (!musicStarted) {
+    musicTracks[currentTrack].play().then(() => {
+      musicStarted = true;
+    }).catch(err => {
+      console.log('Autoplay blocked, waiting for interaction');
+    });
+  }
+}
+
+function fadeOutInTrack(direction) {
+  let current = musicTracks[currentTrack];
+  let nextIndex = (currentTrack + direction + musicTracks.length) % musicTracks.length;
+  let next = musicTracks[nextIndex];
+  let fadeOut = setInterval(() => {
+    if (current.volume > 0.05) {
+      current.volume -= 0.05;
+    } else {
+      clearInterval(fadeOut);
+      current.pause();
+      current.currentTime = 0;
+      next.volume = 0;
+      next.play();
+      fadeIn(next);
+      currentTrack = nextIndex;
+    }
+  }, 50);
+}
+
+function fadeIn(track) {
+  let fi = setInterval(() => {
+    if (track.volume < 0.6) {
+      track.volume += 0.05;
+    } else {
+      clearInterval(fi);
+    }
+  }, 50);
+}
+
+document.getElementById('nextTrack').addEventListener('click', (e) => {
+  e.stopPropagation();
+  startMusic();
+  pickupSound.currentTime = 0;
+  pickupSound.play();
+  fadeOutInTrack(1);
+});
+
+document.getElementById('prevTrack').addEventListener('click', (e) => {
+  e.stopPropagation();
+  startMusic();
+  pickupSound.currentTime = 0;
+  pickupSound.play();
+  fadeOutInTrack(-1);
+});
+
+muteBtn.addEventListener('click', () => {
+  startMusic();
+  pickupSound.currentTime = 0;
+  pickupSound.play();
+  musicTracks.forEach(track => track.muted = !track.muted);
+  muteBtn.textContent = musicTracks[0].muted ? 'Unmute Music' : 'Mute Music';
+});
+
+burgerMenu.addEventListener('click', (e) => {
+  e.stopPropagation();
+  startMusic();
+  pickupSound.currentTime = 0;
+  pickupSound.play();
+  burgerContent.classList.toggle('open');
+});
+
+burgerContent.addEventListener('click', (e) => {
+  e.stopPropagation();
+});
+
+document.addEventListener('click', (e) => {
+  if (!burgerMenu.contains(e.target) && !burgerContent.contains(e.target)) {
+    burgerContent.classList.remove('open');
+  }
+});
+
+document.getElementById('portalBackBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  startMusic();
+  pickupSound.currentTime = 0;
+  pickupSound.play();
+  burgerContent.classList.remove('open');
+  window.location.href = 'capsule.html';
+});
+
+document.addEventListener('click', startMusic, { once: true });
+document.addEventListener('touchstart', startMusic, { once: true });
+document.addEventListener('keydown', startMusic, { once: true });
+
+window.addEventListener('DOMContentLoaded', () => {
+  startMusic();
+  setTimeout(() => {
+    document.body.classList.add('loaded');
+    container.classList.add('visible');
+  }, 100);
+});
+</script>
 </body>
 </html>
