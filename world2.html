@@ -143,13 +143,9 @@ body.loaded::before {
 
 #galleryTab {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0.95);
   width: 65vw;
   min-width: 300px;
   min-height: 200px;
-  max-height: 70vh;
   background: white;
   border-radius: 12px;
   box-shadow: 4px 4px 20px rgba(0,0,0,0.5);
@@ -158,19 +154,18 @@ body.loaded::before {
   flex-direction: column;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.25s ease, transform 0.25s ease;
   overflow: hidden;
+  transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
 #galleryTab.visible {
   opacity: 1;
   pointer-events: auto;
-  transform: translate(-50%, -50%) scale(1);
 }
 
 #galleryTab.closing {
   opacity: 0;
-  transform: translate(-50%, -50%) scale(0.9);
+  transform: scale(0.9);
 }
 
 #galleryHeader {
@@ -219,10 +214,30 @@ body.loaded::before {
 
 #galleryContent {
   overflow-y: auto;
-  padding: 20px;
+  padding: 16px;
   flex: 1;
-  border-radius: 0 0 12px 12px;
   min-height: 0;
+}
+
+#galleryGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+#galleryGrid img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  display: block;
+}
+
+#galleryGrid img:hover {
+  transform: scale(1.05);
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
 }
 
 #galleryResizeHandle {
@@ -240,6 +255,88 @@ body.loaded::before {
   color: #bbb;
   font-size: 14px;
   user-select: none;
+}
+
+/* Image viewer */
+#imageViewerOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.75);
+  z-index: 4000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+#imageViewerOverlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#imageViewerImg {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -55%);
+  max-width: 80vw;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: 6px;
+  box-shadow: 4px 4px 20px rgba(0,0,0,0.6);
+  z-index: 4001;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+#imageViewerImg.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#imageViewerNav {
+  position: fixed;
+  bottom: 8%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 20px;
+  z-index: 4002;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+#imageViewerNav.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#imageViewerNav button {
+  background: rgba(255,255,255,0.9);
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  font-size: 22px;
+  cursor: pointer;
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.4);
+  transition: transform 0.1s ease, background 0.1s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#imageViewerNav button:hover {
+  background: white;
+  transform: scale(1.1);
+}
+
+#imageViewerNav button:active {
+  transform: scale(0.95);
 }
 </style>
 </head>
@@ -272,9 +369,16 @@ body.loaded::before {
       <button id="galleryClose">✕</button>
     </div>
     <div id="galleryContent">
-      <!-- images will go here later -->
+      <div id="galleryGrid"></div>
     </div>
     <div id="galleryResizeHandle">⇲</div>
+  </div>
+
+  <div id="imageViewerOverlay"></div>
+  <img id="imageViewerImg" src="">
+  <div id="imageViewerNav">
+    <button id="prevImg">←</button>
+    <button id="nextImg">→</button>
   </div>
 
 </div>
@@ -292,6 +396,10 @@ const galleryOverlay = document.getElementById('galleryOverlay');
 const galleryClose = document.getElementById('galleryClose');
 const galleryHeader = document.getElementById('galleryHeader');
 const galleryResizeHandle = document.getElementById('galleryResizeHandle');
+const galleryGrid = document.getElementById('galleryGrid');
+const imageViewerOverlay = document.getElementById('imageViewerOverlay');
+const imageViewerImg = document.getElementById('imageViewerImg');
+const imageViewerNav = document.getElementById('imageViewerNav');
 
 const musicTracks = [
   document.getElementById('background'),
@@ -302,6 +410,111 @@ let currentTrack = 0;
 let musicStarted = false;
 musicTracks.forEach(track => { track.volume = 0.6; });
 creakSound.volume = 0.6;
+
+const galleryImages = [
+  'images/Letter images/IMG_20250906_194806.jpg',
+  'images/Letter images/IMG_20250907_143058~2.jpg',
+  'images/Letter images/IMG_20250917_234550.jpg',
+  'images/Letter images/IMG_20250918_010319~2.jpg',
+  'images/Letter images/IMG_20250918_010333~3.jpg',
+  'images/Letter images/IMG_20250918_151724.jpg',
+  'images/Letter images/IMG_20250919_001438.jpg',
+  'images/Letter images/IMG_20250919_145942~2.jpg',
+  'images/Letter images/IMG_20250919_150057~2.jpg',
+  'images/Letter images/IMG_20250919_150247.jpg',
+  'images/Letter images/IMG_20250919_150309~2.jpg',
+  'images/Letter images/IMG_20250919_150333~2.jpg',
+  'images/Letter images/IMG_20250919_180559.jpg',
+  'images/Letter images/IMG_20251025_182452~2.jpg',
+  'images/Letter images/IMG_20251025_185734~2.jpg',
+  'images/Letter images/IMG_20251025_185747~2.jpg',
+  'images/Letter images/IMG_20251026_220548.jpg',
+  'images/Letter images/IMG_20251026_220601.jpg',
+  'images/Letter images/IMG_20251026_220631~2.jpg',
+  'images/Letter images/IMG_20251026_220714~2.jpg',
+  'images/Letter images/IMG_20251026_220814~2.jpg',
+  'images/Letter images/IMG_20251216_011751~2.jpg',
+  'images/Letter images/IMG_20251216_131924.jpg',
+  'images/Letter images/IMG_20251217_231525.jpg',
+  'images/Letter images/IMG_20251218_010436~2.jpg',
+  'images/Letter images/IMG_20251218_161802.jpg',
+  'images/Letter images/IMG_20251219_125630.jpg',
+  'images/Letter images/IMG_20251219_170202~2.jpg',
+  'images/Letter images/IMG_20251220_213654~2.jpg',
+  'images/Letter images/Untitled119_20251025184237~2.png',
+];
+
+let currentImageIndex = 0;
+let isViewerOpen = false;
+
+// Populate gallery grid
+galleryImages.forEach((src, i) => {
+  const img = document.createElement('img');
+  img.src = src;
+  img.addEventListener('click', () => openImageViewer(i));
+  img.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    openImageViewer(i);
+  });
+  galleryGrid.appendChild(img);
+});
+
+function openImageViewer(index) {
+  currentImageIndex = index;
+  imageViewerImg.src = galleryImages[currentImageIndex];
+  isViewerOpen = true;
+  imageViewerOverlay.classList.add('active');
+  imageViewerImg.classList.add('active');
+  imageViewerNav.classList.add('active');
+}
+
+function closeImageViewer() {
+  isViewerOpen = false;
+  imageViewerOverlay.classList.remove('active');
+  imageViewerImg.classList.remove('active');
+  imageViewerNav.classList.remove('active');
+}
+
+function goToImage(index) {
+  currentImageIndex = ((index % galleryImages.length) + galleryImages.length) % galleryImages.length;
+  imageViewerImg.src = galleryImages[currentImageIndex];
+}
+
+document.getElementById('prevImg').addEventListener('click', (e) => {
+  e.stopPropagation();
+  pickupSound.currentTime = 0;
+  pickupSound.play();
+  goToImage(currentImageIndex - 1);
+});
+
+document.getElementById('nextImg').addEventListener('click', (e) => {
+  e.stopPropagation();
+  pickupSound.currentTime = 0;
+  pickupSound.play();
+  goToImage(currentImageIndex + 1);
+});
+
+document.getElementById('prevImg').addEventListener('touchend', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  pickupSound.currentTime = 0;
+  pickupSound.play();
+  goToImage(currentImageIndex - 1);
+});
+
+document.getElementById('nextImg').addEventListener('touchend', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  pickupSound.currentTime = 0;
+  pickupSound.play();
+  goToImage(currentImageIndex + 1);
+});
+
+imageViewerOverlay.addEventListener('click', closeImageViewer);
+imageViewerOverlay.addEventListener('touchend', (e) => {
+  e.preventDefault();
+  closeImageViewer();
+});
 
 function startMusic() {
   if (!musicStarted) {
@@ -397,34 +610,64 @@ cupboard.addEventListener('click', () => {
   startMusic();
   creakSound.currentTime = 0;
   creakSound.play();
+  openGallery();
+});
+
+cupboard.addEventListener('touchend', (e) => {
+  e.preventDefault();
+  startMusic();
+  creakSound.currentTime = 0;
+  creakSound.play();
+  openGallery();
+});
+
+function openGallery() {
+  const w = Math.min(window.innerWidth * 0.65, window.innerWidth - 40);
+  const h = Math.min(window.innerHeight * 0.6, window.innerHeight - 40);
+  const left = (window.innerWidth - w) / 2;
+  const top = (window.innerHeight - h) / 2;
+  galleryTab.style.width = w + 'px';
+  galleryTab.style.height = h + 'px';
+  galleryTab.style.left = left + 'px';
+  galleryTab.style.top = top + 'px';
+  galleryTab.style.transform = 'none';
+  galleryTab.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
   galleryTab.classList.add('visible');
   galleryOverlay.classList.add('active');
-});
+}
 
 galleryClose.addEventListener('click', (e) => {
   e.stopPropagation();
   pickupSound.currentTime = 0;
   pickupSound.play();
+  closeGallery();
+});
+
+galleryClose.addEventListener('touchend', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  pickupSound.currentTime = 0;
+  pickupSound.play();
+  closeGallery();
+});
+
+function closeGallery() {
   galleryTab.classList.add('closing');
   galleryOverlay.classList.remove('active');
   setTimeout(() => {
     galleryTab.classList.remove('visible');
     galleryTab.classList.remove('closing');
-    galleryTab.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
-    galleryTab.style.top = '50%';
-    galleryTab.style.left = '50%';
-    galleryTab.style.transform = 'translate(-50%, -50%) scale(0.95)';
-    galleryTab.style.width = '65vw';
-    galleryTab.style.height = '';
   }, 250);
-});
+}
 
-galleryOverlay.addEventListener('click', () => {
-  galleryClose.click();
+galleryOverlay.addEventListener('click', closeGallery);
+galleryOverlay.addEventListener('touchend', (e) => {
+  e.preventDefault();
+  closeGallery();
 });
 
 // Dragging
-let dragOffsetX, dragOffsetY, isDraggingGallery = false;
+let dragOffsetX = 0, dragOffsetY = 0, isDraggingGallery = false;
 
 function startGalleryDrag(clientX, clientY) {
   isDraggingGallery = true;
@@ -432,22 +675,16 @@ function startGalleryDrag(clientX, clientY) {
   dragOffsetX = clientX - rect.left;
   dragOffsetY = clientY - rect.top;
   galleryTab.style.transition = 'none';
-  galleryTab.style.transform = 'none';
-  galleryTab.style.top = rect.top + 'px';
-  galleryTab.style.left = rect.left + 'px';
 }
 
 function moveGallery(clientX, clientY) {
   if (!isDraggingGallery) return;
-  galleryTab.style.top = (clientY - dragOffsetY) + 'px';
   galleryTab.style.left = (clientX - dragOffsetX) + 'px';
+  galleryTab.style.top = (clientY - dragOffsetY) + 'px';
 }
 
 function endGalleryDrag() {
   isDraggingGallery = false;
-  if (!galleryTab.classList.contains('closing')) {
-    galleryTab.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
-  }
 }
 
 galleryHeader.addEventListener('mousedown', (e) => {
@@ -465,17 +702,30 @@ galleryHeader.addEventListener('touchstart', (e) => {
 
 document.addEventListener('mousemove', (e) => {
   moveGallery(e.clientX, e.clientY);
+  doResize(e.clientX, e.clientY);
 });
 
 document.addEventListener('touchmove', (e) => {
-  if (!isDraggingGallery) return;
   const touch = e.touches[0];
-  moveGallery(touch.clientX, touch.clientY);
-  e.preventDefault();
+  if (isDraggingGallery) {
+    moveGallery(touch.clientX, touch.clientY);
+    e.preventDefault();
+  }
+  if (isResizing) {
+    doResize(touch.clientX, touch.clientY);
+    e.preventDefault();
+  }
 }, { passive: false });
 
-document.addEventListener('mouseup', endGalleryDrag);
-document.addEventListener('touchend', endGalleryDrag);
+document.addEventListener('mouseup', () => {
+  endGalleryDrag();
+  endResize();
+});
+
+document.addEventListener('touchend', () => {
+  endGalleryDrag();
+  endResize();
+});
 
 // Resizing
 let isResizing = false;
@@ -515,20 +765,6 @@ galleryResizeHandle.addEventListener('touchstart', (e) => {
   e.preventDefault();
   e.stopPropagation();
 }, { passive: false });
-
-document.addEventListener('mousemove', (e) => {
-  doResize(e.clientX, e.clientY);
-});
-
-document.addEventListener('touchmove', (e) => {
-  if (!isResizing) return;
-  const touch = e.touches[0];
-  doResize(touch.clientX, touch.clientY);
-  e.preventDefault();
-}, { passive: false });
-
-document.addEventListener('mouseup', endResize);
-document.addEventListener('touchend', endResize);
 
 document.addEventListener('click', startMusic, { once: true });
 document.addEventListener('touchstart', startMusic, { once: true });
