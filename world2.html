@@ -124,6 +124,26 @@ body.loaded::before {
   transform: scale(0.97);
 }
 
+#trashBin {
+  position: fixed;
+  bottom: 3%;
+  right: 3%;
+  font-size: 48px;
+  cursor: pointer;
+  z-index: 399;
+  transition: transform 0.1s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+#trashBin.shake {
+  animation: shake 0.3s ease;
+}
+
 #tooltip {
   position: fixed;
   pointer-events: none;
@@ -1214,8 +1234,10 @@ body.loaded::before {
     <button id="portalBackBtn">🪵</button>
   </div>
 
-  <img src="images/cupboard.png" id="cupboard">
+<img src="images/cupboard.png" id="cupboard">
   <div id="tooltip"></div>
+  <audio id="binSound" src="sounds/bin.mp3"></audio>
+  <div id="trashBin">🗑️</div>
 
   <!-- Guestbook book SVG -->
   <svg id="guestbookBook" viewBox="0 0 60 75" xmlns="http://www.w3.org/2000/svg">
@@ -1262,16 +1284,24 @@ body.loaded::before {
   <div id="instructionsPaper">
     <h1>Instructions</h1>
     <p class="subtitle">(click anywhere to escape)</p>
+  <p style="font-size:20px;font-weight:500;margin:0 0 6px 0;">Gallery</p>
     <ul>
       <li>All the art is in the cupboard for you to look at</li>
       <li>You can drag and resize the gallery tab</li>
       <li>Click on images to view them (you can download them too)</li>
       <li>Use the arrow keys on screen or on your keyboard to look through images</li>
-     <li>Zoom in and out using the trackpad, then use the mouse to move the image around</li>
+      <li>Zoom in and out using the trackpad, then use the mouse to move the image around</li>
+    </ul>
+    <p style="font-size:20px;font-weight:500;margin:16px 0 6px 0;">Notebook</p>
+    <ul>
       <li>There's a notebook on top of the cupboard. We can both leave messages in there, just select your name and leave one.</li>
       <li>You can drag the notebook around</li>
-    <li>If there's an unread notification, the book will glow.</li>
+      <li>If there's an unread notification, the book will glow.</li>
+    </ul>
+    <p style="font-size:20px;font-weight:500;margin:16px 0 6px 0;">Site</p>
+    <ul>
       <li>Click the polaroid piles to look through the photos</li>
+      <li>You can drag the polaroids around too</li>
     </ul>
   </div>
 
@@ -1327,6 +1357,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const pickupSound = document.getElementById('pickup');
+const binSound = document.getElementById('binSound');
 const muteBtn = document.getElementById('muteBtn');
 const burgerMenu = document.getElementById('burgerMenu');
 const burgerContent = document.getElementById('burgerMenuContent');
@@ -1936,7 +1967,7 @@ function buildPolaroidPile(files, pileEl, viewerFiles) {
       e.preventDefault();
     }, { passive: false });
 
-    function onPileMove(clientX, clientY) {
+   function onPileMove(clientX, clientY) {
       if (!isDraggingPile) return;
       const dx = clientX - pileStartX;
       const dy = clientY - pileStartY;
@@ -1947,16 +1978,29 @@ function buildPolaroidPile(files, pileEl, viewerFiles) {
       pileSwing += (targetSwing - pileSwing) * 0.3;
       el.style.left = (clientX - pileDragOffX) + 'px';
       el.style.top = (clientY - pileDragOffY) + 'px';
-      el.style.transform = `rotate(${currentRot + pileSwing}deg)`;
+      const binRect = document.getElementById('trashBin').getBoundingClientRect();
+      const overBin = clientX >= binRect.left && clientX <= binRect.right && clientY >= binRect.top && clientY <= binRect.bottom;
+      const scale = overBin ? 0.85 : 1;
+      el.style.transform = `rotate(${currentRot + pileSwing}deg) scale(${scale})`;
     }
 
-    function onPileEnd(clientX) {
+ function onPileEnd(clientX, clientY) {
       if (!isDraggingPile) return;
       isDraggingPile = false;
       el.classList.remove('hovered');
       pileSwing = 0;
       el.style.transition = 'transform 0.3s ease';
       el.style.transform = `rotate(${currentRot}deg)`;
+      const binRect = document.getElementById('trashBin').getBoundingClientRect();
+      if (clientX >= binRect.left && clientX <= binRect.right && clientY >= binRect.top && clientY <= binRect.bottom) {
+        binSound.currentTime = 0;
+        binSound.play();
+        const trashBin = document.getElementById('trashBin');
+        trashBin.classList.add('shake');
+        setTimeout(() => trashBin.classList.remove('shake'), 300);
+        el.remove();
+        return;
+      }
       if (!pileHasMoved) {
         openPolaroidViewer(viewerFiles);
       }
@@ -1968,8 +2012,8 @@ function buildPolaroidPile(files, pileEl, viewerFiles) {
       onPileMove(e.touches[0].clientX, e.touches[0].clientY);
       e.preventDefault();
     }, { passive: false });
-    document.addEventListener('mouseup', (e) => { onPileEnd(e.clientX); });
-    document.addEventListener('touchend', (e) => { onPileEnd(e.changedTouches[0].clientX); });
+  document.addEventListener('mouseup', (e) => { onPileEnd(e.clientX, e.clientY); });
+    document.addEventListener('touchend', (e) => { onPileEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY); });
 
     pileEl.appendChild(el);
   });
@@ -2046,10 +2090,21 @@ function openPolaroidViewer(files) {
       item.style.transform = `rotate(${currentRot + swing}deg)`;
     }
 
-function onEnd(clientX) {
+function onEnd(clientX, clientY) {
       if (!isDragging) return;
       isDragging = false;
       item.classList.remove('dragging');
+      const binRect = document.getElementById('trashBin').getBoundingClientRect();
+      if (clientX >= binRect.left && clientX <= binRect.right && clientY >= binRect.top && clientY <= binRect.bottom) {
+        binSound.currentTime = 0;
+        binSound.play();
+        const trashBin = document.getElementById('trashBin');
+        trashBin.classList.add('shake');
+        setTimeout(() => trashBin.classList.remove('shake'), 300);
+        item.remove();
+        polaroidViewerItems = polaroidViewerItems.filter(p => p !== item);
+        return;
+      }
       polaroidTopZ += 1;
       item.style.zIndex = polaroidTopZ;
       const dx = clientX - startDX;
@@ -2060,8 +2115,26 @@ function onEnd(clientX) {
       setTimeout(() => { item.style.transition = 'box-shadow 0.15s ease'; }, 300);
     }
 
+    function onMove(clientX, clientY) {
+      if (!isDragging) return;
+      const dx = clientX - startDX;
+      const swing = Math.max(-15, Math.min(15, dx * 0.1));
+      item.style.left = (clientX - dragOffX) + 'px';
+      item.style.top = (clientY - dragOffY) + 'px';
+      const binRect = document.getElementById('trashBin').getBoundingClientRect();
+      const overBin = clientX >= binRect.left && clientX <= binRect.right && clientY >= binRect.top && clientY <= binRect.bottom;
+      const scale = overBin ? 0.85 : 1;
+      item.style.transform = `rotate(${currentRot + swing}deg) scale(${scale})`;
+    }
+
     document.addEventListener('mousemove', (e) => { onMove(e.clientX, e.clientY); });
     document.addEventListener('touchmove', (e) => {
+      if (!isDragging) return;
+      onMove(e.touches[0].clientX, e.touches[0].clientY);
+      e.preventDefault();
+    }, { passive: false });
+    document.addEventListener('mouseup', (e) => { onEnd(e.clientX, e.clientY); });
+    document.addEventListener('touchend', (e) => { onEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY); });
       if (!isDragging) return;
       onMove(e.touches[0].clientX, e.touches[0].clientY);
       e.preventDefault();
