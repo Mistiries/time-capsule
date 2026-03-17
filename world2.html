@@ -1950,8 +1950,9 @@ const ctx = cameraCanvas.getContext('2d');
   snapBtn.disabled = true;
   snapBtn.textContent = '⏳';
 
-  cameraCanvas.toBlob(async (blob) => {
+cameraCanvas.toBlob(async (blob) => {
     try {
+      console.log('Starting upload, blob size:', blob.size);
       const formData = new FormData();
       formData.append('file', blob);
       formData.append('upload_preset', CLOUDINARY_PRESET);
@@ -1962,15 +1963,20 @@ const ctx = cameraCanvas.getContext('2d');
         body: formData
       });
       const data = await res.json();
+      console.log('Cloudinary response:', data);
 
       if (data.secure_url) {
+        console.log('Got URL, saving to Firestore:', data.secure_url);
+        console.log('Current user:', currentUser);
         await addDoc(collection(db, 'selfies'), {
           name: currentUser,
           url: data.secure_url,
           publicId: data.public_id,
           timestamp: serverTimestamp()
         });
+        console.log('Saved to Firestore successfully!');
       } else {
+        console.error('No secure_url in response:', data);
         alert('Upload failed. Please try again.');
       }
     } catch (err) {
