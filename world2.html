@@ -1075,8 +1075,8 @@ body.loaded::before {
   position: fixed;
   bottom: 8%;
   right: 5%;
-  width: 140px;
-  height: 160px;
+  width: 180px;
+  height: 200px;
   z-index: 400;
 }
 
@@ -1087,7 +1087,7 @@ body.loaded::before {
   padding: 8px 8px 28px 8px;
   box-shadow: 2px 4px 12px rgba(0,0,0,0.4);
   cursor: pointer;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition: transform 0.4s ease, box-shadow 0.4s ease, z-index 0s;
   transform-origin: center bottom;
   user-select: none;
 }
@@ -1097,12 +1097,14 @@ body.loaded::before {
   height: 100px;
   object-fit: cover;
   display: block;
+  pointer-events: none;
 }
 
 .polaroid:hover {
-  transform: var(--base-rotate, rotate(0deg)) scale(1.15) translateY(-8px) !important;
+  transform: var(--base-rotate, rotate(0deg)) scale(1.18) translateY(-12px) !important;
   box-shadow: 4px 8px 20px rgba(0,0,0,0.5);
   z-index: 450 !important;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
 }
 
 /* Polaroid viewer */
@@ -1261,7 +1263,8 @@ body.loaded::before {
      <li>Zoom in and out using the trackpad, then use the mouse to move the image around</li>
       <li>There's a notebook on top of the cupboard. We can both leave messages in there, just select your name and leave one.</li>
       <li>You can drag the notebook around</li>
-      <li>If there's an unread notification, the book will glow.</li>
+    <li>If there's an unread notification, the book will glow.</li>
+      <li>Click the polaroid piles to look through the photos</li>
     </ul>
   </div>
 
@@ -1848,8 +1851,8 @@ polaroidFiles.forEach((src, i) => {
   el.style.setProperty('--base-rotate', `rotate(${rot}deg)`);
   el.style.transform = `rotate(${rot}deg)`;
   el.style.zIndex = 400 + i;
-  el.style.left = (i * 4) + 'px';
-  el.style.top = (i * -3) + 'px';
+ el.style.left = (i * 8) + 'px';
+  el.style.top = (i * -5) + 'px';
   const img = document.createElement('img');
   img.src = src;
   img.loading = 'lazy';
@@ -1926,11 +1929,14 @@ function openPolaroidViewer() {
       item.style.transform = `rotate(${currentRot + swing}deg)`;
     }
 
+  let topZIndex = 5550;
+
     function onEnd(clientX) {
       if (!isDragging) return;
       isDragging = false;
       item.classList.remove('dragging');
-      item.style.zIndex = 5550 + i;
+      topZIndex += 1;
+      item.style.zIndex = topZIndex;
       const dx = clientX - startDX;
       const finalRot = currentRot + Math.max(-12, Math.min(12, dx * 0.05));
       currentRot = finalRot;
