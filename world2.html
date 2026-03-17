@@ -498,10 +498,16 @@ galleryImages.forEach((src, i) => {
 
 function openImageViewer(index) {
   currentImageIndex = index;
-  imageViewerImg.src = galleryImages[currentImageIndex];
+  imageViewerImg.classList.remove('active');
+  imageViewerImg.src = '';
+  setTimeout(() => {
+    imageViewerImg.src = galleryImages[currentImageIndex];
+    imageViewerImg.onload = () => {
+      imageViewerImg.classList.add('active');
+    };
+  }, 10);
   isViewerOpen = true;
   imageViewerOverlay.classList.add('active');
-  imageViewerImg.classList.add('active');
   imageViewerNav.classList.add('active');
 }
 
