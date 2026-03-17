@@ -636,7 +636,9 @@ function openGallery() {
   galleryTab.style.left = left + 'px';
   galleryTab.style.top = top + 'px';
   galleryTab.style.transform = 'none';
-  galleryTab.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+  galleryTab.style.transition = 'none';
+  galleryTab.style.opacity = '1';
+  galleryTab.style.pointerEvents = 'auto';
   galleryTab.classList.add('visible');
   galleryOverlay.classList.add('active');
 }
