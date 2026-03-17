@@ -1430,7 +1430,7 @@ function startGbDrag(clientX, clientY) {
   gbDragOffsetX = clientX - rect.left;
   gbDragOffsetY = clientY - rect.top;
   guestbookPanel.style.transition = 'none';
-  guestbookPanel.style.transform = 'none';
+  guestbookPanel.style.transform = 'rotate(0deg)';
   guestbookPanel.style.top = rect.top + 'px';
   guestbookPanel.style.left = rect.left + 'px';
 }
@@ -1456,6 +1456,7 @@ function endGbDrag() {
 
 guestbookPanelHeader.addEventListener('mousedown', (e) => {
   if (e.target === document.getElementById('guestbookCloseBtn')) return;
+  if (e.target.closest('.guestbook-msg-actions') || e.target.closest('.reaction-picker') || e.target.closest('.guestbook-msg-reactions')) return;
   startGbDrag(e.clientX, e.clientY);
   e.preventDefault();
 });
