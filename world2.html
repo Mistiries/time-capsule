@@ -1091,21 +1091,12 @@ body.loaded::before {
 }
 
 /* Polaroids */
-#polaroidPile {
+#polaroidPile, #polaroidPile2 {
   position: fixed;
-  bottom: 12%;
-  right: 2%;
-  width: 180px;
-  height: 200px;
-  z-index: 400;
-}
-
-#polaroidPile2 {
-  position: fixed;
-  bottom: 2%;
-  right: 20%;
-  width: 180px;
-  height: 200px;
+  bottom: 0;
+  right: 0;
+  width: 0;
+  height: 0;
   z-index: 400;
 }
 
@@ -1898,7 +1889,18 @@ let polaroidTopZ = 5550;
 
 const baseRotations = [-14, -6, 0, 8, -10, 4, -18, 12, -4, 16];
 
-function buildPolaroidPile(files, pileEl, viewerFiles) {
+// Scattered positions across the right side of the screen
+// Each entry is [rightPercent, bottomPercent]
+const pile1Positions = [
+  [3, 55], [8, 42], [2, 68], [12, 30], [5, 78],
+  [14, 60], [7, 20], [18, 45]
+];
+const pile2Positions = [
+  [22, 15], [28, 35], [20, 52], [32, 22], [25, 65],
+  [35, 48], [30, 8], [24, 78], [38, 30], [27, 58]
+];
+
+function buildPolaroidPile(files, positions, viewerFiles) {
   files.forEach((src, i) => {
     const el = document.createElement('div');
     el.className = 'polaroid';
@@ -1909,11 +1911,12 @@ function buildPolaroidPile(files, pileEl, viewerFiles) {
     let pileDragOffX, pileDragOffY, pileStartX, pileStartY, pileLastX;
     let pileSwing = 0;
 
-    el.style.setProperty('--base-rotate', `rotate(${rot}deg)`);
+    const pos = positions[i % positions.length];
+    el.style.position = 'fixed';
+    el.style.right = pos[0] + '%';
+    el.style.bottom = pos[1] + '%';
     el.style.transform = `rotate(${rot}deg)`;
     el.style.zIndex = 400 + i;
-   el.style.left = (i * 12) + 'px';
-    el.style.top = (i * -8) + 'px';
 
     const img = document.createElement('img');
     img.src = src;
@@ -1930,7 +1933,7 @@ function buildPolaroidPile(files, pileEl, viewerFiles) {
       if (!isDraggingPile) el.style.transform = `rotate(${currentRot}deg)`;
     });
 
-el.addEventListener('mousedown', (e) => {
+    el.addEventListener('mousedown', (e) => {
       isDraggingPile = true;
       pileHasMoved = false;
       pileLastX = e.clientX;
@@ -1940,13 +1943,11 @@ el.addEventListener('mousedown', (e) => {
       pileStartX = e.clientX;
       pileStartY = e.clientY;
       el.style.transition = 'none';
-      el.style.position = 'fixed';
+      el.style.right = 'auto';
+      el.style.bottom = 'auto';
       el.style.left = rect.left + 'px';
       el.style.top = rect.top + 'px';
-      el.style.bottom = 'auto';
-      el.style.right = 'auto';
       el.style.zIndex = 490 + i;
-      if (el.parentElement !== document.body) document.body.appendChild(el);
       e.preventDefault();
     });
 
@@ -1961,17 +1962,15 @@ el.addEventListener('mousedown', (e) => {
       pileStartX = touch.clientX;
       pileStartY = touch.clientY;
       el.style.transition = 'none';
-      el.style.position = 'fixed';
+      el.style.right = 'auto';
+      el.style.bottom = 'auto';
       el.style.left = rect.left + 'px';
       el.style.top = rect.top + 'px';
-      el.style.bottom = 'auto';
-      el.style.right = 'auto';
       el.style.zIndex = 490 + i;
-      if (el.parentElement !== document.body) document.body.appendChild(el);
       e.preventDefault();
     }, { passive: false });
 
-   function onPileMove(clientX, clientY) {
+    function onPileMove(clientX, clientY) {
       if (!isDraggingPile) return;
       const dx = clientX - pileStartX;
       const dy = clientY - pileStartY;
@@ -1988,7 +1987,7 @@ el.addEventListener('mousedown', (e) => {
       el.style.transform = `rotate(${currentRot + pileSwing}deg) scale(${scale})`;
     }
 
- function onPileEnd(clientX, clientY) {
+    function onPileEnd(clientX, clientY) {
       if (!isDraggingPile) return;
       isDraggingPile = false;
       el.classList.remove('hovered');
@@ -2016,15 +2015,15 @@ el.addEventListener('mousedown', (e) => {
       onPileMove(e.touches[0].clientX, e.touches[0].clientY);
       e.preventDefault();
     }, { passive: false });
-  document.addEventListener('mouseup', (e) => { onPileEnd(e.clientX, e.clientY); });
+    document.addEventListener('mouseup', (e) => { onPileEnd(e.clientX, e.clientY); });
     document.addEventListener('touchend', (e) => { onPileEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY); });
 
-    pileEl.appendChild(el);
+    document.body.appendChild(el);
   });
 }
 
-buildPolaroidPile(polaroidFiles, polaroidPile, polaroidFiles);
-buildPolaroidPile(polaroidFiles2, polaroidPile2, polaroidFiles2);
+buildPolaroidPile(polaroidFiles, pile1Positions, polaroidFiles);
+buildPolaroidPile(polaroidFiles2, pile2Positions, polaroidFiles2);
 
 function openPolaroidViewer(files) {
   if (polaroidViewerOpen) return;
