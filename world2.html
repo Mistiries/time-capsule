@@ -140,7 +140,7 @@ body.loaded::before {
 /* Guestbook book object */
 #guestbookBook {
   position: fixed;
-  bottom: 28%;
+  bottom: 33%;
   left: 3.5%;
   width: 60px;
   cursor: grab;
@@ -989,7 +989,7 @@ body.loaded::before {
   <div id="guestbookOverlay"></div>
   <div id="guestbookPanel">
     <div id="guestbookPanelHeader">
-      <span id="guestbookPanelTitle">Our wall</span>
+     <span id="guestbookPanelTitle">Our Notebook</span>
       <span id="guestbookWhoAmI"></span>
       <button id="guestbookCloseBtn">✕</button>
     </div>
@@ -1011,7 +1011,9 @@ body.loaded::before {
       <li>You can drag and resize the gallery tab</li>
       <li>Click on images to view them (you can download them too)</li>
       <li>Use the arrow keys on screen or on your keyboard to look through images</li>
-      <li>Zoom in and out using the trackpad, then use the mouse to move the image around</li>
+     <li>Zoom in and out using the trackpad, then use the mouse to move the image around</li>
+      <li>There's a notebook on top of the cupboard. We can both leave messages in there, just select your name and leave one.</li>
+      <li>You can drag the notebook around</li>
     </ul>
   </div>
 
@@ -1617,7 +1619,7 @@ function setupTooltip(el, text) {
 }
 
 setupTooltip(cupboard, 'It smells like perfume in here...');
-setupTooltip(guestbookBook, 'Our wall');
+setupTooltip(guestbookBook, 'Notebook');
 
 function startMusic() {
   if (!musicStarted) {
