@@ -140,10 +140,10 @@ body.loaded::before {
 /* Guestbook book object */
 #guestbookBook {
   position: fixed;
-  bottom: 13%;
+  bottom: 28%;
   left: 3.5%;
   width: 60px;
-  cursor: pointer;
+  cursor: grab;
   z-index: 401;
   transition: transform 0.15s ease;
   filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5));
@@ -285,8 +285,9 @@ body.loaded::before {
 }
 
 #guestbookPanelTitle {
-  font-size: 18px;
-  font-weight: 500;
+  font-size: 22px;
+  font-family: 'Brush Script MT', cursive;
+  font-style: italic;
   color: #222;
 }
 
@@ -1137,10 +1138,98 @@ function closeGuestbook() {
   }, 200);
 }
 
-guestbookBook.addEventListener('click', openGuestbookFlow);
-guestbookBook.addEventListener('touchend', (e) => {
+let bookDragOffsetX, bookDragOffsetY, isBookDragging = false;
+let bookStartX, bookStartY, bookHasMoved = false;
+
+function getBookPos() {
+  const rect = guestbookBook.getBoundingClientRect();
+  return { left: rect.left, top: rect.top };
+}
+
+guestbookBook.addEventListener('mousedown', (e) => {
+  isBookDragging = true;
+  bookHasMoved = false;
+  lastBookX = e.clientX;
+  const rect = guestbookBook.getBoundingClientRect();
+  bookDragOffsetX = e.clientX - rect.left;
+  bookDragOffsetY = e.clientY - rect.top;
+  bookStartX = e.clientX;
+  bookStartY = e.clientY;
+  guestbookBook.style.transition = 'none';
+  guestbookBook.style.cursor = 'grabbing';
   e.preventDefault();
-  openGuestbookFlow();
+});
+
+guestbookBook.addEventListener('touchstart', (e) => {
+  const touch = e.touches[0];
+  isBookDragging = true;
+  bookHasMoved = false;
+  const rect = guestbookBook.getBoundingClientRect();
+  bookDragOffsetX = touch.clientX - rect.left;
+  bookDragOffsetY = touch.clientY - rect.top;
+  bookStartX = touch.clientX;
+  bookStartY = touch.clientY;
+  guestbookBook.style.transition = 'none';
+  e.preventDefault();
+}, { passive: false });
+
+let lastBookX = 0, bookSwing = 0;
+
+document.addEventListener('mousemove', (e) => {
+  if (!isBookDragging) return;
+  const dx = e.clientX - bookStartX;
+  const dy = e.clientY - bookStartY;
+  if (Math.abs(dx) > 4 || Math.abs(dy) > 4) bookHasMoved = true;
+  const moveDx = e.clientX - lastBookX;
+  lastBookX = e.clientX;
+  const targetSwing = Math.max(-5, Math.min(5, moveDx * 0.2));
+  bookSwing += (targetSwing - bookSwing) * 0.25;
+  guestbookBook.style.position = 'fixed';
+  guestbookBook.style.left = (e.clientX - bookDragOffsetX) + 'px';
+  guestbookBook.style.top = (e.clientY - bookDragOffsetY) + 'px';
+  guestbookBook.style.bottom = 'auto';
+  guestbookBook.style.transform = `rotate(${bookSwing}deg)`;
+});
+
+document.addEventListener('touchmove', (e) => {
+  if (!isBookDragging) return;
+  const touch = e.touches[0];
+  const dx = touch.clientX - bookStartX;
+  const dy = touch.clientY - bookStartY;
+  if (Math.abs(dx) > 4 || Math.abs(dy) > 4) bookHasMoved = true;
+  const moveDx = touch.clientX - lastBookX;
+  lastBookX = touch.clientX;
+  const targetSwing = Math.max(-5, Math.min(5, moveDx * 0.2));
+  bookSwing += (targetSwing - bookSwing) * 0.25;
+  guestbookBook.style.position = 'fixed';
+  guestbookBook.style.left = (touch.clientX - bookDragOffsetX) + 'px';
+  guestbookBook.style.top = (touch.clientY - bookDragOffsetY) + 'px';
+  guestbookBook.style.bottom = 'auto';
+  guestbookBook.style.transform = `rotate(${bookSwing}deg)`;
+  e.preventDefault();
+}, { passive: false });
+
+document.addEventListener('mouseup', (e) => {
+  if (!isBookDragging) return;
+  isBookDragging = false;
+  bookSwing = 0;
+  guestbookBook.style.cursor = 'grab';
+  guestbookBook.style.transition = 'transform 0.3s ease';
+  guestbookBook.style.transform = 'rotate(0deg)';
+  if (!bookHasMoved) {
+    openGuestbookFlow();
+  }
+});
+
+document.addEventListener('touchend', (e) => {
+  if (!isBookDragging) return;
+  isBookDragging = false;
+  bookSwing = 0;
+  guestbookBook.style.transition = 'transform 0.3s ease';
+  guestbookBook.style.transform = 'rotate(0deg)';
+  if (!bookHasMoved) {
+    openGuestbookFlow();
+  }
 });
 
 document.getElementById('guestbookCloseBtn').addEventListener('click', closeGuestbook);
@@ -1433,6 +1522,7 @@ viewerSlideContainer.addEventListener('mousedown', (e) => {
 });
 
 document.addEventListener('mousemove', (e) => {
+  if (isBookDragging) return;
   if (!isPanning) return;
   panX = panStartX + (e.clientX - panStartMouseX);
   panY = panStartY + (e.clientY - panStartMouseY);
@@ -1624,7 +1714,7 @@ function endGalleryDrag() {
 galleryHeader.addEventListener('mousedown', (e) => { if (e.target === galleryClose) return; startGalleryDrag(e.clientX, e.clientY); e.preventDefault(); });
 galleryHeader.addEventListener('touchstart', (e) => { if (e.target === galleryClose) return; const touch = e.touches[0]; startGalleryDrag(touch.clientX, touch.clientY); e.preventDefault(); }, { passive: false });
 
-document.addEventListener('mousemove', (e) => { moveGallery(e.clientX, e.clientY); doResize(e.clientX, e.clientY); });
+document.addEventListener('mousemove', (e) => { if (!isBookDragging) { moveGallery(e.clientX, e.clientY); doResize(e.clientX, e.clientY); } });
 document.addEventListener('touchmove', (e) => {
   const touch = e.touches[0];
   if (isDraggingGallery) { moveGallery(touch.clientX, touch.clientY); e.preventDefault(); }
