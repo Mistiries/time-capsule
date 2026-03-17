@@ -166,8 +166,9 @@ body.loaded::before {
 }
 
 #galleryTab.closing {
-  opacity: 0;
+  opacity: 0 !important;
   transform: scale(0.9);
+  transition: opacity 0.25s ease, transform 0.25s ease !important;
 }
 
 #galleryHeader {
@@ -664,6 +665,8 @@ function closeGallery() {
   setTimeout(() => {
     galleryTab.classList.remove('visible');
     galleryTab.classList.remove('closing');
+    galleryTab.style.opacity = '0';
+    galleryTab.style.pointerEvents = 'none';
   }, 250);
 }
 
