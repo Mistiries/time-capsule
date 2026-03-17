@@ -254,6 +254,15 @@ body.loaded::before {
   transform: scale(0.95);
 }
 
+@keyframes portalGlow {
+  0%, 100% { box-shadow: 0 0 5px rgba(0,0,0,0.3); }
+  50% { box-shadow: 0 0 12px rgba(255,200,100,0.9), 0 0 5px rgba(0,0,0,0.3); }
+}
+
+#portalBtn.has-unread {
+  animation: portalGlow 2s ease-in-out infinite;
+}
+
 #instructionsBtn {
   width: 100%;
   display: flex;
@@ -1346,5 +1355,46 @@ if (lastVisit) {
 localStorage.setItem('timecapsule_lastvisit', Date.now().toString());
   
 </script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, onSnapshot, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyABA6tV0WH8rZaaOaUHqeSFxsNVao5vpC8",
+  authDomain: "time-capsule-964c8.firebaseapp.com",
+  projectId: "time-capsule-964c8",
+  storageBucket: "time-capsule-964c8.firebasestorage.app",
+  messagingSenderId: "1030157356208",
+  appId: "1:1030157356208:web:5525f855c4ee89e6d2bf75"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const currentUser = localStorage.getItem('timecapsule_user');
+const lastSeen = parseInt(localStorage.getItem('timecapsule_notebook_seen') || '0');
+
+const q = query(collection(db, 'messages'), orderBy('timestamp', 'asc'));
+onSnapshot(q, (snapshot) => {
+  let hasUnread = false;
+  snapshot.forEach((docSnap) => {
+    const data = docSnap.data();
+    if (data.timestamp && data.name !== currentUser) {
+      const msgTime = data.timestamp.seconds * 1000;
+      if (msgTime > lastSeen) hasUnread = true;
+    }
+  });
+  const portalBtn = document.getElementById('portalBtn');
+  if (portalBtn) {
+    if (hasUnread) {
+      portalBtn.classList.add('has-unread');
+    } else {
+      portalBtn.classList.remove('has-unread');
+    }
+  }
+});
+</script>
+
 </body>
 </html>
