@@ -1341,7 +1341,7 @@ if (lastVisit) {
   stamp.style.cssText = 'position:fixed;bottom:12px;right:12px;color:rgba(255,255,255,0.4);font-size:12px;pointer-events:none;z-index:9999;font-style:italic;';
   stamp.textContent = msg;
   document.body.appendChild(stamp);
-  setTimeout(() => { stamp.style.transition = 'opacity 1.5s ease'; stamp.style.opacity = '0'; }, 4000);
+  setTimeout(() => { stamp.style.transition = 'opacity 1.5s ease'; stamp.style.opacity = '0'; }, 8000);
 }
 localStorage.setItem('timecapsule_lastvisit', Date.now().toString());
   
