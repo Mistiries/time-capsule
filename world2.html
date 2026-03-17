@@ -111,7 +111,7 @@ body.loaded::before {
 
 #cupboard {
   position: fixed;
-  bottom: 4%;
+  bottom: -2%;
   left: 3%;
   width: 180px;
   cursor: pointer;
@@ -147,6 +147,8 @@ body.loaded::before {
   left: 50%;
   transform: translate(-50%, -50%) scale(0.95);
   width: 65vw;
+  min-width: 300px;
+  min-height: 200px;
   max-height: 70vh;
   background: white;
   border-radius: 12px;
@@ -157,6 +159,9 @@ body.loaded::before {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.25s ease, transform 0.25s ease;
+  resize: both;
+  overflow: hidden;
+}
 }
 
 #galleryTab.visible {
@@ -219,6 +224,7 @@ body.loaded::before {
   padding: 20px;
   flex: 1;
   border-radius: 0 0 12px 12px;
+  min-height: 0;
 }
 </style>
 </head>
