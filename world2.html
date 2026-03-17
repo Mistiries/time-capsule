@@ -1269,18 +1269,19 @@ function openGuestbookFlow() {
 
 function openGuestbook() {
   guestbookWhoAmI.textContent = `Signed in as ${currentUser}`;
+  const w = 520;
+  const h = window.innerHeight * 0.7;
+  const left = (window.innerWidth - w) / 2;
+  const top = (window.innerHeight - h) / 2;
   guestbookPanel.style.transition = 'none';
-  guestbookPanel.style.top = '50%';
-  guestbookPanel.style.left = '50%';
-  guestbookPanel.style.width = '520px';
-  guestbookPanel.style.height = '70vh';
-  guestbookPanel.style.transform = 'translate(-50%, -50%) scale(1)';
+  guestbookPanel.style.transform = 'none';
+  guestbookPanel.style.width = w + 'px';
+  guestbookPanel.style.height = h + 'px';
+  guestbookPanel.style.left = left + 'px';
+  guestbookPanel.style.top = top + 'px';
   guestbookOverlay.classList.add('active');
   guestbookPanel.classList.add('visible');
   markAllRead();
-  setTimeout(() => {
-    guestbookPanel.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
-  }, 50);
 }
 
 function closeGuestbook() {
