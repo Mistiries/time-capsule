@@ -250,9 +250,8 @@ body.loaded::before {
   opacity: 0;
   pointer-events: none;
   overflow: hidden;
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  transition: opacity 0.25s ease;
   will-change: transform;
-  transform: translateZ(0);
 }
 
 #galleryTab.visible {
@@ -1237,21 +1236,27 @@ function startGalleryDrag(clientX, clientY) {
 
 let lastGalleryX = 0;
 
+let currentSwing = 0;
+
 function moveGallery(clientX, clientY) {
   if (!isDraggingGallery) return;
   const dx = clientX - lastGalleryX;
   lastGalleryX = clientX;
-  const swing = Math.min(Math.abs(dx) * 0.08, 3);
-  const direction = dx > 0 ? swing : -swing;
+  const targetSwing = Math.max(-3, Math.min(3, dx * 0.15));
+  currentSwing += (targetSwing - currentSwing) * 0.25;
   galleryTab.style.left = (clientX - dragOffsetX) + 'px';
   galleryTab.style.top = (clientY - dragOffsetY) + 'px';
-  galleryTab.style.transform = `rotate(${direction}deg)`;
+  galleryTab.style.transform = `rotate(${currentSwing}deg)`;
 }
 
 function endGalleryDrag() {
   isDraggingGallery = false;
+  currentSwing = 0;
   galleryTab.style.transition = 'transform 0.3s ease';
   galleryTab.style.transform = 'rotate(0deg)';
+  setTimeout(() => {
+    galleryTab.style.transition = 'opacity 0.25s ease';
+  }, 300);
 }
 
 galleryHeader.addEventListener('mousedown', (e) => {
