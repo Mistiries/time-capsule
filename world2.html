@@ -427,6 +427,115 @@ body.loaded::before {
   background: #fdecea;
 }
 
+.guestbook-msg-reactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.reaction-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #f5f5f5;
+  border: 1.5px solid #eee;
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease, border-color 0.15s ease;
+  user-select: none;
+}
+
+.reaction-pill:hover {
+  background: #efefef;
+  border-color: #ddd;
+}
+
+.reaction-pill.mine {
+  background: #fff3e0;
+  border-color: #f5c842;
+}
+
+.reaction-pill.mine:hover {
+  background: #ffe8b0;
+}
+
+.reaction-pill .reaction-count {
+  font-size: 12px;
+  color: #888;
+  font-weight: 500;
+}
+
+@keyframes reactionPop {
+  0% { transform: scale(0.5); opacity: 0; }
+  60% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.reaction-pill.popping {
+  animation: reactionPop 0.3s ease forwards;
+}
+
+.reaction-picker {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  right: 10px;
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 6px 8px;
+  display: flex;
+  gap: 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  z-index: 100;
+  opacity: 0;
+  transform: scale(0.85) translateY(6px);
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.reaction-picker.visible {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  pointer-events: auto;
+}
+
+.reaction-picker-btn {
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 8px;
+  transition: background 0.1s ease, transform 0.1s ease;
+  background: none;
+  border: none;
+  box-shadow: none;
+  margin: 0;
+}
+
+.reaction-picker-btn:hover {
+  background: #f5f5f5;
+  transform: scale(1.2);
+}
+
+.react-trigger-btn {
+  background: #f5f5f5;
+  border: none;
+  border-radius: 5px;
+  padding: 3px 8px;
+  font-size: 13px;
+  cursor: pointer;
+  color: #777;
+  transition: background 0.1s ease;
+  box-shadow: none;
+  margin: 0;
+}
+
+.react-trigger-btn:hover {
+  background: #ebebeb;
+}
+
 #guestbookEmpty {
   text-align: center;
   color: #bbb;
@@ -1452,30 +1561,60 @@ onSnapshot(q, (snapshot) => {
     msgEl.className = 'guestbook-msg';
     msgEl.dataset.id = id;
 
-    const date = data.timestamp ? new Date(data.timestamp.seconds * 1000) : new Date();
-    const dateStr = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    function getRelativeTime(timestamp) {
+  if (!timestamp) return 'just now';
+  const now = Date.now();
+  const then = timestamp.seconds * 1000;
+  const diff = now - then;
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  if (minutes < 1) return 'just now';
+  if (minutes < 60) return `${minutes}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  if (days < 7) return `${days}d ago`;
+  return new Date(then).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+}
 
+const dateStr = getRelativeTime(data.timestamp);
     const nameClass = data.name === 'Eleni' ? 'eleni' : 'achraf';
 
-    msgEl.innerHTML = `
-      <div class="guestbook-msg-name ${nameClass}">${data.name}</div>
-      <div class="guestbook-msg-text">${data.text}</div>
-      <div class="guestbook-edit-area">
-        <textarea class="guestbook-edit-input">${data.text}</textarea>
-        <div class="guestbook-edit-actions">
-          <button class="guestbook-cancel-btn">Cancel</button>
-          <button class="guestbook-save-btn">Save</button>
-        </div>
-      </div>
-      <div class="guestbook-msg-date">${dateStr}</div>
-      ${isOwn ? `
-      <div class="guestbook-msg-actions">
-        <button class="msg-action-btn edit-btn">Edit</button>
-        <button class="msg-action-btn delete delete-btn">Delete</button>
-      </div>` : ''}
-    `;
+   const reactions = data.reactions || {};
+const reactionEmojis = ['❤️', '😊', '😳', '😡'];
 
-    if (isOwn) {
+const reactionPillsHTML = reactionEmojis.map(emoji => {
+  const users = reactions[emoji] || [];
+  if (users.length === 0) return '';
+  const isMine = users.includes(currentUser);
+  return `<span class="reaction-pill ${isMine ? 'mine' : ''}" data-emoji="${emoji}">
+    ${emoji} <span class="reaction-count">${users.length}</span>
+  </span>`;
+}).join('');
+
+msgEl.innerHTML = `
+  <div class="reaction-picker">
+    ${reactionEmojis.map(e => `<button class="reaction-picker-btn" data-emoji="${e}">${e}</button>`).join('')}
+  </div>
+  <div class="guestbook-msg-name ${nameClass}">${data.name}</div>
+  <div class="guestbook-msg-text">${data.text}</div>
+  <div class="guestbook-edit-area">
+    <textarea class="guestbook-edit-input">${data.text}</textarea>
+    <div class="guestbook-edit-actions">
+      <button class="guestbook-cancel-btn">Cancel</button>
+      <button class="guestbook-save-btn">Save</button>
+    </div>
+  </div>
+  <div class="guestbook-msg-date">${dateStr}</div>
+  <div class="guestbook-msg-reactions">${reactionPillsHTML}</div>
+  <div class="guestbook-msg-actions">
+    <button class="react-trigger-btn">😊</button>
+    ${isOwn ? `
+    <button class="msg-action-btn edit-btn">Edit</button>
+    <button class="msg-action-btn delete delete-btn">Delete</button>` : ''}
+  </div>
+`;
+
+  if (isOwn) {
       msgEl.querySelector('.delete-btn').addEventListener('click', async () => {
         await deleteDoc(doc(db, 'messages', id));
       });
@@ -1489,6 +1628,68 @@ onSnapshot(q, (snapshot) => {
         msgEl.classList.remove('editing');
         msgEl.querySelector('.guestbook-edit-input').value = data.text;
       });
+
+      msgEl.querySelector('.guestbook-save-btn').addEventListener('click', async () => {
+        const newText = msgEl.querySelector('.guestbook-edit-input').value.trim();
+        if (!newText) return;
+        await updateDoc(doc(db, 'messages', id), { text: newText });
+        msgEl.classList.remove('editing');
+      });
+    }
+
+    // Reaction picker toggle
+    const picker = msgEl.querySelector('.reaction-picker');
+    const triggerBtn = msgEl.querySelector('.react-trigger-btn');
+
+    triggerBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isVisible = picker.classList.contains('visible');
+      document.querySelectorAll('.reaction-picker.visible').forEach(p => p.classList.remove('visible'));
+      if (!isVisible) picker.classList.add('visible');
+    });
+
+    document.addEventListener('click', () => {
+      picker.classList.remove('visible');
+    });
+
+    // Reaction picker buttons
+    msgEl.querySelectorAll('.reaction-picker-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const emoji = btn.dataset.emoji;
+        picker.classList.remove('visible');
+        const currentReactions = data.reactions || {};
+        const users = [...(currentReactions[emoji] || [])];
+        const idx = users.indexOf(currentUser);
+        if (idx > -1) {
+          users.splice(idx, 1);
+        } else {
+          users.push(currentUser);
+        }
+        const updatedReactions = { ...currentReactions, [emoji]: users };
+        await updateDoc(doc(db, 'messages', id), { reactions: updatedReactions });
+      });
+    });
+
+    // Reaction pill click to remove
+    msgEl.querySelectorAll('.reaction-pill').forEach(pill => {
+      pill.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const emoji = pill.dataset.emoji;
+        const currentReactions = data.reactions || {};
+        const users = [...(currentReactions[emoji] || [])];
+        const idx = users.indexOf(currentUser);
+        if (idx > -1) {
+          users.splice(idx, 1);
+          const updatedReactions = { ...currentReactions, [emoji]: users };
+          await updateDoc(doc(db, 'messages', id), { reactions: updatedReactions });
+        }
+      });
+
+      // Pop animation on new reactions
+      pill.classList.add('popping');
+      setTimeout(() => pill.classList.remove('popping'), 300);
+    });
 
       msgEl.querySelector('.guestbook-save-btn').addEventListener('click', async () => {
         const newText = msgEl.querySelector('.guestbook-edit-input').value.trim();
