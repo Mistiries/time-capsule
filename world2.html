@@ -140,7 +140,7 @@ body.loaded::before {
 /* Guestbook book object */
 #guestbookBook {
   position: fixed;
-  bottom: 33%;
+  bottom: 35%;
   left: 3.5%;
   width: 60px;
   cursor: grab;
@@ -150,7 +150,7 @@ body.loaded::before {
 }
 
 #guestbookBook:hover {
-  transform: translateY(-3px);
+  filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5)) brightness(1.08);
 }
 
 @keyframes bookGlow {
@@ -160,10 +160,6 @@ body.loaded::before {
 
 #guestbookBook.has-unread {
   animation: bookGlow 2s ease-in-out infinite;
-}
-
-#guestbookBook:active {
-  transform: scale(0.95);
 }
 
 /* Name selector */
@@ -1047,6 +1043,7 @@ body.loaded::before {
      <li>Zoom in and out using the trackpad, then use the mouse to move the image around</li>
       <li>There's a notebook on top of the cupboard. We can both leave messages in there, just select your name and leave one.</li>
       <li>You can drag the notebook around</li>
+      <li>If there's an unread notification, the book will glow.</li>
     </ul>
   </div>
 
@@ -1151,11 +1148,18 @@ function openGuestbookFlow() {
   startMusic();
   pickupSound.currentTime = 0;
   pickupSound.play();
-  if (!currentUser) {
-    nameSelectorOverlay.classList.add('active');
-  } else {
-    openGuestbook();
-  }
+  guestbookBook.style.transition = 'transform 0.1s ease, filter 0.15s ease';
+  guestbookBook.style.transform = 'scale(0.92)';
+  setTimeout(() => {
+    guestbookBook.style.transform = 'scale(1)';
+    setTimeout(() => {
+      if (!currentUser) {
+        nameSelectorOverlay.classList.add('active');
+      } else {
+        openGuestbook();
+      }
+    }, 100);
+  }, 100);
 }
 
 function openGuestbook() {
@@ -1931,7 +1935,7 @@ if (lastVisit) {
   stamp.style.cssText = 'position:fixed;bottom:12px;right:12px;color:rgba(255,255,255,0.4);font-size:12px;pointer-events:none;z-index:9999;font-style:italic;';
   stamp.textContent = msg;
   document.body.appendChild(stamp);
-  setTimeout(() => { stamp.style.transition = 'opacity 1.5s ease'; stamp.style.opacity = '0'; }, 4000);
+ setTimeout(() => { stamp.style.transition = 'opacity 1.5s ease'; stamp.style.opacity = '0'; }, 8000);
 }
 localStorage.setItem('timecapsule_lastvisit', Date.now().toString());
   
