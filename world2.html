@@ -1325,6 +1325,7 @@ body.loaded::before {
   display: block;
   max-height: 300px;
   object-fit: cover;
+  transform: scaleX(-1);
 }
 
 #cameraCanvas {
@@ -1934,7 +1935,9 @@ snapBtn.addEventListener('click', async () => {
   const h = cameraPreview.videoHeight;
   cameraCanvas.width = w;
   cameraCanvas.height = h;
-  const ctx = cameraCanvas.getContext('2d');
+const ctx = cameraCanvas.getContext('2d');
+  ctx.translate(w, 0);
+  ctx.scale(-1, 1);
   ctx.drawImage(cameraPreview, 0, 0, w, h);
   closeCamera();
   snapBtn.disabled = true;
