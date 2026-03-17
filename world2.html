@@ -1492,7 +1492,7 @@ body.loaded::before {
     </ul>
     <p style="font-size:20px;font-weight:500;margin:16px 0 6px 0;">Site</p>
     <ul>
-      <li>Click the polaroid piles to look through the photos</li>
+     <li>Click on polaroids to look through them closer</li>
       <li>You can drag the polaroids around too</li>
     </ul>
   </div>
@@ -2241,12 +2241,12 @@ const baseRotations = [-18, -8, 3, 12, -25, 6, 20, -12, 15, -5, 22, -15, 8, -20,
 // Scattered positions across the right side of the screen
 // Each entry is [rightPercent, bottomPercent]
 const pile1Positions = [
-  [62, 55], [72, 72], [48, 60], [58, 20], [78, 35],
-  [85, 65], [65, 10], [52, 40]
+  [72, 55], [82, 72], [58, 60], [68, 20], [88, 35],
+  [92, 65], [75, 10], [62, 40]
 ];
 const pile2Positions = [
-  [38, 45], [28, 65], [45, 15], [18, 50], [32, 28],
-  [22, 72], [42, 75], [15, 30], [35, 10], [50, 55]
+  [48, 45], [38, 65], [55, 15], [28, 50], [42, 28],
+  [32, 72], [52, 75], [25, 30], [45, 10], [60, 55]
 ];
 
 function buildPolaroidPile(files, positions, viewerFiles) {
@@ -2282,7 +2282,7 @@ function buildPolaroidPile(files, positions, viewerFiles) {
       if (!isDraggingPile) el.style.transform = `rotate(${currentRot}deg)`;
     });
 
-    el.addEventListener('mousedown', (e) => {
+   el.addEventListener('mousedown', (e) => {
       isDraggingPile = true;
       pileHasMoved = false;
       pileLastX = e.clientX;
@@ -2292,15 +2292,16 @@ function buildPolaroidPile(files, positions, viewerFiles) {
       pileStartX = e.clientX;
       pileStartY = e.clientY;
       el.style.transition = 'none';
-      el.style.right = 'auto';
-      el.style.bottom = 'auto';
+      el.style.position = 'fixed';
       el.style.left = rect.left + 'px';
       el.style.top = rect.top + 'px';
+      el.style.right = 'auto';
+      el.style.bottom = 'auto';
       el.style.zIndex = 490 + i;
       e.preventDefault();
     });
 
-    el.addEventListener('touchstart', (e) => {
+   el.addEventListener('touchstart', (e) => {
       const touch = e.touches[0];
       isDraggingPile = true;
       pileHasMoved = false;
@@ -2311,10 +2312,11 @@ function buildPolaroidPile(files, positions, viewerFiles) {
       pileStartX = touch.clientX;
       pileStartY = touch.clientY;
       el.style.transition = 'none';
-      el.style.right = 'auto';
-      el.style.bottom = 'auto';
+      el.style.position = 'fixed';
       el.style.left = rect.left + 'px';
       el.style.top = rect.top + 'px';
+      el.style.right = 'auto';
+      el.style.bottom = 'auto';
       el.style.zIndex = 490 + i;
       e.preventDefault();
     }, { passive: false });
@@ -2367,7 +2369,7 @@ function buildPolaroidPile(files, positions, viewerFiles) {
     document.addEventListener('mouseup', (e) => { onPileEnd(e.clientX, e.clientY); });
     document.addEventListener('touchend', (e) => { onPileEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY); });
 
-    document.body.appendChild(el);
+   document.getElementById('container').appendChild(el);
   });
 }
 
