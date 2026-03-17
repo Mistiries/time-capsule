@@ -262,7 +262,6 @@ body.loaded::before {
   user-select: none;
 }
 
-/* Image viewer */
 #imageViewerOverlay {
   position: fixed;
   top: 0;
@@ -425,7 +424,7 @@ const galleryImages = [
   'images/Letter images/IMG_20250918_151724.jpg',
   'images/Letter images/IMG_20250919_001438.jpg',
   'images/Letter images/IMG_20250919_145942~2.jpg',
-  'images/Letter images/IMG_20250919_150057%7E2.jpg',
+  'images/Letter images/IMG_20250919_150057~2.jpg',
   'images/Letter images/IMG_20250919_150247.jpg',
   'images/Letter images/IMG_20250919_150309~2.jpg',
   'images/Letter images/IMG_20250919_150333~2.jpg',
@@ -449,14 +448,46 @@ const galleryImages = [
   'images/Letter images/Untitled119_20251025184237~2.png',
 ];
 
+const galleryThumbs = [
+  'images/Letter images/thumbs/IMG_20250906_194806.jpg',
+  'images/Letter images/thumbs/IMG_20250907_143058~2.jpg',
+  'images/Letter images/thumbs/IMG_20250917_234550.jpg',
+  'images/Letter images/thumbs/IMG_20250918_010319~2.jpg',
+  'images/Letter images/thumbs/IMG_20250918_010333~3.jpg',
+  'images/Letter images/thumbs/IMG_20250918_151724.jpg',
+  'images/Letter images/thumbs/IMG_20250919_001438.jpg',
+  'images/Letter images/thumbs/IMG_20250919_145942~2.jpg',
+  'images/Letter images/thumbs/IMG_20250919_150057~2.jpg',
+  'images/Letter images/thumbs/IMG_20250919_150247.jpg',
+  'images/Letter images/thumbs/IMG_20250919_150309~2.jpg',
+  'images/Letter images/thumbs/IMG_20250919_150333~2.jpg',
+  'images/Letter images/thumbs/IMG_20250919_180559.jpg',
+  'images/Letter images/thumbs/IMG_20251025_182452~2.jpg',
+  'images/Letter images/thumbs/IMG_20251025_185734~2.jpg',
+  'images/Letter images/thumbs/IMG_20251025_185747~2.jpg',
+  'images/Letter images/thumbs/IMG_20251026_220548.jpg',
+  'images/Letter images/thumbs/IMG_20251026_220601.jpg',
+  'images/Letter images/thumbs/IMG_20251026_220631~2.jpg',
+  'images/Letter images/thumbs/IMG_20251026_220714~2.jpg',
+  'images/Letter images/thumbs/IMG_20251026_220814~2.jpg',
+  'images/Letter images/thumbs/IMG_20251216_011751~2.jpg',
+  'images/Letter images/thumbs/IMG_20251216_131924.jpg',
+  'images/Letter images/thumbs/IMG_20251217_231525.jpg',
+  'images/Letter images/thumbs/IMG_20251218_010436~2.jpg',
+  'images/Letter images/thumbs/IMG_20251218_161802.jpg',
+  'images/Letter images/thumbs/IMG_20251219_125630.jpg',
+  'images/Letter images/thumbs/IMG_20251219_170202~2.jpg',
+  'images/Letter images/thumbs/IMG_20251220_213654~2.jpg',
+  'images/Letter images/thumbs/Untitled119_20251025184237~2.jpg',
+];
+
 let currentImageIndex = 0;
 let isViewerOpen = false;
 
-// Populate gallery grid
 galleryImages.forEach((src, i) => {
   const img = document.createElement('img');
   img.loading = 'lazy';
-  img.src = src;
+  img.src = galleryThumbs[i];
   img.addEventListener('click', () => openImageViewer(i));
   img.addEventListener('touchend', (e) => {
     e.preventDefault();
@@ -676,7 +707,6 @@ galleryOverlay.addEventListener('touchend', (e) => {
   closeGallery();
 });
 
-// Dragging
 let dragOffsetX = 0, dragOffsetY = 0, isDraggingGallery = false;
 
 function startGalleryDrag(clientX, clientY) {
@@ -737,7 +767,6 @@ document.addEventListener('touchend', () => {
   endResize();
 });
 
-// Resizing
 let isResizing = false;
 let resizeStartX, resizeStartY, resizeStartW, resizeStartH;
 
