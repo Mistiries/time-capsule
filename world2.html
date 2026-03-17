@@ -136,6 +136,88 @@ body.loaded::before {
   z-index: 3000;
 }
 
+#instructionsPaper {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
+  width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: white;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 3px 3px 10px rgba(0,0,0,0.5);
+  z-index: 3500;
+  display: none;
+  opacity: 0;
+  font-family: 'Comic Sans MS', 'Segoe Print', cursive;
+}
+
+#instructionsPaper.visible {
+  display: block;
+  animation: popIn 0.2s ease forwards;
+}
+
+@keyframes popIn {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+#instructionsPaper h1 {
+  font-family: 'Comic Sans MS', 'Segoe Print', cursive;
+  font-size: 36px;
+  margin: 0 0 5px 0;
+  text-align: center;
+}
+
+#instructionsPaper .subtitle {
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 25px;
+  font-style: italic;
+}
+
+#instructionsPaper ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#instructionsPaper li {
+  margin: 12px 0;
+  padding-left: 25px;
+  position: relative;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+#instructionsPaper li:before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  font-size: 20px;
+}
+
+#instructionsOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.45);
+  z-index: 3499;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+#instructionsOverlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 #galleryOverlay {
   position: fixed;
   top: 0;
@@ -522,11 +604,25 @@ body.loaded::before {
       <button id="prevTrack">⏮</button>
       <button id="nextTrack">⏭</button>
     </div>
+    <button id="instructionsBtn">📋</button>
     <button id="portalBackBtn">🪵</button>
   </div>
 
  <img src="images/cupboard.png" id="cupboard">
   <div id="tooltip"></div>
+
+  <div id="instructionsOverlay"></div>
+  <div id="instructionsPaper">
+    <h1>Instructions</h1>
+    <p class="subtitle">(click anywhere to escape)</p>
+    <ul>
+      <li>All the art is in the cupboard for you to look at</li>
+      <li>You can drag and resize the gallery tab</li>
+      <li>Click on images to view them (you can download them too)</li>
+      <li>Use the arrow keys on screen or on your keyboard to look through images</li>
+      <li>Zoom in and out using the trackpad, then use the mouse to move the image around</li>
+    </ul>
+  </div>
 
   <div id="galleryOverlay"></div>
   <div id="galleryTab">
@@ -926,6 +1022,28 @@ viewerSlideContainer.addEventListener('touchend', (e) => {
 });
 
 const tooltip = document.getElementById('tooltip');
+const instructionsPaper = document.getElementById('instructionsPaper');
+const instructionsOverlay = document.getElementById('instructionsOverlay');
+
+document.getElementById('instructionsBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  startMusic();
+  pickupSound.currentTime = 0;
+  pickupSound.play();
+  instructionsPaper.classList.add('visible');
+  instructionsOverlay.classList.add('active');
+  burgerContent.classList.remove('open');
+});
+
+instructionsOverlay.addEventListener('click', () => {
+  instructionsPaper.classList.remove('visible');
+  instructionsOverlay.classList.remove('active');
+});
+
+instructionsPaper.addEventListener('click', () => {
+  instructionsPaper.classList.remove('visible');
+  instructionsOverlay.classList.remove('active');
+});
 
 function setupTooltip(el, text) {
   let timeout;
@@ -1110,20 +1228,30 @@ let dragOffsetX = 0, dragOffsetY = 0, isDraggingGallery = false;
 
 function startGalleryDrag(clientX, clientY) {
   isDraggingGallery = true;
+  lastGalleryX = clientX;
   const rect = galleryTab.getBoundingClientRect();
   dragOffsetX = clientX - rect.left;
   dragOffsetY = clientY - rect.top;
   galleryTab.style.transition = 'none';
 }
 
+let lastGalleryX = 0;
+
 function moveGallery(clientX, clientY) {
   if (!isDraggingGallery) return;
+  const dx = clientX - lastGalleryX;
+  lastGalleryX = clientX;
+  const swing = Math.min(Math.abs(dx) * 0.08, 3);
+  const direction = dx > 0 ? swing : -swing;
   galleryTab.style.left = (clientX - dragOffsetX) + 'px';
   galleryTab.style.top = (clientY - dragOffsetY) + 'px';
+  galleryTab.style.transform = `rotate(${direction}deg)`;
 }
 
 function endGalleryDrag() {
   isDraggingGallery = false;
+  galleryTab.style.transition = 'transform 0.3s ease';
+  galleryTab.style.transform = 'rotate(0deg)';
 }
 
 galleryHeader.addEventListener('mousedown', (e) => {
