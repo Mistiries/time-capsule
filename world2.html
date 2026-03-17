@@ -2081,15 +2081,6 @@ function openPolaroidViewer(files) {
       e.preventDefault();
     }, { passive: false });
 
-    function onMove(clientX, clientY) {
-      if (!isDragging) return;
-      const dx = clientX - startDX;
-      const swing = Math.max(-15, Math.min(15, dx * 0.1));
-      item.style.left = (clientX - dragOffX) + 'px';
-      item.style.top = (clientY - dragOffY) + 'px';
-      item.style.transform = `rotate(${currentRot + swing}deg)`;
-    }
-
 function onEnd(clientX, clientY) {
       if (!isDragging) return;
       isDragging = false;
@@ -2133,14 +2124,8 @@ function onEnd(clientX, clientY) {
       onMove(e.touches[0].clientX, e.touches[0].clientY);
       e.preventDefault();
     }, { passive: false });
-    document.addEventListener('mouseup', (e) => { onEnd(e.clientX, e.clientY); });
+ document.addEventListener('mouseup', (e) => { onEnd(e.clientX, e.clientY); });
     document.addEventListener('touchend', (e) => { onEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY); });
-      if (!isDragging) return;
-      onMove(e.touches[0].clientX, e.touches[0].clientY);
-      e.preventDefault();
-    }, { passive: false });
-    document.addEventListener('mouseup', (e) => { onEnd(e.clientX); });
-    document.addEventListener('touchend', (e) => { onEnd(e.changedTouches[0].clientX); });
 
     document.body.appendChild(item);
     polaroidViewerItems.push(item);
