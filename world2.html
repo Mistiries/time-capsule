@@ -2025,8 +2025,10 @@ onSnapshot(selfieQ, (snapshot) => {
       thumb.appendChild(delBtn);
     }
 
-    selfieStrip.appendChild(thumb);
+   selfieStrip.appendChild(thumb);
   });
+}, (error) => {
+  console.error('Selfie listener error:', error);
 });
 
 selfieViewerOverlay.addEventListener('click', () => {
