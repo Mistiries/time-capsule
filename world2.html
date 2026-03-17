@@ -1202,6 +1202,202 @@ body.loaded::before {
   z-index: 5600;
 }
 
+  /* Selfie wall */
+#selfieSection {
+  border-top: 1px solid #eee;
+  padding: 12px 16px;
+  background: white;
+  flex-shrink: 0;
+}
+
+#selfieStrip {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-height: 0;
+}
+
+#selfieStrip:empty {
+  display: none;
+}
+
+.selfie-thumb {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+}
+
+.selfie-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 2px solid #eee;
+  transition: transform 0.15s ease;
+  display: block;
+}
+
+.selfie-thumb:hover img {
+  transform: scale(1.05);
+}
+
+.selfie-delete-btn {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  background: #c0605a;
+  border: none;
+  border-radius: 50%;
+  color: white;
+  font-size: 11px;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 1px 1px 4px rgba(0,0,0,0.3);
+  line-height: 1;
+  padding: 0;
+  margin: 0;
+}
+
+.selfie-thumb:hover .selfie-delete-btn {
+  display: flex;
+}
+
+#cameraBtn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background 0.1s ease;
+  box-shadow: none;
+  margin: 0;
+  color: #aaa;
+}
+
+#cameraBtn:hover {
+  background: #f0f0f0;
+  color: #555;
+}
+
+#cameraModal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.7);
+  z-index: 6000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+#cameraModal.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#cameraBox {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  max-width: 420px;
+  width: 90%;
+}
+
+#cameraPreview {
+  width: 100%;
+  border-radius: 10px;
+  background: #000;
+  display: block;
+  max-height: 300px;
+  object-fit: cover;
+}
+
+#cameraCanvas {
+  display: none;
+}
+
+#cameraActions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+#snapBtn {
+  background: #222;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  font-size: 22px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+  box-shadow: none;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#snapBtn:hover {
+  background: #444;
+  transform: scale(1.05);
+}
+
+#closeCameraBtn {
+  background: #f0f0f0;
+  color: #555;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: none;
+  margin: 0;
+}
+
+#selfieViewerOverlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.85);
+  z-index: 6500;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#selfieViewerOverlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#selfieViewerImg {
+  max-width: 85vw;
+  max-height: 85vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+}
+
 </style>
 </head>
 <body>
@@ -1257,12 +1453,16 @@ body.loaded::before {
   <div id="guestbookOverlay"></div>
 <div id="guestbookPanel">
     <div id="guestbookPanelHeader">
-      <span id="guestbookPanelTitle">Our Notebook</span>
+   <span id="guestbookPanelTitle">Our Notebook</span>
       <span id="guestbookWhoAmI"></span>
+      <button id="cameraBtn" title="Take a selfie">📷</button>
       <button id="guestbookCloseBtn">✕</button>
     </div>
     <div id="guestbookMessages">
       <div id="guestbookEmpty">No messages yet — be the first!</div>
+    </div>
+  <div id="selfieSection">
+      <div id="selfieStrip"></div>
     </div>
     <div id="guestbookComposer">
       <textarea id="guestbookInput" placeholder="Leave a message..."></textarea>
@@ -1312,6 +1512,23 @@ body.loaded::before {
 <!-- Polaroid pile -->
   <div id="polaroidPile"></div>
   <div id="polaroidPile2"></div>
+
+  <!-- Camera modal -->
+  <div id="cameraModal">
+    <div id="cameraBox">
+      <video id="cameraPreview" autoplay playsinline muted></video>
+      <canvas id="cameraCanvas"></canvas>
+      <div id="cameraActions">
+        <button id="closeCameraBtn">Cancel</button>
+        <button id="snapBtn">📸</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Selfie viewer -->
+  <div id="selfieViewerOverlay">
+    <img id="selfieViewerImg" src="">
+  </div>
   
   <!-- Polaroid viewer -->
   <div id="polaroidViewerOverlay"></div>
@@ -1669,6 +1886,135 @@ guestbookResizeHandle.addEventListener('touchstart', (e) => {
   e.preventDefault();
   e.stopPropagation();
 }, { passive: false });
+
+  // Selfie wall
+const selfieStrip = document.getElementById('selfieStrip');
+const cameraModal = document.getElementById('cameraModal');
+const cameraPreview = document.getElementById('cameraPreview');
+const cameraCanvas = document.getElementById('cameraCanvas');
+const snapBtn = document.getElementById('snapBtn');
+const closeCameraBtn = document.getElementById('closeCameraBtn');
+const cameraBtn = document.getElementById('cameraBtn');
+const selfieViewerOverlay = document.getElementById('selfieViewerOverlay');
+const selfieViewerImg = document.getElementById('selfieViewerImg');
+let cameraStream = null;
+
+const CLOUDINARY_CLOUD = 'djg7mvjal';
+const CLOUDINARY_PRESET = 'timecapsule_selfies';
+
+cameraBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  openCamera();
+});
+
+async function openCamera() {
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+    cameraPreview.srcObject = cameraStream;
+    cameraModal.classList.add('active');
+  } catch (err) {
+    alert('Could not access camera. Please allow camera permissions.');
+  }
+}
+
+function closeCamera() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(t => t.stop());
+    cameraStream = null;
+  }
+  cameraModal.classList.remove('active');
+}
+
+closeCameraBtn.addEventListener('click', closeCamera);
+cameraModal.addEventListener('click', (e) => { if (e.target === cameraModal) closeCamera(); });
+
+snapBtn.addEventListener('click', async () => {
+  if (!currentUser) return;
+  const w = cameraPreview.videoWidth;
+  const h = cameraPreview.videoHeight;
+  cameraCanvas.width = w;
+  cameraCanvas.height = h;
+  const ctx = cameraCanvas.getContext('2d');
+  ctx.drawImage(cameraPreview, 0, 0, w, h);
+  closeCamera();
+  snapBtn.disabled = true;
+  snapBtn.textContent = '⏳';
+
+  cameraCanvas.toBlob(async (blob) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', blob);
+      formData.append('upload_preset', CLOUDINARY_PRESET);
+      formData.append('folder', 'selfies');
+
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+
+      if (data.secure_url) {
+        await addDoc(collection(db, 'selfies'), {
+          name: currentUser,
+          url: data.secure_url,
+          publicId: data.public_id,
+          timestamp: serverTimestamp()
+        });
+      } else {
+        alert('Upload failed. Please try again.');
+      }
+    } catch (err) {
+      console.error('Error uploading selfie:', err);
+      alert('Failed to upload selfie. Please try again.');
+    }
+    snapBtn.disabled = false;
+    snapBtn.textContent = '📸';
+  }, 'image/jpeg', 0.95);
+});
+
+const selfieQ = query(collection(db, 'selfies'), orderBy('timestamp', 'asc'));
+onSnapshot(selfieQ, (snapshot) => {
+  selfieStrip.innerHTML = '';
+  snapshot.forEach((docSnap) => {
+    const data = docSnap.data();
+    const id = docSnap.id;
+    const isOwn = data.name === currentUser;
+
+    const thumb = document.createElement('div');
+    thumb.className = 'selfie-thumb';
+
+    const img = document.createElement('img');
+    img.src = data.url;
+    img.addEventListener('click', () => {
+      selfieViewerImg.src = data.url;
+      selfieViewerOverlay.classList.add('active');
+    });
+
+    thumb.appendChild(img);
+
+    if (isOwn) {
+      const delBtn = document.createElement('button');
+      delBtn.className = 'selfie-delete-btn';
+      delBtn.textContent = '✕';
+      delBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        try {
+          await deleteDoc(doc(db, 'selfies', id));
+        } catch (err) {
+          console.error('Error deleting selfie:', err);
+        }
+      });
+      thumb.appendChild(delBtn);
+    }
+
+    selfieStrip.appendChild(thumb);
+  });
+});
+
+selfieViewerOverlay.addEventListener('click', () => {
+  selfieViewerOverlay.classList.remove('active');
+  selfieViewerImg.src = '';
+});
 
 // Post message
 guestbookPostBtn.addEventListener('click', async () => {
