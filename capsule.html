@@ -659,6 +659,7 @@ body.loaded::before {
     </div>
     <button id="instructionsBtn">📋</button>
     <button id="cloudsBtn">☁️</button>
+    <button id="portalBtn">🌀</button>
   </div>
 
   <div id="trashBin">🗑️</div>
@@ -1303,7 +1304,15 @@ function animateClouds() {
   }
 }
 
-document.getElementById('cloudsBtn').addEventListener('click', (e) => {
+document.getElementById('portalBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  startMusic();
+  pickupSound.currentTime = 0;
+  pickupSound.play();
+  burgerContent.classList.remove('open');
+  window.location.href = 'world2.html';
+});
+  document.getElementById('cloudsBtn').addEventListener('click', (e) => {
   e.stopPropagation();
   if(isViewerOpen) return;
   startMusic();
