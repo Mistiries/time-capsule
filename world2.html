@@ -1465,9 +1465,7 @@ body.loaded::before {
     <div id="guestbookMessages">
       <div id="guestbookEmpty">No messages yet — be the first!</div>
     </div>
-  <div id="selfieSection">
-      <div id="selfieStrip"></div>
-    </div>
+ 
     <div id="guestbookComposer">
       <textarea id="guestbookInput" placeholder="Leave a message..."></textarea>
       <button id="guestbookPostBtn">Post</button>
@@ -1517,7 +1515,7 @@ body.loaded::before {
   <div id="polaroidPile"></div>
   <div id="polaroidPile2"></div>
 
-  <!-- Camera modal -->
+<!-- Camera modal -->
   <div id="cameraModal">
     <div id="cameraBox">
       <video id="cameraPreview" autoplay playsinline muted></video>
@@ -1525,6 +1523,13 @@ body.loaded::before {
       <div id="cameraActions">
         <button id="closeCameraBtn">Cancel</button>
         <button id="snapBtn">📸</button>
+      </div>
+      <div id="cameraConfirm" style="display:none; flex-direction:column; align-items:center; gap:12px; width:100%;">
+        <img id="cameraConfirmImg" style="width:100%; border-radius:10px; max-height:300px; object-fit:cover;">
+        <div style="display:flex; gap:12px;">
+          <button id="retakeBtn" style="background:#f0f0f0;color:#555;border:none;border-radius:8px;padding:10px 20px;font-size:14px;cursor:pointer;">Retake</button>
+          <button id="sendSelfieBtn" style="background:#222;color:white;border:none;border-radius:8px;padding:10px 20px;font-size:14px;cursor:pointer;">Send 📤</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1894,17 +1899,21 @@ guestbookResizeHandle.addEventListener('touchstart', (e) => {
   e.stopPropagation();
 }, { passive: false });
 
-  // Selfie wall
-const selfieStrip = document.getElementById('selfieStrip');
+// Selfie wall
 const cameraModal = document.getElementById('cameraModal');
 const cameraPreview = document.getElementById('cameraPreview');
 const cameraCanvas = document.getElementById('cameraCanvas');
 const snapBtn = document.getElementById('snapBtn');
 const closeCameraBtn = document.getElementById('closeCameraBtn');
 const cameraBtn = document.getElementById('cameraBtn');
+const cameraConfirm = document.getElementById('cameraConfirm');
+const cameraConfirmImg = document.getElementById('cameraConfirmImg');
+const retakeBtn = document.getElementById('retakeBtn');
+const sendSelfieBtn = document.getElementById('sendSelfieBtn');
 const selfieViewerOverlay = document.getElementById('selfieViewerOverlay');
 const selfieViewerImg = document.getElementById('selfieViewerImg');
 let cameraStream = null;
+let pendingSelfieBlob = null;
 
 const CLOUDINARY_CLOUD = 'djg7mvjal';
 const CLOUDINARY_PRESET = 'timecapsule_selfies';
@@ -1924,6 +1933,10 @@ async function openCamera() {
   try {
     cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
     cameraPreview.srcObject = cameraStream;
+    cameraPreview.style.display = 'block';
+    cameraCanvas.style.display = 'none';
+    cameraConfirm.style.display = 'none';
+    document.querySelector('#cameraBox #cameraActions').style.display = 'flex';
     cameraModal.classList.add('active');
   } catch (err) {
     alert('Could not access camera. Please allow camera permissions.');
@@ -1936,81 +1949,89 @@ function closeCamera() {
     cameraStream = null;
   }
   cameraModal.classList.remove('active');
+  pendingSelfieBlob = null;
 }
 
 closeCameraBtn.addEventListener('click', closeCamera);
 cameraModal.addEventListener('click', (e) => { if (e.target === cameraModal) closeCamera(); });
 
-snapBtn.addEventListener('click', async () => {
-  if (!currentUser) return;
+snapBtn.addEventListener('click', () => {
   const w = cameraPreview.videoWidth;
   const h = cameraPreview.videoHeight;
   cameraCanvas.width = w;
   cameraCanvas.height = h;
-const ctx = cameraCanvas.getContext('2d');
+  const ctx = cameraCanvas.getContext('2d');
   ctx.translate(w, 0);
   ctx.scale(-1, 1);
   ctx.drawImage(cameraPreview, 0, 0, w, h);
-  closeCamera();
-  snapBtn.disabled = true;
-  snapBtn.textContent = '⏳';
 
-cameraCanvas.toBlob(async (blob) => {
-    try {
-      console.log('Starting upload, blob size:', blob.size);
-      const formData = new FormData();
-      formData.append('file', blob);
-      formData.append('upload_preset', CLOUDINARY_PRESET);
-      formData.append('folder', 'selfies');
-
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, {
-        method: 'POST',
-        body: formData
-      });
-      const data = await res.json();
-      console.log('Cloudinary response:', data);
-
-      if (data.secure_url) {
-        console.log('Got URL, saving to Firestore:', data.secure_url);
-        console.log('Current user:', currentUser);
-        await addDoc(collection(db, 'selfies'), {
-          name: currentUser,
-          url: data.secure_url,
-          publicId: data.public_id,
-          timestamp: serverTimestamp()
-        });
-        console.log('Saved to Firestore successfully!');
-      } else {
-        console.error('No secure_url in response:', data);
-        alert('Upload failed. Please try again.');
-      }
-    } catch (err) {
-      console.error('Error uploading selfie:', err);
-      alert('Failed to upload selfie. Please try again.');
+  cameraCanvas.toBlob((blob) => {
+    pendingSelfieBlob = blob;
+    const url = URL.createObjectURL(blob);
+    cameraConfirmImg.src = url;
+    cameraPreview.style.display = 'none';
+    document.querySelector('#cameraBox #cameraActions').style.display = 'none';
+    cameraConfirm.style.display = 'flex';
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(t => t.stop());
+      cameraStream = null;
     }
-    snapBtn.disabled = false;
-    snapBtn.textContent = '📸';
   }, 'image/jpeg', 0.95);
 });
 
-const selfieQ = query(collection(db, 'selfies'), orderBy('timestamp', 'asc'));
-onSnapshot(selfieQ, (snapshot) => {
-  console.log('Selfie snapshot fired, docs:', snapshot.size);
-  selfieStrip.innerHTML = '';
-  snapshot.forEach((docSnap) => {
-    const data = docSnap.data();
-    const id = docSnap.id;
-    const isOwn = data.name === currentUser;
+retakeBtn.addEventListener('click', async () => {
+  cameraConfirm.style.display = 'none';
+  cameraPreview.style.display = 'block';
+  document.querySelector('#cameraBox #cameraActions').style.display = 'flex';
+  pendingSelfieBlob = null;
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+    cameraPreview.srcObject = cameraStream;
+  } catch (err) {
+    alert('Could not access camera.');
+  }
+});
 
-    const thumb = document.createElement('div');
-    thumb.className = 'selfie-thumb';
+sendSelfieBtn.addEventListener('click', async () => {
+  if (!pendingSelfieBlob || !currentUser) return;
+  sendSelfieBtn.disabled = true;
+  sendSelfieBtn.textContent = '⏳';
 
-    const img = document.createElement('img');
-    img.src = data.url;
-    img.addEventListener('click', () => {
-      selfieViewerImg.src = data.url;
-      selfieViewerOverlay.classList.add('active');
+  try {
+    const formData = new FormData();
+    formData.append('file', pendingSelfieBlob);
+    formData.append('upload_preset', CLOUDINARY_PRESET);
+    formData.append('folder', 'selfies');
+
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, {
+      method: 'POST',
+      body: formData
     });
+    const data = await res.json();
+
+    if (data.secure_url) {
+      await addDoc(collection(db, 'messages'), {
+        name: currentUser,
+        text: '',
+        imageUrl: data.secure_url,
+        timestamp: serverTimestamp()
+      });
+      closeCamera();
+    } else {
+      alert('Upload failed. Please try again.');
+    }
+  } catch (err) {
+    console.error('Error uploading selfie:', err);
+    alert('Failed to upload. Please try again.');
+  }
+  sendSelfieBtn.disabled = false;
+  sendSelfieBtn.textContent = 'Send 📤';
+});
+
+selfieViewerOverlay.addEventListener('click', () => {
+  selfieViewerOverlay.classList.remove('active');
+  selfieViewerImg.src = '';
+});
 
     thumb.appendChild(img);
 
@@ -2099,6 +2120,22 @@ onSnapshot(q, (snapshot) => {
 
 const dateStr = getRelativeTime(data.timestamp);
     const nameClass = data.name === 'Eleni' ? 'eleni' : 'achraf';
+
+    if (data.imageUrl) {
+      msgEl.innerHTML = `
+        <div class="guestbook-msg-name ${nameClass}">${data.name}</div>
+        <img src="${data.imageUrl}" style="width:100%;border-radius:8px;cursor:pointer;margin-top:6px;" onclick="document.getElementById('selfieViewerImg').src='${data.imageUrl}';document.getElementById('selfieViewerOverlay').classList.add('active');">
+        <div class="guestbook-msg-date">${dateStr}</div>
+        ${isOwn ? `<div class="guestbook-msg-actions"><button class="msg-action-btn delete delete-btn">Delete</button></div>` : ''}
+      `;
+      if (isOwn) {
+        msgEl.querySelector('.delete-btn').addEventListener('click', async () => {
+          await deleteDoc(doc(db, 'messages', id));
+        });
+      }
+      guestbookMessages.appendChild(msgEl);
+      return;
+    }
 
    const reactions = data.reactions || {};
 const reactionEmojis = ['❤️', '😊', '😳', '😡'];
