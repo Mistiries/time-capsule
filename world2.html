@@ -1613,6 +1613,8 @@ const musicTracks = [
 let currentTrack = 0;
 let musicStarted = false;
 musicTracks.forEach(track => { track.volume = 0.6; });
+musicTracks[0].volume = 0.15;
+musicTracks[1].volume = 0.15;
 creakSound.volume = 0.6;
 
 // Name handling
