@@ -2097,7 +2097,7 @@ const dateStr = getRelativeTime(data.timestamp);
     if (data.imageUrl) {
       msgEl.innerHTML = `
         <div class="guestbook-msg-name ${nameClass}">${data.name}</div>
-        <img src="${data.imageUrl}" style="width:100%;border-radius:8px;cursor:pointer;margin-top:6px;" onclick="document.getElementById('selfieViewerImg').src='${data.imageUrl}';document.getElementById('selfieViewerOverlay').classList.add('active');">
+      <img src="${data.imageUrl}" style="width:160px;height:160px;object-fit:cover;border-radius:8px;cursor:pointer;margin-top:6px;display:block;" onclick="document.getElementById('selfieViewerImg').src='${data.imageUrl}';document.getElementById('selfieViewerOverlay').classList.add('active');">
         <div class="guestbook-msg-date">${dateStr}</div>
         ${isOwn ? `<div class="guestbook-msg-actions"><button class="msg-action-btn delete delete-btn">Delete</button></div>` : ''}
       `;
@@ -2833,7 +2833,11 @@ setupTooltip(guestbookBook, 'Notebook');
 
 function startMusic() {
   if (!musicStarted) {
-    musicTracks[currentTrack].play().then(() => { musicStarted = true; }).catch(() => {});
+    musicTracks[currentTrack].play().then(() => { musicStarted = true; }).catch((err) => {
+      console.error('Music failed to play:', err, musicTracks[currentTrack].src);
+      currentTrack = 2;
+      musicTracks[currentTrack].play().then(() => { musicStarted = true; }).catch(() => {});
+    });
   }
 }
 
