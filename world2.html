@@ -1421,7 +1421,8 @@ body.loaded::before {
       <button id="prevTrack">⏮</button>
       <button id="nextTrack">⏭</button>
     </div>
-    <button id="instructionsBtn">📋</button>
+<button id="instructionsBtn">📋</button>
+    <button id="petalBtn">🌸</button>
     <button id="portalBackBtn">🪵</button>
   </div>
 
@@ -2990,6 +2991,89 @@ if (lastVisit) {
  setTimeout(() => { stamp.style.transition = 'opacity 1.5s ease'; stamp.style.opacity = '0'; }, 8000);
 }
 localStorage.setItem('timecapsule_lastvisit', Date.now().toString());
+  // Petal effect
+const petalBtn = document.getElementById('petalBtn');
+let petalsActive = false;
+let petalInterval = null;
+const activePetals = [];
+
+function createPetal() {
+  const petal = document.createElement('div');
+  const size = Math.random() * 8 + 6;
+  const startX = Math.random() * window.innerWidth * 0.4;
+  const duration = Math.random() * 6 + 7;
+  const delay = Math.random() * 2;
+  const swayAmount = Math.random() * 180 + 120;
+  const rotSpeed = Math.random() * 360 + 180;
+
+  petal.style.cssText = `
+    position: fixed;
+    top: -20px;
+    left: ${startX}px;
+    width: ${size}px;
+    height: ${size * 0.85}px;
+    background: radial-gradient(ellipse at 40% 35%, #ffb7d5, #f48baf);
+    border-radius: 150% 0 150% 0;
+    opacity: ${Math.random() * 0.3 + 0.45};
+    pointer-events: none;
+    z-index: 9998;
+    transform: rotate(${Math.random() * 360}deg);
+    animation: petalFall${Math.round(duration * 10)} ${duration}s ${delay}s linear forwards;
+  `;
+
+  const styleId = `petal-style-${Math.round(duration * 10)}-${Math.round(swayAmount)}`;
+  if (!document.getElementById(styleId)) {
+    const style = document.createElement('style');
+    style.id = styleId;
+    style.textContent = `
+      @keyframes petalFall${Math.round(duration * 10)} {
+        0% { transform: translate(0, 0) rotate(0deg); }
+        25% { transform: translate(${swayAmount * 0.4}px, ${window.innerHeight * 0.25}px) rotate(${rotSpeed * 0.25}deg); }
+        50% { transform: translate(${swayAmount * 0.7}px, ${window.innerHeight * 0.5}px) rotate(${rotSpeed * 0.5}deg); }
+        75% { transform: translate(${swayAmount * 0.9}px, ${window.innerHeight * 0.75}px) rotate(${rotSpeed * 0.75}deg); }
+        100% { transform: translate(${swayAmount}px, ${window.innerHeight + 30}px) rotate(${rotSpeed}deg); }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  document.body.appendChild(petal);
+  activePetals.push(petal);
+
+  setTimeout(() => {
+    petal.remove();
+    const idx = activePetals.indexOf(petal);
+    if (idx > -1) activePetals.splice(idx, 1);
+  }, (duration + delay + 0.5) * 1000);
+}
+
+function startPetals() {
+  petalsActive = true;
+  petalBtn.style.background = '#ffd6e8';
+  createPetal();
+  petalInterval = setInterval(() => {
+    if (petalsActive) {
+      for (let i = 0; i < 2; i++) createPetal();
+    }
+  }, 600);
+}
+
+function stopPetals() {
+  petalsActive = false;
+  petalBtn.style.background = 'white';
+  clearInterval(petalInterval);
+  petalInterval = null;
+}
+
+petalBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (petalsActive) {
+    stopPetals();
+  } else {
+    startPetals();
+    burgerContent.classList.remove('open');
+  }
+});
   
 </script>
 </body>
