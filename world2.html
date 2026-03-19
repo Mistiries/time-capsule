@@ -1405,6 +1405,8 @@ body.loaded::before {
 <body>
 
 <div id="container">
+<audio id="background4" src="sounds/background4.mp3" loop></audio>
+  <audio id="background5" src="background5.mp3" loop></audio>
   <audio id="background" src="sounds/background.mp3" loop></audio>
   <audio id="background2" src="sounds/background2.mp3" loop></audio>
   <audio id="background3" src="sounds/background3.mp3" loop></audio>
@@ -1597,6 +1599,8 @@ const guestbookWhoAmI = document.getElementById('guestbookWhoAmI');
 const guestbookEmpty = document.getElementById('guestbookEmpty');
 
 const musicTracks = [
+  document.getElementById('background4'),
+  document.getElementById('background5'),
   document.getElementById('background'),
   document.getElementById('background2'),
   document.getElementById('background3')
