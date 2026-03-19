@@ -2033,33 +2033,6 @@ selfieViewerOverlay.addEventListener('click', () => {
   selfieViewerImg.src = '';
 });
 
-    thumb.appendChild(img);
-
-    if (isOwn) {
-      const delBtn = document.createElement('button');
-      delBtn.className = 'selfie-delete-btn';
-      delBtn.textContent = '✕';
-      delBtn.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        try {
-          await deleteDoc(doc(db, 'selfies', id));
-        } catch (err) {
-          console.error('Error deleting selfie:', err);
-        }
-      });
-      thumb.appendChild(delBtn);
-    }
-
-   selfieStrip.appendChild(thumb);
-  });
-}, (error) => {
-  console.error('Selfie listener error:', error);
-});
-
-selfieViewerOverlay.addEventListener('click', () => {
-  selfieViewerOverlay.classList.remove('active');
-  selfieViewerImg.src = '';
-});
 
 // Post message
 guestbookPostBtn.addEventListener('click', async () => {
