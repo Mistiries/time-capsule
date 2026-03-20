@@ -1400,6 +1400,118 @@ body.loaded::before {
   box-shadow: 0 8px 32px rgba(0,0,0,0.6);
 }
 
+  #perfumeBottle {
+  position: fixed;
+  bottom: 2%;
+  left: 11%;
+  width: 55px;
+  cursor: pointer;
+  z-index: 400;
+  transition: filter 0.2s ease;
+  filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5));
+}
+
+#perfumeBottle:hover {
+  filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5)) brightness(1.3) drop-shadow(0 0 8px rgba(255,200,220,0.7));
+}
+
+#perfumeOverlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.55);
+  z-index: 4800;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+#perfumeOverlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#perfumeBook {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
+  width: 820px;
+  max-width: 94vw;
+  background: #fdf6ee;
+  border-radius: 4px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5), inset 0 0 30px rgba(0,0,0,0.05);
+  z-index: 4801;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  overflow: hidden;
+}
+
+#perfumeBook.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+#perfumeBookClose {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #aaa;
+  z-index: 10;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.1s ease, background 0.1s ease;
+  box-shadow: none;
+  margin: 0;
+}
+
+#perfumeBookClose:hover {
+  background: rgba(0,0,0,0.06);
+  color: #555;
+}
+
+#perfumeBookInner {
+  display: flex;
+  min-height: 480px;
+}
+
+.book-page {
+  flex: 1;
+  padding: 50px 44px;
+  font-family: 'Comic Sans MS', 'Segoe Print', cursive;
+  font-size: 15px;
+  line-height: 1.85;
+  color: #2a1f1a;
+  background: #fdf6ee;
+  position: relative;
+}
+
+.book-page p {
+  margin: 0 0 16px 0;
+}
+
+.left-page {
+  background: linear-gradient(to right, #f5ead8, #fdf6ee);
+  border-right: none;
+}
+
+.right-page {
+  background: linear-gradient(to left, #f5ead8, #fdf6ee);
+}
+
+.book-spine {
+  width: 24px;
+  background: linear-gradient(to right, #c8a97a, #e8d5b0, #c8a97a);
+  flex-shrink: 0;
+  box-shadow: inset -2px 0 6px rgba(0,0,0,0.1), inset 2px 0 6px rgba(0,0,0,0.1);
+}
+
 </style>
 </head>
 <body>
@@ -1428,6 +1540,27 @@ body.loaded::before {
   </div>
 
 <img src="images/cupboard.png" id="cupboard">
+<img src="images/perfume.png" id="perfumeBottle">
+
+<!-- Perfume book -->
+<div id="perfumeOverlay"></div>
+<div id="perfumeBook">
+  <button id="perfumeBookClose">✕</button>
+  <div id="perfumeBookInner">
+    <div class="book-page left-page">
+      <p>It was a warm and sunny day in 2015 at my primary school. I was 8 years old. I had just confessed to two of my girl classmates that I had a crush on one of the boys. They were thrilled with this information and pushed me to confess. I was like 'noooo I'm scared', but they ran off to find the guy ANYWAYS.</p>
+      <p>The boy was very artistic and empathetic. I loved his art, and I loved his sarcastic humour. I had a crush on him from the start of primary school, in Year 2. I'd moved to the UK from Greece when I was 6, in 2013, and they place children by age rather than ability, so I started in an older year group, and he was one of the first people I remember.</p>
+      <p>I hid behind a tree waiting for him, and he turned up, alone, without the girls. I managed to get out what I wanted to say eventually, and he didn't say anything at first. Then he simply said, "That's cool." And he took my hand, and we walked down the park. He changed the subject and started talking about something else.</p>
+    </div>
+    <div class="book-spine"></div>
+    <div class="book-page right-page">
+      <p>From that day, we were very good friends. We spent breaks together and drew together. The crush disappeared. I think I really just wanted to be friends with him.</p>
+      <p>It turns out he was gay, and I found out in high school from others. Looking back, it does kind of make sense. His friends were all the girls in the class; he was quite good with emotions and was way kinder than the other boys. I never spoke to him again after high school, but I like remembering the fun moments from primary school.</p>
+      <p>I think I felt it very intensely, but I just couldn't articulate it because I was young, and other people just saw it as a humongous crush, since there's not much vocabulary for it. I called it a crush, but what I actually wanted was closeness. The friendship was the point in the end, not the crush.</p>
+      <p>I don't think connections need labels to be real. They should just be.</p>
+    </div>
+  </div>
+</div>
   <div id="tooltip"></div>
   <audio id="binSound" src="sounds/bin.mp3"></audio>
   <div id="trashBin">🗑️</div>
@@ -1481,11 +1614,10 @@ body.loaded::before {
     <p class="subtitle">(click anywhere to escape)</p>
   <p style="font-size:20px;font-weight:500;margin:0 0 6px 0;">Gallery</p>
     <ul>
-      <li>All the art is in the cupboard for you to look at</li>
+      <li>All my art is in the cupboard for you to look at in digital form</li>
       <li>You can drag and resize the gallery tab</li>
       <li>Click on images to view them (you can download them too)</li>
-      <li>Use the arrow keys on screen or on your keyboard to look through images</li>
-      <li>Zoom in and out using the trackpad, then use the mouse to move the image around</li>
+      <li>Use the arrow keys on screen or on your keyboard to look through images. Zoom in and out using the trackpad, then use the mouse to move the image around</li>
     </ul>
     <p style="font-size:20px;font-weight:500;margin:16px 0 6px 0;">Notebook</p>
     <ul>
@@ -1498,6 +1630,7 @@ body.loaded::before {
      <li>Click on polaroids to look through them closer</li>
       <li>You can drag the polaroids around too</li>
       <li>Try out the petals and fireflies in the side panel!</li>
+      <li>The perfume bottle tells a story</li>
     </ul>
   </div>
 
@@ -2996,6 +3129,78 @@ if (lastVisit) {
  setTimeout(() => { stamp.style.transition = 'opacity 1.5s ease'; stamp.style.opacity = '0'; }, 8000);
 }
 localStorage.setItem('timecapsule_lastvisit', Date.now().toString());
+
+  // Perfume bottle
+const perfumeBottle = document.getElementById('perfumeBottle');
+const perfumeOverlay = document.getElementById('perfumeOverlay');
+const perfumeBook = document.getElementById('perfumeBook');
+const perfumeBookClose = document.getElementById('perfumeBookClose');
+const click2Sound = new Audio('sounds/click2.wav');
+let perfumeDragOffX, perfumeDragOffY, isPerfumeDragging = false;
+let perfumeHasMoved = false, perfumeStartX, perfumeStartY;
+
+setupTooltip(perfumeBottle, 'There\'s a story inside');
+
+function openPerfumeBook() {
+  perfumeOverlay.classList.add('active');
+  perfumeBook.classList.add('visible');
+}
+
+function closePerfumeBook() {
+  perfumeOverlay.classList.remove('active');
+  perfumeBook.classList.remove('visible');
+}
+
+perfumeBookClose.addEventListener('click', (e) => { e.stopPropagation(); closePerfumeBook(); });
+perfumeOverlay.addEventListener('click', closePerfumeBook);
+perfumeBook.addEventListener('click', (e) => e.stopPropagation());
+
+perfumeBottle.addEventListener('mousedown', (e) => {
+  isPerfumeDragging = true;
+  perfumeHasMoved = false;
+  const rect = perfumeBottle.getBoundingClientRect();
+  perfumeDragOffX = e.clientX - rect.left;
+  perfumeDragOffY = e.clientY - rect.top;
+  perfumeStartX = e.clientX;
+  perfumeStartY = e.clientY;
+  perfumeBottle.style.transition = 'none';
+  e.preventDefault();
+});
+
+document.addEventListener('mousemove', (e) => {
+  if (!isPerfumeDragging) return;
+  const dx = e.clientX - perfumeStartX;
+  const dy = e.clientY - perfumeStartY;
+  if (Math.abs(dx) > 4 || Math.abs(dy) > 4) perfumeHasMoved = true;
+  perfumeBottle.style.position = 'fixed';
+  perfumeBottle.style.left = (e.clientX - perfumeDragOffX) + 'px';
+  perfumeBottle.style.top = (e.clientY - perfumeDragOffY) + 'px';
+  perfumeBottle.style.bottom = 'auto';
+  const binRect = document.getElementById('trashBin').getBoundingClientRect();
+  const overBin = e.clientX >= binRect.left && e.clientX <= binRect.right && e.clientY >= binRect.top && e.clientY <= binRect.bottom;
+  perfumeBottle.style.opacity = overBin ? '0.5' : '1';
+});
+
+document.addEventListener('mouseup', (e) => {
+  if (!isPerfumeDragging) return;
+  isPerfumeDragging = false;
+  perfumeBottle.style.opacity = '1';
+  perfumeBottle.style.transition = 'filter 0.2s ease';
+  const binRect = document.getElementById('trashBin').getBoundingClientRect();
+  if (e.clientX >= binRect.left && e.clientX <= binRect.right && e.clientY >= binRect.top && e.clientY <= binRect.bottom) {
+    binSound.currentTime = 0;
+    binSound.play();
+    document.getElementById('trashBin').classList.add('shake');
+    setTimeout(() => document.getElementById('trashBin').classList.remove('shake'), 300);
+    perfumeBottle.style.display = 'none';
+    return;
+  }
+  if (!perfumeHasMoved) {
+    click2Sound.currentTime = 0;
+    click2Sound.play();
+    openPerfumeBook();
+  }
+});
   
 // Petal effect
 const petalBtn = document.getElementById('petalBtn');
