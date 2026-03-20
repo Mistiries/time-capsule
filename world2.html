@@ -3057,8 +3057,8 @@ function createPetal() {
     if (dist < 100) {
       const force = (100 - dist) / 100;
       const speed = Math.sqrt(mouseVX * mouseVX + mouseVY * mouseVY);
-      vx += (mouseVX * force * 0.12) + (distX / dist) * force * speed * 0.08 * -1;
-      vy += (mouseVY * force * 0.08) + (distY / dist) * force * speed * 0.06 * -1;
+    vx += (mouseVX * force * 0.018) + (distX / dist) * force * 0.15 * -1;
+      vy += (mouseVY * force * 0.012) + (distY / dist) * force * 0.1 * -1;
     }
 
     vx *= 0.98;
