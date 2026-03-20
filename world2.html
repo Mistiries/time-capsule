@@ -1516,6 +1516,142 @@ body.loaded::before {
   box-shadow: inset -2px 0 6px rgba(0,0,0,0.1), inset 2px 0 6px rgba(0,0,0,0.1);
 }
 
+  #windowFrame {
+  position: fixed;
+  top: 6%;
+  left: 2%;
+  width: 160px;
+  height: 130px;
+  z-index: 350;
+  border: 6px solid #5a3e28;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: inset 0 0 12px rgba(0,0,0,0.4), 3px 3px 10px rgba(0,0,0,0.5);
+}
+
+#windowSky {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  transition: background 4s ease;
+}
+
+#windowCloudsLayer {
+  position: absolute;
+  top: 0; left: 0;
+  width: 300%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.window-cloud {
+  position: absolute;
+  background: rgba(255,255,255,0.85);
+  border-radius: 50px;
+  filter: blur(3px);
+}
+
+#windowRainLayer {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 2s ease;
+}
+
+.rain-drop {
+  position: absolute;
+  width: 1.5px;
+  background: linear-gradient(to bottom, transparent, rgba(180,210,255,0.7));
+  border-radius: 2px;
+  animation: rainFall linear infinite;
+}
+
+@keyframes rainFall {
+  0% { transform: translateY(-20px); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 0.6; }
+  100% { transform: translateY(150px); opacity: 0; }
+}
+
+#windowGlass {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 50%, rgba(255,255,255,0.04) 100%);
+  pointer-events: none;
+}
+
+#windowBars {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+}
+
+.window-bar-h {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 5px;
+  background: #5a3e28;
+  transform: translateY(-50%);
+}
+
+.window-bar-v {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 5px;
+  height: 100%;
+  background: #5a3e28;
+  transform: translateX(-50%);
+}
+
+.window-raindrop {
+  position: absolute;
+  background: rgba(180,210,255,0.5);
+  border-radius: 0 50% 50% 50%;
+  transform: rotate(45deg);
+  animation: dropletFade linear forwards;
+  pointer-events: none;
+}
+
+@keyframes dropletFade {
+  0% { opacity: 0; transform: rotate(45deg) scale(0.3); }
+  20% { opacity: 0.8; transform: rotate(45deg) scale(1); }
+  70% { opacity: 0.6; }
+  100% { opacity: 0; transform: rotate(45deg) scale(1.2) translateY(8px); }
+}
+
+#rainBtn {
+  position: fixed;
+  top: calc(6% + 138px);
+  left: 2%;
+  width: 40px;
+  height: 24px;
+  background: rgba(255,255,255,0.85);
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  z-index: 351;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.4);
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+  padding: 0;
+  margin: 0;
+}
+
+#rainBtn.active {
+  background: rgba(180,220,255,0.95);
+  box-shadow: 0 0 8px rgba(120,180,255,0.7), 2px 2px 6px rgba(0,0,0,0.3);
+}
+
 </style>
 </head>
 <body>
@@ -1528,6 +1664,7 @@ body.loaded::before {
   <audio id="background3" src="sounds/background3.mp3"></audio>
   <audio id="pickup" src="sounds/pickup.mp3"></audio>
   <audio id="creakSound" src="sounds/doorcreak.mp3"></audio>
+  <audio id="rainSound" src="sounds/rain.mp3" loop></audio>
 
   <button id="muteBtn">Mute Music</button>
 
@@ -1543,6 +1680,17 @@ body.loaded::before {
     <button id="portalBackBtn">🌀</button>
   </div>
 
+<div id="windowFrame">
+  <div id="windowSky"></div>
+  <div id="windowCloudsLayer"></div>
+  <div id="windowRainLayer"></div>
+  <div id="windowGlass"></div>
+  <div id="windowBars">
+    <div class="window-bar-h"></div>
+    <div class="window-bar-v"></div>
+  </div>
+</div>
+<button id="rainBtn" title="Toggle rain">🌧️</button>
 <img src="images/cupboard.png" id="cupboard">
 <img src="images/perfume.png" id="perfumeBottle">
 
@@ -3260,6 +3408,140 @@ document.addEventListener('mouseup', (e) => {
     click2Sound.play();
     openPerfumeBook();
   }
+});
+
+  // Window
+const windowSky = document.getElementById('windowSky');
+const windowCloudsLayer = document.getElementById('windowCloudsLayer');
+const windowRainLayer = document.getElementById('windowRainLayer');
+const rainBtn = document.getElementById('rainBtn');
+const rainSound = document.getElementById('rainSound');
+rainSound.volume = 0;
+let rainActive = false;
+let rainDropletInterval = null;
+let rainFallInterval = null;
+
+const skyColours = {
+  night:     'linear-gradient(to bottom, #0a0a1a, #1a1a3a)',
+  morning:   'linear-gradient(to bottom, #f7c97e, #f4a261, #e07b5a)',
+  afternoon: 'linear-gradient(to bottom, #87ceeb, #b0d4f1)',
+  evening:   'linear-gradient(to bottom, #ff7043, #ff8c69, #ffb347, #2c1a4a)',
+};
+
+function getTimeOfDay() {
+  const hour = new Date().toLocaleString('en-GB', { timeZone: 'Europe/London', hour: 'numeric', hour12: false });
+  const h = parseInt(hour);
+  if (h >= 5 && h < 10) return 'morning';
+  if (h >= 10 && h < 17) return 'afternoon';
+  if (h >= 17 && h < 21) return 'evening';
+  return 'night';
+}
+
+function updateSky() {
+  const tod = getTimeOfDay();
+  windowSky.style.background = skyColours[tod];
+}
+
+updateSky();
+setInterval(updateSky, 60000);
+
+// Clouds
+function createCloud() {
+  const cloud = document.createElement('div');
+  cloud.className = 'window-cloud';
+  const w = Math.random() * 60 + 30;
+  const h = w * 0.45;
+  const top = Math.random() * 55;
+  const duration = Math.random() * 25 + 20;
+  const opacity = Math.random() * 0.4 + 0.3;
+  cloud.style.cssText = `
+    width: ${w}px;
+    height: ${h}px;
+    top: ${top}%;
+    left: -${w + 10}px;
+    opacity: ${opacity};
+    animation: cloudMove ${duration}s linear infinite;
+    animation-delay: -${Math.random() * duration}s;
+  `;
+  if (!document.getElementById('cloudMoveStyle')) {
+    const s = document.createElement('style');
+    s.id = 'cloudMoveStyle';
+    s.textContent = `@keyframes cloudMove { from { transform: translateX(0); } to { transform: translateX(${160 * 3 + 100}px); } }`;
+    document.head.appendChild(s);
+  }
+  windowCloudsLayer.appendChild(cloud);
+}
+
+for (let i = 0; i < 5; i++) createCloud();
+
+// Rain falling streaks
+function buildRainStreaks() {
+  windowRainLayer.innerHTML = '';
+  for (let i = 0; i < 40; i++) {
+    const drop = document.createElement('div');
+    drop.className = 'rain-drop';
+    const height = Math.random() * 14 + 8;
+    drop.style.cssText = `
+      left: ${Math.random() * 100}%;
+      height: ${height}px;
+      animation-duration: ${Math.random() * 0.6 + 0.5}s;
+      animation-delay: ${Math.random() * 2}s;
+    `;
+    windowRainLayer.appendChild(drop);
+  }
+}
+
+buildRainStreaks();
+
+// Rain droplets on glass
+function createRaindrop() {
+  const drop = document.createElement('div');
+  drop.className = 'window-raindrop';
+  const size = Math.random() * 5 + 3;
+  const duration = Math.random() * 2 + 1.5;
+  drop.style.cssText = `
+    left: ${Math.random() * 90}%;
+    top: ${Math.random() * 85}%;
+    width: ${size}px;
+    height: ${size * 1.3}px;
+    animation-duration: ${duration}s;
+  `;
+  document.getElementById('windowGlass').appendChild(drop);
+  setTimeout(() => drop.remove(), duration * 1000);
+}
+
+function startRain() {
+  rainActive = true;
+  rainBtn.classList.add('active');
+  windowRainLayer.style.opacity = '1';
+  rainDropletInterval = setInterval(createRaindrop, 300);
+  rainSound.play();
+  let vol = 0;
+  const fadeIn = setInterval(() => {
+    vol = Math.min(vol + 0.01, 0.18);
+    rainSound.volume = vol;
+    if (vol >= 0.18) clearInterval(fadeIn);
+  }, 80);
+}
+
+function stopRain() {
+  rainActive = false;
+  rainBtn.classList.remove('active');
+  windowRainLayer.style.opacity = '0';
+  clearInterval(rainDropletInterval);
+  rainDropletInterval = null;
+  let vol = rainSound.volume;
+  const fadeOut = setInterval(() => {
+    vol = Math.max(vol - 0.01, 0);
+    rainSound.volume = vol;
+    if (vol <= 0) { clearInterval(fadeOut); rainSound.pause(); rainSound.currentTime = 0; }
+  }, 80);
+}
+
+rainBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (rainActive) stopRain();
+  else startRain();
 });
   
 // Petal effect
