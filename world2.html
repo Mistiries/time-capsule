@@ -2991,20 +2991,28 @@ if (lastVisit) {
  setTimeout(() => { stamp.style.transition = 'opacity 1.5s ease'; stamp.style.opacity = '0'; }, 8000);
 }
 localStorage.setItem('timecapsule_lastvisit', Date.now().toString());
-  // Petal effect
+  
+// Petal effect
 const petalBtn = document.getElementById('petalBtn');
 let petalsActive = false;
 let petalInterval = null;
 const activePetals = [];
+let mouseX = 0, mouseY = 0, lastMouseX = 0, lastMouseY = 0;
+let mouseVX = 0, mouseVY = 0;
+
+document.addEventListener('mousemove', (e) => {
+  mouseVX = e.clientX - lastMouseX;
+  mouseVY = e.clientY - lastMouseY;
+  lastMouseX = mouseX = e.clientX;
+  lastMouseY = mouseY = e.clientY;
+});
 
 function createPetal() {
   const petal = document.createElement('div');
   const size = Math.random() * 8 + 6;
-  const startX = Math.random() * window.innerWidth * 0.4;
-  const duration = Math.random() * 6 + 7;
-  const delay = Math.random() * 2;
-  const swayAmount = Math.random() * 180 + 120;
-  const rotSpeed = Math.random() * 360 + 180;
+  const startX = Math.random() * window.innerWidth * 0.25;
+  const duration = Math.random() * 5 + 8;
+  const delay = Math.random() * 1.5;
 
   petal.style.cssText = `
     position: fixed;
@@ -3017,34 +3025,63 @@ function createPetal() {
     opacity: ${Math.random() * 0.3 + 0.45};
     pointer-events: none;
     z-index: 9998;
-    transform: rotate(${Math.random() * 360}deg);
-    animation: petalFall${Math.round(duration * 10)} ${duration}s ${delay}s linear forwards;
   `;
-
-  const styleId = `petal-style-${Math.round(duration * 10)}-${Math.round(swayAmount)}`;
-  if (!document.getElementById(styleId)) {
-    const style = document.createElement('style');
-    style.id = styleId;
-    style.textContent = `
-      @keyframes petalFall${Math.round(duration * 10)} {
-        0% { transform: translate(0, 0) rotate(0deg); }
-        25% { transform: translate(${swayAmount * 0.4}px, ${window.innerHeight * 0.25}px) rotate(${rotSpeed * 0.25}deg); }
-        50% { transform: translate(${swayAmount * 0.7}px, ${window.innerHeight * 0.5}px) rotate(${rotSpeed * 0.5}deg); }
-        75% { transform: translate(${swayAmount * 0.9}px, ${window.innerHeight * 0.75}px) rotate(${rotSpeed * 0.75}deg); }
-        100% { transform: translate(${swayAmount}px, ${window.innerHeight + 30}px) rotate(${rotSpeed}deg); }
-      }
-    `;
-    document.head.appendChild(style);
-  }
 
   document.body.appendChild(petal);
   activePetals.push(petal);
 
-  setTimeout(() => {
-    petal.remove();
-    const idx = activePetals.indexOf(petal);
-    if (idx > -1) activePetals.splice(idx, 1);
-  }, (duration + delay + 0.5) * 1000);
+  let x = startX;
+  let y = -20;
+  let vx = Math.random() * 0.4 + 0.1;
+  let vy = Math.random() * 1.2 + 0.8;
+  let rot = Math.random() * 360;
+  let rotSpeed = (Math.random() - 0.5) * 2.5;
+  let wobble = Math.random() * Math.PI * 2;
+  let windStrength = 0;
+  let age = 0;
+
+  function tick() {
+    age++;
+    wobble += 0.025;
+    windStrength = Math.min(1, age / 180);
+
+    const wind = windStrength * (1.2 + Math.sin(wobble * 0.3) * 0.4);
+    vx += wind * 0.06;
+    vx += Math.sin(wobble) * 0.08;
+    vy += 0.012;
+    vy = Math.min(vy, 2.8);
+
+    const distX = mouseX - x;
+    const distY = mouseY - y;
+    const dist = Math.sqrt(distX * distX + distY * distY);
+    if (dist < 100) {
+      const force = (100 - dist) / 100;
+      const speed = Math.sqrt(mouseVX * mouseVX + mouseVY * mouseVY);
+      vx += (mouseVX * force * 0.12) + (distX / dist) * force * speed * 0.08 * -1;
+      vy += (mouseVY * force * 0.08) + (distY / dist) * force * speed * 0.06 * -1;
+    }
+
+    vx *= 0.98;
+    vy *= 0.99;
+
+    x += vx;
+    y += vy;
+    rot += rotSpeed + vx * 0.5;
+
+    petal.style.left = x + 'px';
+    petal.style.top = y + 'px';
+    petal.style.transform = `rotate(${rot}deg)`;
+
+    if (y < window.innerHeight + 30 && x < window.innerWidth + 50) {
+      requestAnimationFrame(tick);
+    } else {
+      petal.remove();
+      const idx = activePetals.indexOf(petal);
+      if (idx > -1) activePetals.splice(idx, 1);
+    }
+  }
+
+  setTimeout(() => requestAnimationFrame(tick), delay * 1000);
 }
 
 function startPetals() {
