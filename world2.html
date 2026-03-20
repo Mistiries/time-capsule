@@ -1526,8 +1526,8 @@ body.loaded::before {
   border: 7px solid transparent;
   border-radius: 6px;
   overflow: hidden;
-  background: linear-gradient(#1a1a1a, #1a1a1a) padding-box,
-              linear-gradient(135deg, #e8e8e8, #a0a0a0, #f5f5f5, #707070, #d0d0d0) border-box;
+ background: linear-gradient(#1a1a1a, #1a1a1a) padding-box,
+              linear-gradient(135deg, #555555, #222222, #666666, #1a1a1a, #444444) border-box;
   box-shadow: 
     0 0 0 1px rgba(255,255,255,0.15),
     inset 0 1px 0 rgba(255,255,255,0.3),
@@ -3550,12 +3550,14 @@ function startRain() {
   rainBtn.classList.add('active');
   windowRainLayer.style.opacity = '1';
   rainDropletInterval = setInterval(createRaindrop, 300);
+  rainSound.loop = true;
+  rainSound.volume = 0;
   rainSound.play();
   let vol = 0;
-  const fadeIn = setInterval(() => {
+  const fadeInInterval = setInterval(() => {
     vol = Math.min(vol + 0.01, 0.18);
     rainSound.volume = vol;
-    if (vol >= 0.18) clearInterval(fadeIn);
+    if (vol >= 0.18) clearInterval(fadeInInterval);
   }, 80);
 }
 
