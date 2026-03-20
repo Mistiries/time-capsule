@@ -2836,14 +2836,18 @@ function onPileEnd(clientX, clientY) {
       }
     }
 
-    document.addEventListener('mousemove', (e) => { onPileMove(e.clientX, e.clientY); });
-    document.addEventListener('touchmove', (e) => {
+  const boundMove = (e) => { onPileMove(e.clientX, e.clientY); };
+    const boundTouchMove = (e) => {
       if (!isDraggingPile) return;
       onPileMove(e.touches[0].clientX, e.touches[0].clientY);
       e.preventDefault();
-    }, { passive: false });
-    document.addEventListener('mouseup', (e) => { onPileEnd(e.clientX, e.clientY); });
-    document.addEventListener('touchend', (e) => { onPileEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY); });
+    };
+    const boundUp = (e) => { onPileEnd(e.clientX, e.clientY); };
+    const boundTouchEnd = (e) => { onPileEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY); };
+    document.addEventListener('mousemove', boundMove);
+    document.addEventListener('touchmove', boundTouchMove, { passive: false });
+    document.addEventListener('mouseup', boundUp);
+    document.addEventListener('touchend', boundTouchEnd);
 
    document.getElementById('container').appendChild(el);
   });
@@ -3757,6 +3761,20 @@ const wateringCan = document.getElementById('wateringCan');
 
 const stemHeights = [0, 22, 52, 88, 118];
 
+function onFlowerEnter() {
+  plantFlower.innerHTML = buildSunflower(true);
+  if (blinkInterval) clearInterval(blinkInterval);
+  if (lookInterval) clearInterval(lookInterval);
+  startSunflowerLife();
+}
+
+function onFlowerLeave() {
+  plantFlower.innerHTML = buildSunflower(false);
+  if (blinkInterval) clearInterval(blinkInterval);
+  if (lookInterval) clearInterval(lookInterval);
+  startSunflowerLife();
+}
+
 function renderPlant() {
   plantStem.style.height = stemHeights[plantStage] + 'px';
 
@@ -3771,12 +3789,8 @@ function renderPlant() {
     return;
   }
 
-  // Position flower at top of stem
-  if (plantStage >= 1) {
-    plantFlower.style.bottom = (30 + stemHeights[plantStage]) + 'px';
-  }
+  plantFlower.style.bottom = (30 + stemHeights[plantStage]) + 'px';
 
-  // Leaves at correct heights along stem
   const leafData = {
     1: [
       { w: 16, h: 10, side: 'left', fromBottom: 8, rot: -30 },
@@ -3804,9 +3818,9 @@ function renderPlant() {
 
   const leaves = leafData[plantStage] || [];
   plantLeaves.innerHTML = leaves.map(l => {
-    const left = l.side === 'left' ? `left:${4 - l.w + 10}px` : `right:${4 - l.w + 10}px`;
+    const leftStyle = l.side === 'left' ? `left:${4 - l.w + 10}px` : `right:${4 - l.w + 10}px`;
     const flip = l.side === 'right' ? ' scaleX(-1)' : '';
-    return `<div class="leaf" style="width:${l.w}px;height:${l.h}px;${left};bottom:${l.fromBottom}px;transform:rotate(${l.rot}deg)${flip};"></div>`;
+    return `<div class="leaf" style="width:${l.w}px;height:${l.h}px;${leftStyle};bottom:${l.fromBottom}px;transform:rotate(${l.rot}deg)${flip};"></div>`;
   }).join('');
   setTimeout(() => plantLeaves.classList.add('visible'), 100);
 
@@ -3816,6 +3830,8 @@ function renderPlant() {
       plantFlower.classList.add('visible');
       setTimeout(() => plantFlower.classList.add('swaying'), 500);
     }, 200);
+    plantFlower.addEventListener('mouseenter', onFlowerEnter);
+    plantFlower.addEventListener('mouseleave', onFlowerLeave);
     startSunflowerLife();
   }
 }
@@ -3869,15 +3885,6 @@ function startSunflowerLife() {
       if (eyeR) eyeR.setAttribute('cx', 40);
     }, 700);
   }, 2000 + Math.random() * 1500);
-
-  plantFlower.addEventListener('mouseenter', () => {
-    plantFlower.innerHTML = buildSunflower(true);
-    startSunflowerLife();
-  });
-  plantFlower.addEventListener('mouseleave', () => {
-    plantFlower.innerHTML = buildSunflower(false);
-    startSunflowerLife();
-  });
 }
 
 function isOverPlant(x, y) {
@@ -3888,15 +3895,14 @@ function isOverPlant(x, y) {
 
 function getNozzlePosition() {
   const rect = wateringCan.getBoundingClientRect();
-  // nozzle is on the left side of the flipped can
   return { x: rect.left + 8, y: rect.top + 12 };
 }
 
 function spawnWaterDrop() {
+  if (document.querySelectorAll('.water-particle').length > 12) return;
   const nozzle = getNozzlePosition();
   const potRect = document.getElementById('plantPot').getBoundingClientRect();
   const fallDistance = Math.max(20, potRect.top - nozzle.y + 10);
-
   const p = document.createElement('div');
   p.className = 'water-particle';
   p.style.left = (nozzle.x + Math.random() * 10 - 5) + 'px';
@@ -3910,7 +3916,7 @@ function spawnWaterDrop() {
 function startWatering() {
   if (plantStage >= 4 || wateringTimer) return;
   wateringCan.classList.add('tipping');
-  particleInterval = setInterval(spawnWaterDrop, 100);
+  particleInterval = setInterval(spawnWaterDrop, 180);
   wateringTimer = setInterval(() => {
     wateringSeconds++;
     if (wateringSeconds >= 2) {
@@ -3966,7 +3972,6 @@ document.addEventListener('mousemove', (e) => {
   wateringCan.style.left = (e.clientX - canDragOffX) + 'px';
   wateringCan.style.top = (e.clientY - canDragOffY) + 'px';
   wateringCan.style.bottom = 'auto';
-
   if (isOverPlant(e.clientX, e.clientY) && !wateringTimer) {
     startWatering();
   } else if (!isOverPlant(e.clientX, e.clientY) && wateringTimer) {
@@ -3984,7 +3989,6 @@ document.addEventListener('touchmove', (e) => {
   wateringCan.style.left = (touch.clientX - canDragOffX) + 'px';
   wateringCan.style.top = (touch.clientY - canDragOffY) + 'px';
   wateringCan.style.bottom = 'auto';
-
   if (isOverPlant(touch.clientX, touch.clientY) && !wateringTimer) {
     startWatering();
   } else if (!isOverPlant(touch.clientX, touch.clientY) && wateringTimer) {
@@ -3993,96 +3997,6 @@ document.addEventListener('touchmove', (e) => {
 }, { passive: false });
 
 document.addEventListener('mouseup', () => {
-  if (!isCanDragging) return;
-  isCanDragging = false;
-  wateringCan.style.cursor = 'grab';
-  stopWatering();
-});
-
-document.addEventListener('touchend', () => {
-  if (!isCanDragging) return;
-  isCanDragging = false;
-  stopWatering();
-});
-
-renderPlant();
-      if (plantStage >= 4) stopWatering();
-    }
-  }, 1000);
-}
-
-function stopWatering() {
-  wateringCan.classList.remove('tipping');
-  clearInterval(wateringTimer);
-  clearInterval(particleInterval);
-  wateringTimer = null;
-  particleInterval = null;
-  wateringSeconds = 0;
-}
-
-// Watering can drag
-wateringCan.addEventListener('mousedown', (e) => {
-  isCanDragging = true;
-  canHasMoved = false;
-  const rect = wateringCan.getBoundingClientRect();
-  canDragOffX = e.clientX - rect.left;
-  canDragOffY = e.clientY - rect.top;
-  canStartX = e.clientX;
-  canStartY = e.clientY;
-  wateringCan.style.cursor = 'grabbing';
-  wateringCan.style.transition = 'none';
-  e.preventDefault();
-});
-
-wateringCan.addEventListener('touchstart', (e) => {
-  const touch = e.touches[0];
-  isCanDragging = true;
-  canHasMoved = false;
-  const rect = wateringCan.getBoundingClientRect();
-  canDragOffX = touch.clientX - rect.left;
-  canDragOffY = touch.clientY - rect.top;
-  canStartX = touch.clientX;
-  canStartY = touch.clientY;
-  wateringCan.style.transition = 'none';
-  e.preventDefault();
-}, { passive: false });
-
-document.addEventListener('mousemove', (e) => {
-  if (!isCanDragging) return;
-  const dx = e.clientX - canStartX;
-  const dy = e.clientY - canStartY;
-  if (Math.abs(dx) > 4 || Math.abs(dy) > 4) canHasMoved = true;
-  wateringCan.style.position = 'fixed';
-  wateringCan.style.left = (e.clientX - canDragOffX) + 'px';
-  wateringCan.style.top = (e.clientY - canDragOffY) + 'px';
-  wateringCan.style.bottom = 'auto';
-
-  if (isOverPlant(e.clientX, e.clientY) && !wateringTimer) {
-    startWatering(e.clientX, e.clientY);
-  } else if (!isOverPlant(e.clientX, e.clientY) && wateringTimer) {
-    stopWatering();
-  }
-});
-
-document.addEventListener('touchmove', (e) => {
-  if (!isCanDragging) return;
-  const touch = e.touches[0];
-  const dx = touch.clientX - canStartX;
-  const dy = touch.clientY - canStartY;
-  if (Math.abs(dx) > 4 || Math.abs(dy) > 4) canHasMoved = true;
-  wateringCan.style.position = 'fixed';
-  wateringCan.style.left = (touch.clientX - canDragOffX) + 'px';
-  wateringCan.style.top = (touch.clientY - canDragOffY) + 'px';
-  wateringCan.style.bottom = 'auto';
-
-  if (isOverPlant(touch.clientX, touch.clientY) && !wateringTimer) {
-    startWatering(touch.clientX, touch.clientY);
-  } else if (!isOverPlant(touch.clientX, touch.clientY) && wateringTimer) {
-    stopWatering();
-  }
-}, { passive: false });
-
-document.addEventListener('mouseup', (e) => {
   if (!isCanDragging) return;
   isCanDragging = false;
   wateringCan.style.cursor = 'grab';
