@@ -1649,6 +1649,151 @@ body.loaded::before {
   box-shadow: 0 0 8px rgba(120,180,255,0.7), 2px 2px 6px rgba(0,0,0,0.3);
 }
 
+  #plantContainer {
+  position: fixed;
+  bottom: -1%;
+  left: 19%;
+  width: 60px;
+  z-index: 401;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+
+#plantPot {
+  width: 44px;
+  height: 32px;
+  background: linear-gradient(to bottom, #8B5E3C, #6B3F1F);
+  border-radius: 4px 4px 10px 10px;
+  position: relative;
+  z-index: 2;
+  box-shadow: inset -3px 0 6px rgba(0,0,0,0.3);
+}
+
+#plantPot::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: -3px;
+  right: -3px;
+  height: 8px;
+  background: linear-gradient(to bottom, #a0714a, #8B5E3C);
+  border-radius: 4px;
+}
+
+#plantStem {
+  width: 5px;
+  height: 0px;
+  background: linear-gradient(to right, #4a8c2a, #6abf3a);
+  border-radius: 3px;
+  margin-bottom: -2px;
+  transition: height 1.5s ease;
+  position: relative;
+  z-index: 1;
+}
+
+#plantLeaves {
+  position: absolute;
+  bottom: 30px;
+  width: 60px;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+  pointer-events: none;
+}
+
+#plantLeaves.visible {
+  opacity: 1;
+}
+
+.leaf {
+  position: absolute;
+  border-radius: 50% 0 50% 0;
+  background: linear-gradient(135deg, #5cb85c, #3d8b3d);
+}
+
+#plantFlower {
+  position: absolute;
+  bottom: 30px;
+  width: 70px;
+  opacity: 0;
+  transition: opacity 1s ease, transform 0.5s ease;
+  pointer-events: none;
+  transform-origin: center bottom;
+}
+
+#plantFlower.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@keyframes sway {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+
+#plantFlower.swaying {
+  animation: sway 3s ease-in-out infinite;
+}
+
+#plantFlower:hover .sunflower-face {
+  transform: scale(1.08);
+}
+
+#wateringCan {
+  position: fixed;
+  bottom: 8%;
+  left: 22%;
+  width: 80px;
+  cursor: pointer;
+  z-index: 410;
+  transition: transform 0.3s ease;
+  transform-origin: right center;
+  filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.4));
+}
+
+#wateringCan:hover {
+  filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.4)) brightness(1.15);
+}
+
+#wateringCan.tipping {
+  transform: rotate(-35deg);
+}
+
+#waterStream {
+  position: absolute;
+  top: 8px;
+  left: 62px;
+  width: 3px;
+  height: 0px;
+  background: linear-gradient(to bottom, rgba(100,180,255,0.8), rgba(100,180,255,0.2));
+  border-radius: 2px;
+  transition: height 0.3s ease, opacity 0.3s ease;
+  opacity: 0;
+  transform-origin: top center;
+  transform: rotate(15deg);
+}
+
+#waterStream.flowing {
+  height: 40px;
+  opacity: 1;
+}
+
+@keyframes waterDrop {
+  0% { transform: translateY(0) scale(1); opacity: 0.8; }
+  100% { transform: translateY(20px) scale(0.3); opacity: 0; }
+}
+
+.water-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgba(120,200,255,0.8);
+  border-radius: 50%;
+  animation: waterDrop 0.5s ease-out forwards;
+  pointer-events: none;
+}
+
 </style>
 </head>
 <body>
@@ -1690,6 +1835,29 @@ body.loaded::before {
 <button id="rainBtn" title="Toggle rain">🌧️</button>
 <img src="images/cupboard.png" id="cupboard">
 <img src="images/perfume.png" id="perfumeBottle">
+
+<div id="plantContainer">
+  <div id="plantPot"></div>
+  <div id="plantStem"></div>
+  <div id="plantLeaves"></div>
+  <div id="plantFlower"></div>
+</div>
+<div id="wateringCan" title="Water the plant">
+  <svg viewBox="0 0 80 60" xmlns="http://www.w3.org/2000/svg" width="80" height="60">
+    <ellipse cx="30" cy="35" rx="22" ry="14" fill="url(#canGrad)" stroke="#555" stroke-width="1.5"/>
+    <rect x="8" y="28" width="44" height="14" rx="6" fill="url(#canGrad)" stroke="#555" stroke-width="1.5"/>
+    <path d="M50 30 Q65 20 72 18" stroke="#888" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <path d="M8 32 Q2 25 4 18" stroke="#888" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <defs>
+      <linearGradient id="canGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#d0d0d0"/>
+        <stop offset="40%" style="stop-color:#a0a0a0"/>
+        <stop offset="100%" style="stop-color:#707070"/>
+      </linearGradient>
+    </defs>
+  </svg>
+  <div id="waterStream"></div>
+</div>
 
 <!-- Perfume book -->
 <div id="perfumeOverlay"></div>
@@ -3580,6 +3748,194 @@ rainBtn.addEventListener('click', (e) => {
   if (rainActive) stopRain();
   else startRain();
 });
+
+  // Plant and watering can
+let plantStage = 0; // 0=seed, 1=sprout, 2=growing, 3=tall, 4=sunflower
+let isWatering = false;
+let wateringTimer = null;
+let wateringProgress = 0;
+let blinkInterval = null;
+let lookInterval = null;
+
+const plantStem = document.getElementById('plantStem');
+const plantLeaves = document.getElementById('plantLeaves');
+const plantFlower = document.getElementById('plantFlower');
+const wateringCan = document.getElementById('wateringCan');
+const waterStream = document.getElementById('waterStream');
+
+function renderPlant() {
+  if (plantStage === 0) {
+    plantStem.style.height = '0px';
+    plantLeaves.classList.remove('visible');
+    plantFlower.classList.remove('visible');
+    plantFlower.classList.remove('swaying');
+    plantFlower.innerHTML = '';
+  } else if (plantStage === 1) {
+    plantStem.style.height = '20px';
+    plantLeaves.classList.remove('visible');
+    plantFlower.classList.remove('visible');
+    plantLeaves.innerHTML = `
+      <div class="leaf" style="width:18px;height:12px;left:6px;bottom:8px;transform:rotate(-30deg);"></div>
+      <div class="leaf" style="width:18px;height:12px;right:6px;bottom:8px;transform:rotate(30deg) scaleX(-1);"></div>
+    `;
+    setTimeout(() => plantLeaves.classList.add('visible'), 100);
+  } else if (plantStage === 2) {
+    plantStem.style.height = '45px';
+    plantLeaves.innerHTML = `
+      <div class="leaf" style="width:22px;height:14px;left:2px;bottom:20px;transform:rotate(-35deg);"></div>
+      <div class="leaf" style="width:22px;height:14px;right:2px;bottom:20px;transform:rotate(35deg) scaleX(-1);"></div>
+      <div class="leaf" style="width:18px;height:11px;left:4px;bottom:8px;transform:rotate(-20deg);"></div>
+    `;
+    plantLeaves.classList.add('visible');
+  } else if (plantStage === 3) {
+    plantStem.style.height = '80px';
+    plantLeaves.innerHTML = `
+      <div class="leaf" style="width:26px;height:16px;left:-2px;bottom:40px;transform:rotate(-40deg);"></div>
+      <div class="leaf" style="width:26px;height:16px;right:-2px;bottom:40px;transform:rotate(40deg) scaleX(-1);"></div>
+      <div class="leaf" style="width:22px;height:13px;left:0px;bottom:20px;transform:rotate(-25deg);"></div>
+      <div class="leaf" style="width:22px;height:13px;right:0px;bottom:20px;transform:rotate(25deg) scaleX(-1);"></div>
+    `;
+    plantLeaves.classList.add('visible');
+  } else if (plantStage === 4) {
+    plantStem.style.height = '110px';
+    plantLeaves.innerHTML = `
+      <div class="leaf" style="width:28px;height:17px;left:-4px;bottom:55px;transform:rotate(-40deg);"></div>
+      <div class="leaf" style="width:28px;height:17px;right:-4px;bottom:55px;transform:rotate(40deg) scaleX(-1);"></div>
+      <div class="leaf" style="width:24px;height:15px;left:-2px;bottom:30px;transform:rotate(-30deg);"></div>
+      <div class="leaf" style="width:24px;height:15px;right:-2px;bottom:30px;transform:rotate(30deg) scaleX(-1);"></div>
+    `;
+    plantLeaves.classList.add('visible');
+    plantFlower.innerHTML = buildSunflower();
+    plantFlower.classList.add('visible');
+    setTimeout(() => plantFlower.classList.add('swaying'), 500);
+    startSunflowerLife();
+  }
+}
+
+function buildSunflower(grinning = false) {
+  const petalCount = 14;
+  let petals = '';
+  for (let i = 0; i < petalCount; i++) {
+    const angle = (360 / petalCount) * i;
+    petals += `<ellipse cx="35" cy="35" rx="5" ry="11" fill="#FFD700" stroke="#e6ac00" stroke-width="0.5"
+      transform="rotate(${angle} 35 35) translate(0 -20)"/>`;
+  }
+  const mouthPath = grinning
+    ? 'M 26 38 Q 35 46 44 38'
+    : 'M 27 38 Q 35 45 43 38';
+  return `<svg viewBox="0 0 70 70" xmlns="http://www.w3.org/2000/svg" width="70" height="70" class="sunflower-face" style="transition:transform 0.2s ease;">
+    ${petals}
+    <circle cx="35" cy="35" r="14" fill="#8B5E3C" stroke="#6B3F1F" stroke-width="1.5"/>
+    <circle cx="35" cy="35" r="12" fill="#a0714a"/>
+    <ellipse cx="30" cy="32" rx="3" ry="4" fill="#2a1a0a" class="eye-left"/>
+    <ellipse cx="40" cy="32" rx="3" ry="4" fill="#2a1a0a" class="eye-right"/>
+    <circle cx="31" cy="31" r="1" fill="white"/>
+    <circle cx="41" cy="31" r="1" fill="white"/>
+    <path d="${mouthPath}" stroke="#2a1a0a" stroke-width="2" fill="none" stroke-linecap="round"/>
+  </svg>`;
+}
+
+function startSunflowerLife() {
+  if (blinkInterval) clearInterval(blinkInterval);
+  if (lookInterval) clearInterval(lookInterval);
+
+  blinkInterval = setInterval(() => {
+    const eyeL = plantFlower.querySelector('.eye-left');
+    const eyeR = plantFlower.querySelector('.eye-right');
+    if (!eyeL || !eyeR) return;
+    eyeL.setAttribute('ry', '0.5');
+    eyeR.setAttribute('ry', '0.5');
+    setTimeout(() => {
+      eyeL.setAttribute('ry', '4');
+      eyeR.setAttribute('ry', '4');
+    }, 150);
+  }, 3000 + Math.random() * 2000);
+
+  lookInterval = setInterval(() => {
+    const eyeL = plantFlower.querySelector('.eye-left');
+    const eyeR = plantFlower.querySelector('.eye-right');
+    if (!eyeL || !eyeR) return;
+    const dir = Math.random() < 0.5 ? -2 : 2;
+    const origLX = 30, origRX = 40;
+    eyeL.setAttribute('cx', origLX + dir);
+    eyeR.setAttribute('cx', origRX + dir);
+    setTimeout(() => {
+      eyeL.setAttribute('cx', origLX);
+      eyeR.setAttribute('cx', origRX);
+    }, 800);
+  }, 2500 + Math.random() * 1500);
+
+  plantFlower.addEventListener('mouseenter', () => {
+    plantFlower.innerHTML = buildSunflower(true);
+    startSunflowerLife();
+  });
+  plantFlower.addEventListener('mouseleave', () => {
+    plantFlower.innerHTML = buildSunflower(false);
+    startSunflowerLife();
+  });
+}
+
+function growPlant() {
+  if (plantStage >= 4) return;
+  plantStage++;
+  renderPlant();
+}
+
+function spawnWaterParticles() {
+  const rect = wateringCan.getBoundingClientRect();
+  for (let i = 0; i < 4; i++) {
+    const p = document.createElement('div');
+    p.className = 'water-particle';
+    p.style.left = (rect.left + 68 + Math.random() * 10 - 5) + 'px';
+    p.style.top = (rect.top + 15 + Math.random() * 8) + 'px';
+    p.style.position = 'fixed';
+    p.style.zIndex = '9999';
+    p.style.animationDelay = (Math.random() * 0.2) + 's';
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 600);
+  }
+}
+
+let wateringSeconds = 0;
+let particleInterval = null;
+
+wateringCan.addEventListener('mouseenter', () => {
+  if (plantStage >= 4) return;
+  isWatering = true;
+  wateringCan.classList.add('tipping');
+  waterStream.classList.add('flowing');
+
+  particleInterval = setInterval(spawnWaterParticles, 150);
+
+  wateringTimer = setInterval(() => {
+    wateringSeconds++;
+    if (wateringSeconds >= 3) {
+      wateringSeconds = 0;
+      growPlant();
+      if (plantStage >= 4) {
+        stopWatering();
+      }
+    }
+  }, 1000);
+});
+
+wateringCan.addEventListener('mouseleave', () => {
+  stopWatering();
+});
+
+function stopWatering() {
+  isWatering = false;
+  wateringCan.classList.remove('tipping');
+  waterStream.classList.remove('flowing');
+  clearInterval(wateringTimer);
+  clearInterval(particleInterval);
+  wateringTimer = null;
+  particleInterval = null;
+  wateringSeconds = 0;
+}
+
+setupTooltip(wateringCan, 'Water the plant!');
+renderPlant();
   
 // Petal effect
 const petalBtn = document.getElementById('petalBtn');
