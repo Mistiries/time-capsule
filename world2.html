@@ -161,7 +161,7 @@ body.loaded::before {
 #guestbookBook {
   position: fixed;
   bottom: 34%;
-  left: 3.6%;
+  left: 5%;
   width: 60px;
   cursor: grab;
   z-index: 401;
@@ -1400,11 +1400,11 @@ body.loaded::before {
   box-shadow: 0 8px 32px rgba(0,0,0,0.6);
 }
 
-  #perfumeBottle {
+#perfumeBottle {
   position: fixed;
-  bottom: 2%;
-  left: 11%;
-  width: 55px;
+  bottom: 34%;
+  left: 9%;
+  width: 74px;
   cursor: pointer;
   z-index: 400;
   transition: filter 0.2s ease;
@@ -1436,8 +1436,10 @@ body.loaded::before {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) scale(0.9);
-  width: 820px;
-  max-width: 94vw;
+  width: 1000px;
+  max-width: 96vw;
+  max-height: 80vh;
+  overflow-y: auto;
   background: #fdf6ee;
   border-radius: 4px;
   box-shadow: 0 8px 40px rgba(0,0,0,0.5), inset 0 0 30px rgba(0,0,0,0.05);
@@ -1478,12 +1480,12 @@ body.loaded::before {
 
 #perfumeBookInner {
   display: flex;
-  min-height: 480px;
+  min-height: 0;
 }
 
 .book-page {
   flex: 1;
-  padding: 50px 44px;
+  padding: 32px 36px;
   font-family: 'Comic Sans MS', 'Segoe Print', cursive;
   font-size: 15px;
   line-height: 1.85;
@@ -1611,7 +1613,7 @@ body.loaded::before {
   <div id="instructionsOverlay"></div>
   <div id="instructionsPaper">
     <h1>Instructions</h1>
-    <p class="subtitle">(click anywhere to escape)</p>
+    <p class="subtitle">(Make sure the page zoom is at 100%. Click anywhere to escape)</p>
   <p style="font-size:20px;font-weight:500;margin:0 0 6px 0;">Gallery</p>
     <ul>
       <li>All my art is in the cupboard for you to look at in digital form</li>
@@ -2460,8 +2462,9 @@ el.addEventListener('mousedown', (e) => {
       isDraggingPile = true;
       pileHasMoved = false;
       pileLastX = e.clientX;
-      pileDragOffX = 60;
-      pileDragOffY = 64;
+     const rect = el.getBoundingClientRect();
+      pileDragOffX = e.clientX - rect.left;
+      pileDragOffY = e.clientY - rect.top;
       pileStartX = e.clientX;
       pileStartY = e.clientY;
       el.style.transition = 'none';
@@ -3136,6 +3139,7 @@ const perfumeOverlay = document.getElementById('perfumeOverlay');
 const perfumeBook = document.getElementById('perfumeBook');
 const perfumeBookClose = document.getElementById('perfumeBookClose');
 const click2Sound = new Audio('sounds/click2.wav');
+click2Sound.volume = 0.7;
 let perfumeDragOffX, perfumeDragOffY, isPerfumeDragging = false;
 let perfumeHasMoved = false, perfumeStartX, perfumeStartY;
 
