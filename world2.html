@@ -1402,8 +1402,8 @@ body.loaded::before {
 
 #perfumeBottle {
   position: fixed;
-  bottom: 34%;
-  left: 9%;
+  bottom: 32%;
+  left: 11%;
   width: 74px;
   cursor: pointer;
   z-index: 400;
@@ -1492,6 +1492,8 @@ body.loaded::before {
   color: #2a1f1a;
   background: #fdf6ee;
   position: relative;
+  overflow-y: auto;
+  max-height: 75vh;
 }
 
 .book-page p {
@@ -1519,11 +1521,11 @@ body.loaded::before {
 <body>
 
 <div id="container">
-<audio id="background4" src="sounds/background4.mp3" loop></audio>
-  <audio id="background5" src="sounds/background5.mp3" loop></audio>
-  <audio id="background" src="sounds/background.mp3" loop></audio>
-  <audio id="background2" src="sounds/background2.mp3" loop></audio>
-  <audio id="background3" src="sounds/background3.mp3" loop></audio>
+<audio id="background4" src="sounds/background4.mp3"></audio>
+  <audio id="background5" src="sounds/background5.mp3"></audio>
+  <audio id="background" src="sounds/background.mp3"></audio>
+  <audio id="background2" src="sounds/background2.mp3"></audio>
+  <audio id="background3" src="sounds/background3.mp3"></audio>
   <audio id="pickup" src="sounds/pickup.mp3"></audio>
   <audio id="creakSound" src="sounds/doorcreak.mp3"></audio>
 
@@ -1750,9 +1752,14 @@ const musicTracks = [
 ];
 let currentTrack = 0;
 let musicStarted = false;
-const trackVolumes = [0.08, 0.08, 0.6, 0.6, 0.6];
-musicTracks.forEach((track, i) => { track.volume = trackVolumes[i]; });
-creakSound.volume = 0.6;
+const trackVolumes = [0.08, 0.53, 0.6, 0.6, 0.6];
+musicTracks.forEach((track, i) => {
+  track.volume = trackVolumes[i];
+  track.addEventListener('ended', () => {
+    fadeOutInTrack(1);
+  });
+});
+creakSound.volume = 0.72;
 
 // Name handling
 let currentUser = localStorage.getItem('timecapsule_user') || null;
@@ -3139,7 +3146,7 @@ const perfumeOverlay = document.getElementById('perfumeOverlay');
 const perfumeBook = document.getElementById('perfumeBook');
 const perfumeBookClose = document.getElementById('perfumeBookClose');
 const click2Sound = new Audio('sounds/click2.wav');
-click2Sound.volume = 0.7;
+click2Sound.volume = 0.5;
 let perfumeDragOffX, perfumeDragOffY, isPerfumeDragging = false;
 let perfumeHasMoved = false, perfumeStartX, perfumeStartY;
 
@@ -3169,6 +3176,56 @@ perfumeBottle.addEventListener('mousedown', (e) => {
   perfumeStartY = e.clientY;
   perfumeBottle.style.transition = 'none';
   e.preventDefault();
+});
+
+perfumeBottle.addEventListener('touchstart', (e) => {
+  const touch = e.touches[0];
+  isPerfumeDragging = true;
+  perfumeHasMoved = false;
+  const rect = perfumeBottle.getBoundingClientRect();
+  perfumeDragOffX = touch.clientX - rect.left;
+  perfumeDragOffY = touch.clientY - rect.top;
+  perfumeStartX = touch.clientX;
+  perfumeStartY = touch.clientY;
+  perfumeBottle.style.transition = 'none';
+  e.preventDefault();
+}, { passive: false });
+
+document.addEventListener('touchmove', (e) => {
+  if (!isPerfumeDragging) return;
+  const touch = e.touches[0];
+  const dx = touch.clientX - perfumeStartX;
+  const dy = touch.clientY - perfumeStartY;
+  if (Math.abs(dx) > 4 || Math.abs(dy) > 4) perfumeHasMoved = true;
+  perfumeBottle.style.position = 'fixed';
+  perfumeBottle.style.left = (touch.clientX - perfumeDragOffX) + 'px';
+  perfumeBottle.style.top = (touch.clientY - perfumeDragOffY) + 'px';
+  perfumeBottle.style.bottom = 'auto';
+  const binRect = document.getElementById('trashBin').getBoundingClientRect();
+  const overBin = touch.clientX >= binRect.left && touch.clientX <= binRect.right && touch.clientY >= binRect.top && touch.clientY <= binRect.bottom;
+  perfumeBottle.style.opacity = overBin ? '0.5' : '1';
+}, { passive: false });
+
+document.addEventListener('touchend', (e) => {
+  if (!isPerfumeDragging) return;
+  isPerfumeDragging = false;
+  perfumeBottle.style.opacity = '1';
+  perfumeBottle.style.transition = 'filter 0.2s ease';
+  const touch = e.changedTouches[0];
+  const binRect = document.getElementById('trashBin').getBoundingClientRect();
+  if (touch.clientX >= binRect.left && touch.clientX <= binRect.right && touch.clientY >= binRect.top && touch.clientY <= binRect.bottom) {
+    binSound.currentTime = 0;
+    binSound.play();
+    document.getElementById('trashBin').classList.add('shake');
+    setTimeout(() => document.getElementById('trashBin').classList.remove('shake'), 300);
+    perfumeBottle.style.display = 'none';
+    return;
+  }
+  if (!perfumeHasMoved) {
+    click2Sound.currentTime = 0;
+    click2Sound.play();
+    openPerfumeBook();
+  }
 });
 
 document.addEventListener('mousemove', (e) => {
