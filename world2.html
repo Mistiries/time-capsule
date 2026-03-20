@@ -1615,9 +1615,8 @@ const musicTracks = [
 ];
 let currentTrack = 0;
 let musicStarted = false;
-musicTracks.forEach(track => { track.volume = 0.6; });
-musicTracks[0].volume = 0.15;
-musicTracks[1].volume = 0.15;
+const trackVolumes = [0.08, 0.08, 0.6, 0.6, 0.6];
+musicTracks.forEach((track, i) => { track.volume = trackVolumes[i]; });
 creakSound.volume = 0.6;
 
 // Name handling
@@ -2318,9 +2317,10 @@ function buildPolaroidPile(files, positions, viewerFiles) {
       el.classList.add('hovered');
       el.style.transform = `rotate(${currentRot}deg) scale(1.18) translateY(-12px)`;
     });
-    el.addEventListener('mouseleave', () => {
+   el.addEventListener('mouseleave', () => {
+      if (isDraggingPile) return;
       el.classList.remove('hovered');
-      if (!isDraggingPile) el.style.transform = `rotate(${currentRot}deg)`;
+      el.style.transform = `rotate(${currentRot}deg)`;
     });
 
 el.addEventListener('mousedown', (e) => {
@@ -2365,8 +2365,9 @@ el.addEventListener('mousedown', (e) => {
       el.style.top = (clientY - pileDragOffY) + 'px';
       const binRect = document.getElementById('trashBin').getBoundingClientRect();
       const overBin = clientX >= binRect.left && clientX <= binRect.right && clientY >= binRect.top && clientY <= binRect.bottom;
-      const scale = overBin ? 0.85 : 1;
-      el.style.transform = `rotate(${currentRot + pileSwing}deg) scale(${scale})`;
+   const scale = overBin ? 0.85 : 1.18;
+      const translateY = overBin ? '0px' : '-12px';
+      el.style.transform = `rotate(${currentRot + pileSwing}deg) scale(${scale}) translateY(${translateY})`;
     }
 function onPileEnd(clientX, clientY) {
       if (!isDraggingPile) return;
@@ -2857,8 +2858,10 @@ function fadeOutInTrack(direction) {
 }
 
 function fadeIn(track) {
+  const targetVol = trackVolumes[musicTracks.indexOf(track)] ?? 0.6;
   let fi = setInterval(() => {
-    if (track.volume < 0.6) { track.volume += 0.05; } else { clearInterval(fi); }
+    if (track.volume < targetVol - 0.04) { track.volume = Math.min(track.volume + 0.05, targetVol); }
+    else { track.volume = targetVol; clearInterval(fi); }
   }, 50);
 }
 
