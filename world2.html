@@ -2333,6 +2333,7 @@ el.addEventListener('mousedown', (e) => {
       pileStartY = e.clientY;
       el.style.transition = 'none';
       el.style.zIndex = 490 + i;
+      el.style.transform = `rotate(${currentRot}deg) scale(1.18) translateY(-12px)`;
       e.preventDefault();
     });
 
@@ -2367,14 +2368,13 @@ el.addEventListener('mousedown', (e) => {
       const scale = overBin ? 0.85 : 1;
       el.style.transform = `rotate(${currentRot + pileSwing}deg) scale(${scale})`;
     }
-
-    function onPileEnd(clientX, clientY) {
+function onPileEnd(clientX, clientY) {
       if (!isDraggingPile) return;
       isDraggingPile = false;
       el.classList.remove('hovered');
       pileSwing = 0;
       el.style.transition = 'transform 0.3s ease';
-      el.style.transform = `rotate(${currentRot}deg)`;
+      el.style.transform = `rotate(${currentRot}deg) scale(1) translateY(0)`;
       const binRect = document.getElementById('trashBin').getBoundingClientRect();
       if (clientX >= binRect.left && clientX <= binRect.right && clientY >= binRect.top && clientY <= binRect.bottom) {
         binSound.currentTime = 0;
@@ -3012,7 +3012,10 @@ document.addEventListener('mousemove', (e) => {
 function createPetal() {
   const petal = document.createElement('div');
   const size = Math.random() * 8 + 6;
-  const startX = Math.random() * window.innerWidth * 0.3;
+ const fromRight = Math.random() < 0.5;
+  const startX = fromRight
+    ? window.innerWidth - Math.random() * window.innerWidth * 0.3
+    : Math.random() * window.innerWidth * 0.3;
 
   petal.style.cssText = `
     position: fixed;
@@ -3032,7 +3035,7 @@ function createPetal() {
 
   let x = startX;
   let y = -20;
-  let vx = Math.random() * 0.4 + 0.1;
+ let vx = fromRight ? -(Math.random() * 0.4 + 0.1) : (Math.random() * 0.4 + 0.1);
   let vy = Math.random() * 1.0 + 0.6;
   let rot = Math.random() * 360;
   let rotSpeed = (Math.random() - 0.5) * 2.5;
@@ -3057,8 +3060,8 @@ function createPetal() {
     const dist = Math.sqrt(distX * distX + distY * distY);
     if (dist < 100) {
       const force = (100 - dist) / 100;
-      vx += (mouseVX * force * 0.018) + (distX / dist) * force * 0.15 * -1;
-      vy += (mouseVY * force * 0.012) + (distY / dist) * force * 0.1 * -1;
+      vx += (mouseVX * force * 0.045) + (distX / dist) * force * 0.3 * -1;
+      vy += (mouseVY * force * 0.03) + (distY / dist) * force * 0.2 * -1;
     }
 
     vx *= 0.982;
@@ -3117,11 +3120,11 @@ petalBtn.addEventListener('click', (e) => {
 const fireflyBtn = document.getElementById('fireflyBtn');
 let firefliesActive = false;
 const activeFireflies = [];
-const FIREFLY_COUNT = 18;
+const FIREFLY_COUNT = 28;
 
 function createFirefly() {
   const ff = document.createElement('div');
-  const size = Math.random() * 4 + 3;
+ const size = Math.random() * 6 + 5;
   const x = Math.random() * window.innerWidth;
   const y = Math.random() * window.innerHeight;
 
