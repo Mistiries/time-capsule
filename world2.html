@@ -1422,7 +1422,8 @@ body.loaded::before {
       <button id="nextTrack">⏭</button>
     </div>
 <button id="instructionsBtn">📋</button>
-    <button id="petalBtn">🌸</button>
+  <button id="petalBtn">🌸</button>
+    <button id="fireflyBtn">🪲</button>
     <button id="portalBackBtn">🪵</button>
   </div>
 
@@ -1496,6 +1497,7 @@ body.loaded::before {
     <ul>
      <li>Click on polaroids to look through them closer</li>
       <li>You can drag the polaroids around too</li>
+      <li>Try out the petals and fireflies in the side panel!</li>
     </ul>
   </div>
 
@@ -3010,9 +3012,7 @@ document.addEventListener('mousemove', (e) => {
 function createPetal() {
   const petal = document.createElement('div');
   const size = Math.random() * 8 + 6;
-  const startX = Math.random() * window.innerWidth * 0.25;
-  const duration = Math.random() * 5 + 8;
-  const delay = Math.random() * 1.5;
+  const startX = Math.random() * window.innerWidth * 0.3;
 
   petal.style.cssText = `
     position: fixed;
@@ -3033,36 +3033,36 @@ function createPetal() {
   let x = startX;
   let y = -20;
   let vx = Math.random() * 0.4 + 0.1;
-  let vy = Math.random() * 1.2 + 0.8;
+  let vy = Math.random() * 1.0 + 0.6;
   let rot = Math.random() * 360;
   let rotSpeed = (Math.random() - 0.5) * 2.5;
   let wobble = Math.random() * Math.PI * 2;
-  let windStrength = 0;
+  let windWobble = Math.random() * Math.PI * 2;
   let age = 0;
 
   function tick() {
     age++;
-    wobble += 0.025;
-    windStrength = Math.min(1, age / 180);
+    wobble += 0.022;
+    windWobble += 0.008 + Math.random() * 0.004;
 
-    const wind = windStrength * (1.2 + Math.sin(wobble * 0.3) * 0.4);
-    vx += wind * 0.06;
-    vx += Math.sin(wobble) * 0.08;
-    vy += 0.012;
-    vy = Math.min(vy, 2.8);
+    const windStrength = Math.min(1, age / 200);
+    const baseWind = windStrength * (0.8 + Math.sin(windWobble) * 0.6 + Math.sin(windWobble * 2.3) * 0.3);
+    vx += baseWind * 0.05;
+    vx += Math.sin(wobble) * 0.07;
+    vy += 0.01;
+    vy = Math.min(vy, 2.2);
 
     const distX = mouseX - x;
     const distY = mouseY - y;
     const dist = Math.sqrt(distX * distX + distY * distY);
     if (dist < 100) {
       const force = (100 - dist) / 100;
-      const speed = Math.sqrt(mouseVX * mouseVX + mouseVY * mouseVY);
-    vx += (mouseVX * force * 0.018) + (distX / dist) * force * 0.15 * -1;
+      vx += (mouseVX * force * 0.018) + (distX / dist) * force * 0.15 * -1;
       vy += (mouseVY * force * 0.012) + (distY / dist) * force * 0.1 * -1;
     }
 
-    vx *= 0.98;
-    vy *= 0.99;
+    vx *= 0.982;
+    vy *= 0.992;
 
     x += vx;
     y += vy;
@@ -3081,18 +3081,19 @@ function createPetal() {
     }
   }
 
-  setTimeout(() => requestAnimationFrame(tick), delay * 1000);
+  setTimeout(() => requestAnimationFrame(tick), Math.random() * 1000);
 }
 
 function startPetals() {
   petalsActive = true;
   petalBtn.style.background = '#ffd6e8';
-  createPetal();
+  for (let i = 0; i < 4; i++) createPetal();
   petalInterval = setInterval(() => {
     if (petalsActive) {
-      for (let i = 0; i < 2; i++) createPetal();
+      const count = Math.random() < 0.4 ? 3 : 2;
+      for (let i = 0; i < count; i++) createPetal();
     }
-  }, 600);
+  }, 450);
 }
 
 function stopPetals() {
@@ -3108,6 +3109,128 @@ petalBtn.addEventListener('click', (e) => {
     stopPetals();
   } else {
     startPetals();
+    burgerContent.classList.remove('open');
+  }
+});
+
+// Firefly effect
+const fireflyBtn = document.getElementById('fireflyBtn');
+let firefliesActive = false;
+const activeFireflies = [];
+const FIREFLY_COUNT = 18;
+
+function createFirefly() {
+  const ff = document.createElement('div');
+  const size = Math.random() * 4 + 3;
+  const x = Math.random() * window.innerWidth;
+  const y = Math.random() * window.innerHeight;
+
+  ff.style.cssText = `
+    position: fixed;
+    width: ${size}px;
+    height: ${size}px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fffaaa, #ffe066);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 9997;
+    box-shadow: 0 0 6px 2px rgba(255, 230, 80, 0.4);
+    transition: box-shadow 0.3s ease, background 0.3s ease;
+  `;
+
+  document.body.appendChild(ff);
+
+  let fx = x, fy = y;
+  let vx = (Math.random() - 0.5) * 0.5;
+  let vy = (Math.random() - 0.5) * 0.5;
+  let glowPhase = Math.random() * Math.PI * 2;
+  let targetX = fx + (Math.random() - 0.5) * 120;
+  let targetY = fy + (Math.random() - 0.5) * 120;
+  let wanderTimer = Math.floor(Math.random() * 180 + 120);
+  let age = 0;
+
+  function ffTick() {
+    if (!activeFireflies.includes(ff)) return;
+
+    age++;
+    glowPhase += 0.03 + Math.random() * 0.01;
+    wanderTimer--;
+
+    if (wanderTimer <= 0) {
+      targetX = fx + (Math.random() - 0.5) * 200;
+      targetY = fy + (Math.random() - 0.5) * 200;
+      targetX = Math.max(20, Math.min(window.innerWidth - 20, targetX));
+      targetY = Math.max(20, Math.min(window.innerHeight - 20, targetY));
+      wanderTimer = Math.floor(Math.random() * 180 + 100);
+    }
+
+    vx += (targetX - fx) * 0.004;
+    vy += (targetY - fy) * 0.004;
+    vx *= 0.94;
+    vy *= 0.94;
+
+    const distX = mouseX - fx;
+    const distY = mouseY - fy;
+    const dist = Math.sqrt(distX * distX + distY * distY);
+
+    let glowSize = 6;
+    let opacity = (Math.sin(glowPhase) * 0.3 + 0.45);
+
+    if (dist < 120) {
+      const proximity = (120 - dist) / 120;
+      glowSize = 6 + proximity * 20;
+      opacity = Math.min(0.95, opacity + proximity * 0.5);
+      ff.style.boxShadow = `0 0 ${glowSize}px ${glowSize * 0.6}px rgba(255, 230, 80, ${0.3 + proximity * 0.5})`;
+      ff.style.background = `radial-gradient(circle, #ffffff, #ffe066)`;
+    } else {
+      ff.style.boxShadow = `0 0 ${glowSize}px 2px rgba(255, 230, 80, 0.35)`;
+      ff.style.background = `radial-gradient(circle, #fffaaa, #ffe066)`;
+    }
+
+    fx += vx;
+    fy += vy;
+    ff.style.left = fx + 'px';
+    ff.style.top = fy + 'px';
+    ff.style.opacity = opacity;
+
+    requestAnimationFrame(ffTick);
+  }
+
+  setTimeout(() => {
+    ff.style.left = fx + 'px';
+    ff.style.top = fy + 'px';
+    activeFireflies.push(ff);
+    requestAnimationFrame(ffTick);
+  }, Math.random() * 1500);
+
+  return ff;
+}
+
+function startFireflies() {
+  firefliesActive = true;
+  fireflyBtn.style.background = '#fffbe6';
+  for (let i = 0; i < FIREFLY_COUNT; i++) {
+    const ff = createFirefly();
+  }
+}
+
+function stopFireflies() {
+  firefliesActive = false;
+  fireflyBtn.style.background = 'white';
+  activeFireflies.forEach(ff => {
+    ff.style.transition = 'opacity 1.5s ease';
+    ff.style.opacity = '0';
+    setTimeout(() => ff.remove(), 1500);
+  });
+  activeFireflies.length = 0;
+}
+
+fireflyBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (firefliesActive) {
+    stopFireflies();
+  } else {
+    startFireflies();
     burgerContent.classList.remove('open');
   }
 });
