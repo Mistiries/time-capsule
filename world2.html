@@ -269,9 +269,9 @@ z-index: 9999;
 
 #guestbookPanel {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0.95);
+  top: 0;
+  left: 0;
+  transform: none;
   width: 520px;
   max-width: 92vw;
   height: 70vh;
@@ -290,12 +290,12 @@ z-index: 9999;
 #guestbookPanel.visible {
   opacity: 1;
   pointer-events: auto;
-  transform: translate(-50%, -50%) scale(1);
+  transform: none;
 }
 
 #guestbookPanel.closing {
   opacity: 0;
-  transform: translate(-50%, -50%) scale(0.92);
+  transform: scale(0.96);
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
@@ -795,7 +795,7 @@ z-index: 9999;
 
 #galleryTab {
   position: fixed;
-  width: 65vw;
+  width: 0;
   min-width: 300px;
   min-height: 200px;
   background: white;
