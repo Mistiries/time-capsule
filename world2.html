@@ -4177,9 +4177,22 @@ const fishDefs = [
     {color:'#ffb703',tail:'#fb8500',size:16,speed:0.6,startY:0.42,dir:1},
     {color:'#ff6b6b',tail:'#c0392b',size:13,speed:0.95,startY:0.32,dir:-1},
     {color:'#74c69d',tail:'#2d6a4f',size:19,speed:0.5,startY:0.65,dir:1},
-    {color:'#2d2d2d',tail:'#1a1a1a',size:28,speed:0.28,startY:0.75,dir:1,angler:true},
+  {color:'#2d2d2d',tail:'#1a1a1a',size:28,speed:0.28,startY:0.75,dir:1,angler:true},
     {color:'#3a2a3a',tail:'#1a1a2a',size:24,speed:0.22,startY:0.82,dir:-1,angler:true},
   ];
+
+  // Octopus
+  const octopus = {
+    x: -120,
+    y: 0,
+    dir: 1,
+    speed: 0.45,
+    wobble: 0,
+    tentaclePhase: 0,
+    active: false,
+    startY: 0.6,
+    timer: 300 + Math.floor(Math.random() * 400),
+  };
 
   let scared = false, scareTimer = 0;
 
@@ -4271,6 +4284,116 @@ const fishDefs = [
       ctx.ellipse(sx + tipOx, h - h * 0.1 - sh, sw.w * 1.3, sw.w * 0.9, 0.5, 0, Math.PI * 2);
       ctx.fill();
     });
+
+    // Octopus timer
+    if (!octopus.active) {
+      octopus.timer--;
+      if (octopus.timer <= 0) {
+        octopus.active = true;
+        octopus.dir = Math.random() < 0.5 ? 1 : -1;
+        octopus.x = octopus.dir > 0 ? -80 : w + 80;
+        octopus.y = (0.45 + Math.random() * 0.3) * h;
+        octopus.timer = 400 + Math.floor(Math.random() * 400);
+      }
+    }
+
+    if (octopus.active) {
+      octopus.wobble += 0.04;
+      octopus.tentaclePhase += 0.06;
+      octopus.x += octopus.speed * octopus.dir;
+
+      if ((octopus.dir > 0 && octopus.x > w + 100) || (octopus.dir < 0 && octopus.x < -100)) {
+        octopus.active = false;
+      }
+
+      ctx.save();
+      ctx.translate(octopus.x, octopus.y);
+      if (octopus.dir < 0) ctx.scale(-1, 1);
+
+      const os = 22;
+
+      // tentacles
+      const tentacleColors = ['#7b2d8b','#6a1f7a','#8b3d9b','#5a1a6a','#7a2a8a','#693080','#7c3590','#612070'];
+      for (let t = 0; t < 8; t++) {
+        const angle = (t / 8) * Math.PI;
+        const baseX = (t - 3.5) * os * 0.28;
+        const tentLen = os * (1.1 + Math.sin(octopus.tentaclePhase + t * 0.8) * 0.2);
+        ctx.strokeStyle = tentacleColors[t];
+        ctx.lineWidth = os * 0.18;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(baseX, os * 0.3);
+        const cp1x = baseX + Math.sin(octopus.tentaclePhase + t) * os * 0.4;
+        const cp1y = os * 0.6 + tentLen * 0.4;
+        const cp2x = baseX + Math.sin(octopus.tentaclePhase + t + 1) * os * 0.5;
+        const cp2y = os * 0.6 + tentLen * 0.8;
+        const endX = baseX + Math.sin(octopus.tentaclePhase + t + 2) * os * 0.3;
+        const endY = os * 0.6 + tentLen;
+        ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, endX, endY);
+        ctx.stroke();
+
+        // sucker dots
+        ctx.fillStyle = 'rgba(200,150,220,0.5)';
+        ctx.beginPath();
+        ctx.arc(cp1x * 0.7 + endX * 0.3, cp1y * 0.5 + cp2y * 0.5, os * 0.05, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // body
+      ctx.fillStyle = '#7b2d8b';
+      ctx.beginPath();
+      ctx.ellipse(0, 0, os * 0.7, os * 0.85, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // head dome
+      ctx.fillStyle = '#8b3d9b';
+      ctx.beginPath();
+      ctx.ellipse(0, -os * 0.4, os * 0.55, os * 0.65, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // subtle bob
+      const bobY = Math.sin(octopus.wobble) * 3;
+      ctx.translate(0, bobY);
+
+      // left eye
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.beginPath();
+      ctx.ellipse(-os * 0.26, -os * 0.35, os * 0.16, os * 0.18, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#1a0a2a';
+      ctx.beginPath();
+      ctx.ellipse(-os * 0.26, -os * 0.35, os * 0.09, os * 0.11, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.8)';
+      ctx.beginPath();
+      ctx.arc(-os * 0.22, -os * 0.39, os * 0.04, 0, Math.PI * 2);
+      ctx.fill();
+
+      // right eye
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.beginPath();
+      ctx.ellipse(os * 0.26, -os * 0.35, os * 0.16, os * 0.18, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#1a0a2a';
+      ctx.beginPath();
+      ctx.ellipse(os * 0.26, -os * 0.35, os * 0.09, os * 0.11, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.8)';
+      ctx.beginPath();
+      ctx.arc(os * 0.3, -os * 0.39, os * 0.04, 0, Math.PI * 2);
+      ctx.fill();
+
+      // ink cloud when scared
+      if (scared) {
+        ctx.fillStyle = 'rgba(60,10,80,0.25)';
+        ctx.beginPath();
+        ctx.ellipse(-octopus.dir * os * 0.8, 0, os * 0.9, os * 0.6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        octopus.x += octopus.dir * 2;
+      }
+
+      ctx.restore();
+    }
 
     // fish
     if (scareTimer > 0) scareTimer--;
