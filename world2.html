@@ -3608,9 +3608,10 @@ document.addEventListener('keydown', startMusic, { once: true });
   // Persist notebook position/size
 function saveNotebookState() {
   const rect = guestbookPanel.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
   localStorage.setItem('nb_pos', JSON.stringify({
-    left: parseFloat(guestbookPanel.style.left),
-    top: parseFloat(guestbookPanel.style.top),
+    left: rect.left,
+    top: rect.top,
     w: rect.width,
     h: rect.height
   }));
@@ -3635,9 +3636,10 @@ function loadNotebookState() {
 // Persist gallery position/size
 function saveGalleryState() {
   const rect = galleryTab.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
   localStorage.setItem('gallery_pos', JSON.stringify({
-    left: parseFloat(galleryTab.style.left),
-    top: parseFloat(galleryTab.style.top),
+    left: rect.left,
+    top: rect.top,
     w: rect.width,
     h: rect.height
   }));
