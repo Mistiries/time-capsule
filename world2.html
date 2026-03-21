@@ -1644,7 +1644,6 @@ body.loaded::before {
   position: fixed;
   bottom: 4%;
   left: 17%;
-  }
 
 #aquarium {
   position: fixed;
@@ -2251,15 +2250,13 @@ document.addEventListener('mousemove', (e) => {
   const dx = e.clientX - bookStartX;
   const dy = e.clientY - bookStartY;
   if (Math.abs(dx) > 4 || Math.abs(dy) > 4) bookHasMoved = true;
-  const moveDx = e.clientX - lastBookX;
-  lastBookX = e.clientX;
-  const targetSwing = Math.max(-5, Math.min(5, moveDx * 0.2));
-  bookSwing += (targetSwing - bookSwing) * 0.25;
-  guestbookBook.style.position = 'fixed';
-  guestbookBook.style.left = (e.clientX - bookDragOffsetX) + 'px';
-  guestbookBook.style.top = (e.clientY - bookDragOffsetY) + 'px';
-  guestbookBook.style.bottom = 'auto';
-  guestbookBook.style.transform = `rotate(${bookSwing}deg)`;
+ 
+
+const moveDx = e.clientX - lastBookX;
+lastBookX = e.clientX;
+const targetSwing = Math.max(-12, Math.min(12, moveDx * 0.4));
+bookSwing += (targetSwing - bookSwing) * 0.35;
+guestbookBook.style.transform = `rotate(${bookSwing}deg)`;
 });
 
 document.addEventListener('touchmove', (e) => {
@@ -2270,8 +2267,8 @@ document.addEventListener('touchmove', (e) => {
   if (Math.abs(dx) > 4 || Math.abs(dy) > 4) bookHasMoved = true;
   const moveDx = touch.clientX - lastBookX;
   lastBookX = touch.clientX;
-  const targetSwing = Math.max(-5, Math.min(5, moveDx * 0.2));
-  bookSwing += (targetSwing - bookSwing) * 0.25;
+  const targetSwing = Math.max(-12, Math.min(12, moveDx * 0.4));
+  bookSwing += (targetSwing - bookSwing) * 0.35;
   guestbookBook.style.position = 'fixed';
   guestbookBook.style.left = (touch.clientX - bookDragOffsetX) + 'px';
   guestbookBook.style.top = (touch.clientY - bookDragOffsetY) + 'px';
@@ -2285,8 +2282,11 @@ document.addEventListener('mouseup', (e) => {
   isBookDragging = false;
   bookSwing = 0;
   guestbookBook.style.cursor = 'grab';
-  guestbookBook.style.transition = 'transform 0.3s ease';
+  guestbookBook.style.transition = 'transform 0.4s ease-out';
   guestbookBook.style.transform = 'rotate(0deg)';
+  setTimeout(() => {
+    guestbookBook.style.transition = 'transform 0.15s ease';
+  }, 450);
   if (!bookHasMoved) {
     openGuestbookFlow();
   }
@@ -2296,8 +2296,11 @@ document.addEventListener('touchend', (e) => {
   if (!isBookDragging) return;
   isBookDragging = false;
   bookSwing = 0;
-  guestbookBook.style.transition = 'transform 0.3s ease';
+  guestbookBook.style.transition = 'transform 0.4s ease-out';
   guestbookBook.style.transform = 'rotate(0deg)';
+  setTimeout(() => {
+    guestbookBook.style.transition = 'transform 0.15s ease';
+  }, 450);
   if (!bookHasMoved) {
     openGuestbookFlow();
   }
@@ -3536,6 +3539,8 @@ const click2Sound = new Audio('sounds/click2.wav');
 click2Sound.volume = 0.5;
 let perfumeDragOffX, perfumeDragOffY, isPerfumeDragging = false;
 let perfumeHasMoved = false, perfumeStartX, perfumeStartY;
+let perfumeSwing = 0;
+let lastPerfumeX = 0;
 
 setupTooltip(perfumeBottle, 'There\'s a story inside');
 
@@ -3588,16 +3593,29 @@ document.addEventListener('touchmove', (e) => {
   perfumeBottle.style.left = (touch.clientX - perfumeDragOffX) + 'px';
   perfumeBottle.style.top = (touch.clientY - perfumeDragOffY) + 'px';
   perfumeBottle.style.bottom = 'auto';
+
+  const moveDx = touch.clientX - lastPerfumeX;
+  lastPerfumeX = touch.clientX;
+  const targetSwing = Math.max(-18, Math.min(18, moveDx * 0.45));
+  perfumeSwing += (targetSwing - perfumeSwing) * 0.28;
+
   const binRect = document.getElementById('trashBin').getBoundingClientRect();
   const overBin = touch.clientX >= binRect.left && touch.clientX <= binRect.right && touch.clientY >= binRect.top && touch.clientY <= binRect.bottom;
+  perfumeBottle.style.transform = `rotate(${perfumeSwing}deg) scale(${overBin ? 0.92 : 1})`;
   perfumeBottle.style.opacity = overBin ? '0.5' : '1';
+  e.preventDefault();
 }, { passive: false });
 
 document.addEventListener('touchend', (e) => {
   if (!isPerfumeDragging) return;
   isPerfumeDragging = false;
   perfumeBottle.style.opacity = '1';
-  perfumeBottle.style.transition = 'filter 0.2s ease';
+  perfumeBottle.style.transition = 'transform 0.45s ease-out, opacity 0.2s ease, filter 0.2s ease';
+  perfumeBottle.style.transform = 'rotate(0deg) scale(1)';
+  setTimeout(() => {
+    perfumeBottle.style.transition = 'filter 0.2s ease';
+  }, 500);
+
   const touch = e.changedTouches[0];
   const binRect = document.getElementById('trashBin').getBoundingClientRect();
   if (touch.clientX >= binRect.left && touch.clientX <= binRect.right && touch.clientY >= binRect.top && touch.clientY <= binRect.bottom) {
@@ -3624,8 +3642,15 @@ document.addEventListener('mousemove', (e) => {
   perfumeBottle.style.left = (e.clientX - perfumeDragOffX) + 'px';
   perfumeBottle.style.top = (e.clientY - perfumeDragOffY) + 'px';
   perfumeBottle.style.bottom = 'auto';
+
+  const moveDx = e.clientX - lastPerfumeX;
+  lastPerfumeX = e.clientX;
+  const targetSwing = Math.max(-18, Math.min(18, moveDx * 0.45));
+  perfumeSwing += (targetSwing - perfumeSwing) * 0.28;
+
   const binRect = document.getElementById('trashBin').getBoundingClientRect();
   const overBin = e.clientX >= binRect.left && e.clientX <= binRect.right && e.clientY >= binRect.top && e.clientY <= binRect.bottom;
+  perfumeBottle.style.transform = `rotate(${perfumeSwing}deg) scale(${overBin ? 0.92 : 1})`;
   perfumeBottle.style.opacity = overBin ? '0.5' : '1';
 });
 
@@ -3633,7 +3658,12 @@ document.addEventListener('mouseup', (e) => {
   if (!isPerfumeDragging) return;
   isPerfumeDragging = false;
   perfumeBottle.style.opacity = '1';
-  perfumeBottle.style.transition = 'filter 0.2s ease';
+  perfumeBottle.style.transition = 'transform 0.45s ease-out, opacity 0.2s ease, filter 0.2s ease';
+  perfumeBottle.style.transform = 'rotate(0deg) scale(1)';
+  setTimeout(() => {
+    perfumeBottle.style.transition = 'filter 0.2s ease';
+  }, 500);
+
   const binRect = document.getElementById('trashBin').getBoundingClientRect();
   if (e.clientX >= binRect.left && e.clientX <= binRect.right && e.clientY >= binRect.top && e.clientY <= binRect.bottom) {
     binSound.currentTime = 0;
@@ -4369,28 +4399,46 @@ function stopFireflies() {
   if (!lc) return;
   let llDragOffX, llDragOffY, isLLDragging = false, llHasMoved = false;
   let llStartX, llStartY;
+  let lavaSwing = 0;
+  let lastLavaX = 0;
+
   lc.addEventListener('mousedown', (e) => {
     isLLDragging = true; llHasMoved = false;
     const rect = lc.getBoundingClientRect();
     llDragOffX = e.clientX - rect.left; llDragOffY = e.clientY - rect.top;
     llStartX = e.clientX; llStartY = e.clientY;
-    lc.style.transition = 'none'; lc.style.cursor = 'grabbing';
+    lastLavaX = e.clientX;
+    lavaSwing = 0;
+    lc.style.transition = 'none';
+    lc.style.cursor = 'grabbing';
     e.preventDefault();
   });
+
   document.addEventListener('mousemove', (e) => {
     if (!isLLDragging) return;
     if (Math.abs(e.clientX - llStartX) > 3 || Math.abs(e.clientY - llStartY) > 3) llHasMoved = true;
     lc.style.left = (e.clientX - llDragOffX) + 'px';
     lc.style.top = (e.clientY - llDragOffY) + 'px';
     lc.style.bottom = 'auto';
+
+    const moveDx = e.clientX - lastLavaX;
+    lastLavaX = e.clientX;
+    const targetSwing = Math.max(-10, Math.min(10, moveDx * 0.35));
+    lavaSwing += (targetSwing - lavaSwing) * 0.3;
+    lc.style.transform = `rotate(${lavaSwing}deg)`;
   });
+
   document.addEventListener('mouseup', () => {
     if (!isLLDragging) return;
     isLLDragging = false;
+    lavaSwing = 0;
+    lc.style.transition = 'transform 0.4s ease-out';
+    lc.style.transform = 'rotate(0deg)';
     lc.style.cursor = 'grab';
+    setTimeout(() => { lc.style.transition = 'none'; }, 450);
   });
 })();
-
+  
 // Lava Lamp
 (function() {
   const lc = document.getElementById('lavaLamp');
