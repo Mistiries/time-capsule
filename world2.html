@@ -377,6 +377,7 @@ z-index: 9999;
   padding: 14px 16px;
   border: 1px solid #eee;
   position: relative;
+  overflow: visible;
 }
 
 .guestbook-msg-name {
@@ -2807,6 +2808,13 @@ msgEl.innerHTML = `
     const picker = msgEl.querySelector('.reaction-picker');
     const triggerBtn = msgEl.querySelector('.react-trigger-btn');
 
+    triggerBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      const isVisible = picker.classList.contains('visible');
+      document.querySelectorAll('.reaction-picker.visible').forEach(p => p.classList.remove('visible'));
+      if (!isVisible) picker.classList.add('visible');
+    });
 
     triggerBtn.addEventListener('mousedown', (e) => {
       e.stopPropagation();
