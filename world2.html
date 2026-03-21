@@ -2372,7 +2372,7 @@ checkUnread();
 // Guestbook panel drag
 const guestbookPanelHeader = document.getElementById('guestbookPanelHeader');
 const guestbookResizeHandle = document.getElementById('guestbookResizeHandle');
-let gbDragOffsetX = 0, gbDragOffsetY = 0, isGbDragging = false;
+let gbDragOffsetX = 0, gbDragOffsetY = 0, isGbDragging = false, gbHasDragged = false;
 let gbLastX = 0, gbSwing = 0;
 
 function startGbDrag(clientX, clientY) {
@@ -2389,6 +2389,7 @@ function startGbDrag(clientX, clientY) {
 
 function moveGb(clientX, clientY) {
   if (!isGbDragging) return;
+  gbHasDragged = true;
   const dx = clientX - gbLastX;
   gbLastX = clientX;
   const targetSwing = Math.max(-3, Math.min(3, dx * 0.15));
@@ -2404,7 +2405,7 @@ function endGbDrag() {
   guestbookPanel.style.transition = 'transform 0.3s ease';
   guestbookPanel.style.transform = 'rotate(0deg)';
   setTimeout(() => { guestbookPanel.style.transition = 'opacity 0.25s ease, transform 0.25s ease'; }, 300);
-  saveNotebookState();
+  if (gbHasDragged) { notebookMoved = true; saveNotebookState(); }
 }
 
 guestbookPanelHeader.addEventListener('mousedown', (e) => {
@@ -2454,7 +2455,10 @@ function doGbResize(clientX, clientY) {
   guestbookPanel.style.height = newH + 'px';
 }
 
-function endGbResize() { isGbResizing = false; saveNotebookState(); }
+function endGbResize() {
+  if (isGbResizing) { notebookMoved = true; saveNotebookState(); }
+  isGbResizing = false;
+}
 
 guestbookResizeHandle.addEventListener('mousedown', (e) => {
   startGbResize(e.clientX, e.clientY);
@@ -3535,7 +3539,7 @@ function closeGallery() {
 galleryOverlay.addEventListener('click', closeGallery);
 galleryOverlay.addEventListener('touchend', (e) => { e.preventDefault(); closeGallery(); });
 
-let dragOffsetX = 0, dragOffsetY = 0, isDraggingGallery = false;
+let dragOffsetX = 0, dragOffsetY = 0, isDraggingGallery = false, galleryHasDragged = false;
 let lastGalleryX = 0, currentSwing = 0;
 
 function startGalleryDrag(clientX, clientY) {
@@ -3549,6 +3553,7 @@ function startGalleryDrag(clientX, clientY) {
 
 function moveGallery(clientX, clientY) {
   if (!isDraggingGallery) return;
+  galleryHasDragged = true;
   const dx = clientX - lastGalleryX;
   lastGalleryX = clientX;
   const targetSwing = Math.max(-3, Math.min(3, dx * 0.15));
@@ -3564,7 +3569,7 @@ function endGalleryDrag() {
   galleryTab.style.transition = 'transform 0.3s ease';
   galleryTab.style.transform = 'rotate(0deg)';
   setTimeout(() => { galleryTab.style.transition = 'opacity 0.25s ease'; }, 300);
-  saveGalleryState();
+  if (galleryHasDragged) { galleryMoved = true; saveGalleryState(); }
 }
 
 galleryHeader.addEventListener('mousedown', (e) => { if (e.target === galleryClose) return; startGalleryDrag(e.clientX, e.clientY); e.preventDefault(); });
@@ -3596,7 +3601,10 @@ function doResize(clientX, clientY) {
   galleryTab.style.height = Math.max(200, resizeStartH + (clientY - resizeStartY)) + 'px';
 }
 
-function endResize() { isResizing = false; saveGalleryState(); }
+function endResize() {
+  if (isResizing) { galleryMoved = true; saveGalleryState(); }
+  isResizing = false;
+}
 
 galleryResizeHandle.addEventListener('mousedown', (e) => { startResize(e.clientX, e.clientY); e.preventDefault(); e.stopPropagation(); });
 galleryResizeHandle.addEventListener('touchstart', (e) => { const touch = e.touches[0]; startResize(touch.clientX, touch.clientY); e.preventDefault(); e.stopPropagation(); }, { passive: false });
@@ -3606,14 +3614,13 @@ document.addEventListener('touchstart', startMusic, { once: true });
 document.addEventListener('keydown', startMusic, { once: true });
 
   // Persist notebook position/size
+let notebookMoved = false;
 function saveNotebookState() {
+  if (!notebookMoved) return;
   const rect = guestbookPanel.getBoundingClientRect();
   if (!rect.width || !rect.height) return;
   localStorage.setItem('nb_pos', JSON.stringify({
-    left: rect.left,
-    top: rect.top,
-    w: rect.width,
-    h: rect.height
+    left: rect.left, top: rect.top, w: rect.width, h: rect.height
   }));
 }
 
@@ -3634,6 +3641,7 @@ function loadNotebookState() {
 }
 
 // Persist gallery position/size
+let galleryMoved = false;
 function saveGalleryState() {
   const rect = galleryTab.getBoundingClientRect();
   if (!rect.width || !rect.height) return;
