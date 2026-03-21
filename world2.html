@@ -290,7 +290,6 @@ z-index: 9999;
 #guestbookPanel.visible {
   opacity: 1;
   pointer-events: auto;
-  transform: none;
 }
 
 #guestbookPanel.closing {
@@ -795,7 +794,7 @@ z-index: 9999;
 
 #galleryTab {
   position: fixed;
-  width: 0;
+  width: 65vw;
   min-width: 300px;
   min-height: 200px;
   background: white;
@@ -2205,16 +2204,16 @@ function openGuestbookFlow() {
 
 function openGuestbook() {
   guestbookWhoAmI.textContent = `Signed in as ${currentUser}`;
+  const w = 520;
+  const h = window.innerHeight * 0.7;
+  const left = (window.innerWidth - w) / 2;
+  const top = (window.innerHeight - h) / 2;
   guestbookPanel.style.transition = 'none';
   guestbookPanel.style.transform = 'none';
-  if (!loadNotebookState()) {
-    const w = 520;
-    const h = window.innerHeight * 0.7;
-    guestbookPanel.style.width = w + 'px';
-    guestbookPanel.style.height = h + 'px';
-    guestbookPanel.style.left = ((window.innerWidth - w) / 2) + 'px';
-    guestbookPanel.style.top = ((window.innerHeight - h) / 2) + 'px';
-  }
+  guestbookPanel.style.width = w + 'px';
+  guestbookPanel.style.height = h + 'px';
+  guestbookPanel.style.left = left + 'px';
+  guestbookPanel.style.top = top + 'px';
   guestbookOverlay.classList.add('active');
   guestbookPanel.classList.add('visible');
   markAllRead();
@@ -2405,7 +2404,6 @@ function endGbDrag() {
   guestbookPanel.style.transition = 'transform 0.3s ease';
   guestbookPanel.style.transform = 'rotate(0deg)';
   setTimeout(() => { guestbookPanel.style.transition = 'opacity 0.25s ease, transform 0.25s ease'; }, 300);
-  if (gbHasDragged) { notebookMoved = true; saveNotebookState(); }
 }
 
 guestbookPanelHeader.addEventListener('mousedown', (e) => {
@@ -2455,10 +2453,7 @@ function doGbResize(clientX, clientY) {
   guestbookPanel.style.height = newH + 'px';
 }
 
-function endGbResize() {
-  if (isGbResizing) { notebookMoved = true; saveNotebookState(); }
-  isGbResizing = false;
-}
+function endGbResize() { isGbResizing = false; }
 
 guestbookResizeHandle.addEventListener('mousedown', (e) => {
   startGbResize(e.clientX, e.clientY);
@@ -3514,15 +3509,14 @@ cupboard.addEventListener('click', () => { startMusic(); creakSound.currentTime 
 cupboard.addEventListener('touchend', (e) => { e.preventDefault(); startMusic(); creakSound.currentTime = 0; creakSound.play(); openGallery(); });
 
 function openGallery() {
+  const w = Math.min(window.innerWidth * 0.65, window.innerWidth - 40);
+  const h = Math.min(window.innerHeight * 0.6, window.innerHeight - 40);
+  const left = (window.innerWidth - w) / 2;
+  const top = (window.innerHeight - h) / 2;
+  galleryTab.style.width = w + 'px'; galleryTab.style.height = h + 'px';
+  galleryTab.style.left = left + 'px'; galleryTab.style.top = top + 'px';
   galleryTab.style.transform = 'none'; galleryTab.style.transition = 'none';
   galleryTab.style.opacity = '1'; galleryTab.style.pointerEvents = 'auto';
-  if (!loadGalleryState()) {
-    const w = Math.min(window.innerWidth * 0.65, window.innerWidth - 40);
-    const h = Math.min(window.innerHeight * 0.6, window.innerHeight - 40);
-    galleryTab.style.width = w + 'px'; galleryTab.style.height = h + 'px';
-    galleryTab.style.left = ((window.innerWidth - w) / 2) + 'px';
-    galleryTab.style.top = ((window.innerHeight - h) / 2) + 'px';
-  }
   galleryTab.classList.add('visible');
   galleryOverlay.classList.add('active');
 }
@@ -3569,7 +3563,6 @@ function endGalleryDrag() {
   galleryTab.style.transition = 'transform 0.3s ease';
   galleryTab.style.transform = 'rotate(0deg)';
   setTimeout(() => { galleryTab.style.transition = 'opacity 0.25s ease'; }, 300);
-  if (galleryHasDragged) { galleryMoved = true; saveGalleryState(); }
 }
 
 galleryHeader.addEventListener('mousedown', (e) => { if (e.target === galleryClose) return; startGalleryDrag(e.clientX, e.clientY); e.preventDefault(); });
@@ -3601,10 +3594,7 @@ function doResize(clientX, clientY) {
   galleryTab.style.height = Math.max(200, resizeStartH + (clientY - resizeStartY)) + 'px';
 }
 
-function endResize() {
-  if (isResizing) { galleryMoved = true; saveGalleryState(); }
-  isResizing = false;
-}
+function endResize() { isResizing = false; }
 
 galleryResizeHandle.addEventListener('mousedown', (e) => { startResize(e.clientX, e.clientY); e.preventDefault(); e.stopPropagation(); });
 galleryResizeHandle.addEventListener('touchstart', (e) => { const touch = e.touches[0]; startResize(touch.clientX, touch.clientY); e.preventDefault(); e.stopPropagation(); }, { passive: false });
@@ -3613,61 +3603,7 @@ document.addEventListener('click', startMusic, { once: true });
 document.addEventListener('touchstart', startMusic, { once: true });
 document.addEventListener('keydown', startMusic, { once: true });
 
-  // Persist notebook position/size
-let notebookMoved = false;
-function saveNotebookState() {
-  if (!notebookMoved) return;
-  const rect = guestbookPanel.getBoundingClientRect();
-  if (!rect.width || !rect.height) return;
-  localStorage.setItem('nb_pos', JSON.stringify({
-    left: rect.left, top: rect.top, w: rect.width, h: rect.height
-  }));
-}
 
-function loadNotebookState() {
-  try {
-    const s = JSON.parse(localStorage.getItem('nb_pos'));
-    if (!s) return false;
-    const w = Math.min(Math.max(320, s.w), window.innerWidth - 20);
-    const h = Math.min(Math.max(300, s.h), window.innerHeight - 20);
-    const left = Math.min(Math.max(0, s.left), window.innerWidth - w);
-    const top = Math.min(Math.max(0, s.top), window.innerHeight - h);
-    guestbookPanel.style.width = w + 'px';
-    guestbookPanel.style.height = h + 'px';
-    guestbookPanel.style.left = left + 'px';
-    guestbookPanel.style.top = top + 'px';
-    return true;
-  } catch(e) { return false; }
-}
-
-// Persist gallery position/size
-let galleryMoved = false;
-function saveGalleryState() {
-  const rect = galleryTab.getBoundingClientRect();
-  if (!rect.width || !rect.height) return;
-  localStorage.setItem('gallery_pos', JSON.stringify({
-    left: rect.left,
-    top: rect.top,
-    w: rect.width,
-    h: rect.height
-  }));
-}
-
-function loadGalleryState() {
-  try {
-    const s = JSON.parse(localStorage.getItem('gallery_pos'));
-    if (!s) return false;
-    const w = Math.min(Math.max(300, s.w), window.innerWidth - 20);
-    const h = Math.min(Math.max(200, s.h), window.innerHeight - 20);
-    const left = Math.min(Math.max(0, s.left), window.innerWidth - w);
-    const top = Math.min(Math.max(0, s.top), window.innerHeight - h);
-    galleryTab.style.width = w + 'px';
-    galleryTab.style.height = h + 'px';
-    galleryTab.style.left = left + 'px';
-    galleryTab.style.top = top + 'px';
-    return true;
-  } catch(e) { return false; }
-}
   
 window.addEventListener('DOMContentLoaded', () => {
   startMusic();
