@@ -495,9 +495,8 @@ z-index: 9999;
 }
 
 .reaction-picker {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 10px;
+  position: fixed;
+  right: auto;
   background: white;
   border: 1px solid #eee;
   border-radius: 12px;
@@ -1644,6 +1643,10 @@ z-index: 9999;
   position: fixed;
   bottom: 4%;
   left: 17%;
+  width: 52px;
+  height: 110px;
+  z-index: 390;
+  cursor: grab;
 }
 
 #aquarium {
@@ -2050,8 +2053,9 @@ z-index: 9999;
         <button id="closeCameraBtn">Cancel</button>
         <button id="snapBtn">📸</button>
       </div>
-      <div id="cameraConfirm" style="display:none; flex-direction:column; align-items:center; gap:12px; width:100%;">
-        <img id="cameraConfirmImg" style="width:100%; border-radius:10px; max-height:300px; object-fit:cover;">
+<div id="cameraConfirm" style="display:none; flex-direction:column; align-items:center; gap:12px; width:100%;">
+        <img id="cameraConfirmImg" style="width:100%; border-radius:10px; max-height:220px; object-fit:cover;">
+        <textarea id="selfieCaption" placeholder="Add a message (optional)..." style="width:100%;border:1.5px solid #eee;border-radius:10px;padding:10px 14px;font-size:14px;font-family:sans-serif;resize:none;outline:none;box-sizing:border-box;min-height:60px;"></textarea>
         <div style="display:flex; gap:12px;">
           <button id="retakeBtn" style="background:#f0f0f0;color:#555;border:none;border-radius:8px;padding:10px 20px;font-size:14px;cursor:pointer;">Retake</button>
           <button id="sendSelfieBtn" style="background:#222;color:white;border:none;border-radius:8px;padding:10px 20px;font-size:14px;cursor:pointer;">Send 📤</button>
@@ -2470,7 +2474,6 @@ cameraBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   openCamera();
 });
-
 cameraBtn.addEventListener('touchend', (e) => {
   e.preventDefault();
   e.stopPropagation();
@@ -2519,6 +2522,8 @@ snapBtn.addEventListener('click', () => {
     cameraConfirmImg.src = url;
     cameraPreview.style.display = 'none';
     document.querySelector('#cameraBox #cameraActions').style.display = 'none';
+    // Show caption input in confirm view
+    document.getElementById('selfieCaption').value = '';
     cameraConfirm.style.display = 'flex';
     if (cameraStream) {
       cameraStream.getTracks().forEach(t => t.stop());
@@ -2557,10 +2562,11 @@ sendSelfieBtn.addEventListener('click', async () => {
     });
     const data = await res.json();
 
-    if (data.secure_url) {
+ if (data.secure_url) {
+      const caption = document.getElementById('selfieCaption')?.value.trim() || '';
       await addDoc(collection(db, 'messages'), {
         name: currentUser,
-        text: '',
+        text: caption,
         imageUrl: data.secure_url,
         timestamp: serverTimestamp()
       });
@@ -2624,7 +2630,7 @@ onSnapshot(q, (snapshot) => {
     msgEl.className = 'guestbook-msg';
     msgEl.dataset.id = id;
 
-    function getRelativeTime(timestamp) {
+function getRelativeTime(timestamp) {
   if (!timestamp) return 'just now';
   const now = Date.now();
   const then = timestamp.seconds * 1000;
@@ -2632,23 +2638,91 @@ onSnapshot(q, (snapshot) => {
   const minutes = Math.floor(diff / 60000);
   const hours = Math.floor(diff / 3600000);
   const days = Math.floor(diff / 86400000);
-  if (minutes < 1) return 'just now';
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  if (days < 7) return `${days}d ago`;
-  return new Date(then).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  const timeStr = new Date(then).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  const dateStr = new Date(then).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  if (minutes < 1) return `just now · ${timeStr}`;
+  if (minutes < 60) return `${minutes}m ago · ${timeStr}`;
+  if (hours < 24) return `${hours}h ago · ${timeStr}`;
+  if (days < 7) return `${days}d ago · ${dateStr} ${timeStr}`;
+  return `${dateStr} · ${timeStr}`;
 }
 
 const dateStr = getRelativeTime(data.timestamp);
     const nameClass = data.name === 'Eleni' ? 'eleni' : 'achraf';
 
-    if (data.imageUrl) {
+if (data.imageUrl) {
+      const reactions = data.reactions || {};
+      const reactionEmojis = ['❤️', '😊', '😳', '😡', '😱', '🤔', '💥', '👊'];
+      const reactionPillsHTML = reactionEmojis.map(emoji => {
+        const users = reactions[emoji] || [];
+        if (users.length === 0) return '';
+        const isMine = users.includes(currentUser);
+        return `<span class="reaction-pill ${isMine ? 'mine' : ''}" data-emoji="${emoji}">${emoji} <span class="reaction-count">${users.length}</span></span>`;
+      }).join('');
+
       msgEl.innerHTML = `
+        <div class="reaction-picker">
+          ${reactionEmojis.map(e => `<button class="reaction-picker-btn" data-emoji="${e}">${e}</button>`).join('')}
+        </div>
         <div class="guestbook-msg-name ${nameClass}">${data.name}</div>
-      <img src="${data.imageUrl}" style="width:160px;height:160px;object-fit:cover;border-radius:8px;cursor:pointer;margin-top:6px;display:block;" onclick="document.getElementById('selfieViewerImg').src='${data.imageUrl}';document.getElementById('selfieViewerOverlay').classList.add('active');">
+        <img src="${data.imageUrl}" style="width:160px;height:160px;object-fit:cover;border-radius:8px;cursor:pointer;margin-top:6px;display:block;" onclick="document.getElementById('selfieViewerImg').src='${data.imageUrl}';document.getElementById('selfieViewerOverlay').classList.add('active');">
+        ${data.text ? `<div class="guestbook-msg-text" style="margin-top:8px;">${data.text}</div>` : ''}
         <div class="guestbook-msg-date">${dateStr}</div>
-        ${isOwn ? `<div class="guestbook-msg-actions"><button class="msg-action-btn delete delete-btn">Delete</button></div>` : ''}
+        <div class="guestbook-msg-reactions">${reactionPillsHTML}</div>
+        <div class="guestbook-msg-actions">
+          <button class="react-trigger-btn">😊</button>
+          ${isOwn ? `<button class="msg-action-btn delete delete-btn">Delete</button>` : ''}
+        </div>
       `;
+
+      const picker = msgEl.querySelector('.reaction-picker');
+      const triggerBtn = msgEl.querySelector('.react-trigger-btn');
+
+      triggerBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const isVisible = picker.classList.contains('visible');
+        document.querySelectorAll('.reaction-picker.visible').forEach(p => p.classList.remove('visible'));
+        if (!isVisible) {
+          const btnRect = triggerBtn.getBoundingClientRect();
+          const pickerW = reactionEmojis.length * 38 + 16;
+          let left = btnRect.left;
+          if (left + pickerW > window.innerWidth - 10) left = window.innerWidth - pickerW - 10;
+          picker.style.left = left + 'px';
+          picker.style.top = (btnRect.top - 52) + 'px';
+          picker.classList.add('visible');
+        }
+      });
+
+      document.addEventListener('click', () => picker.classList.remove('visible'));
+
+      msgEl.querySelectorAll('.reaction-picker-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const emoji = btn.dataset.emoji;
+          picker.classList.remove('visible');
+          const currentReactions = data.reactions || {};
+          const users = [...(currentReactions[emoji] || [])];
+          const idx = users.indexOf(currentUser);
+          if (idx > -1) users.splice(idx, 1); else users.push(currentUser);
+          await updateDoc(doc(db, 'messages', id), { reactions: { ...currentReactions, [emoji]: users } });
+        });
+      });
+
+      msgEl.querySelectorAll('.reaction-pill').forEach(pill => {
+        pill.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const emoji = pill.dataset.emoji;
+          const currentReactions = data.reactions || {};
+          const users = [...(currentReactions[emoji] || [])];
+          const idx = users.indexOf(currentUser);
+          if (idx > -1) {
+            users.splice(idx, 1);
+            await updateDoc(doc(db, 'messages', id), { reactions: { ...currentReactions, [emoji]: users } });
+          }
+        });
+      });
+
       if (isOwn) {
         msgEl.querySelector('.delete-btn').addEventListener('click', async () => {
           await deleteDoc(doc(db, 'messages', id));
@@ -2659,7 +2733,7 @@ const dateStr = getRelativeTime(data.timestamp);
     }
 
    const reactions = data.reactions || {};
-const reactionEmojis = ['❤️', '😊', '😳', '😡'];
+const reactionEmojis = ['❤️', '😊', '😳', '😡', '😱', '🤔', '💥', '👊'];
 
 const reactionPillsHTML = reactionEmojis.map(emoji => {
   const users = reactions[emoji] || [];
@@ -2720,13 +2794,21 @@ msgEl.innerHTML = `
     const picker = msgEl.querySelector('.reaction-picker');
     const triggerBtn = msgEl.querySelector('.react-trigger-btn');
 
-  triggerBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      e.preventDefault();
-      const isVisible = picker.classList.contains('visible');
-      document.querySelectorAll('.reaction-picker.visible').forEach(p => p.classList.remove('visible'));
-      if (!isVisible) picker.classList.add('visible');
-    });
+triggerBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  e.preventDefault();
+  const isVisible = picker.classList.contains('visible');
+  document.querySelectorAll('.reaction-picker.visible').forEach(p => p.classList.remove('visible'));
+  if (!isVisible) {
+    const btnRect = triggerBtn.getBoundingClientRect();
+    const pickerW = reactionEmojis.length * 38 + 16;
+    let left = btnRect.left;
+    if (left + pickerW > window.innerWidth - 10) left = window.innerWidth - pickerW - 10;
+    picker.style.left = left + 'px';
+    picker.style.top = (btnRect.top - 52) + 'px';
+    picker.classList.add('visible');
+  }
+});
 
     triggerBtn.addEventListener('mousedown', (e) => {
       e.stopPropagation();
