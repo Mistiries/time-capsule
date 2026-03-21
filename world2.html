@@ -2692,7 +2692,11 @@ if (data.imageUrl) {
         }
       });
 
-      document.addEventListener('click', () => picker.classList.remove('visible'));
+    document.addEventListener('click', (e) => {
+        if (!picker.contains(e.target) && !triggerBtn.contains(e.target)) {
+          picker.classList.remove('visible');
+        }
+      });
 
       msgEl.querySelectorAll('.reaction-picker-btn').forEach(btn => {
         btn.addEventListener('click', async (e) => {
