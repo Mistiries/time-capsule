@@ -495,8 +495,9 @@ z-index: 9999;
 }
 
 .reaction-picker {
-  position: fixed;
-  right: auto;
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 10px;
   background: white;
   border: 1px solid #eee;
   border-radius: 12px;
@@ -504,10 +505,27 @@ z-index: 9999;
   display: flex;
   gap: 6px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-  z-index: 9000;
+  z-index: 200;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.15s ease;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  transform: scale(0.85) translateY(-6px);
+}
+
+.reaction-picker.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1) translateY(0);
+}
+
+.reaction-picker::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  right: 16px;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 6px solid white;
 }
 
 .reaction-picker.visible {
@@ -2676,21 +2694,20 @@ if (data.imageUrl) {
       const picker = msgEl.querySelector('.reaction-picker');
       const triggerBtn = msgEl.querySelector('.react-trigger-btn');
 
-      triggerBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        const isVisible = picker.classList.contains('visible');
-        document.querySelectorAll('.reaction-picker.visible').forEach(p => p.classList.remove('visible'));
-        if (!isVisible) {
-          const btnRect = triggerBtn.getBoundingClientRect();
-          const pickerW = reactionEmojis.length * 38 + 16;
-          let left = btnRect.left;
-          if (left + pickerW > window.innerWidth - 10) left = window.innerWidth - pickerW - 10;
-          picker.style.left = left + 'px';
-          picker.style.top = (btnRect.top - 52) + 'px';
-          picker.classList.add('visible');
-        }
-      });
+triggerBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  e.preventDefault();
+
+  const isVisible = picker.classList.contains('visible');
+
+
+  document.querySelectorAll('.reaction-picker.visible').forEach(p => {
+    if (p !== picker) p.classList.remove('visible');
+  });
+
+ 
+  picker.classList.toggle('visible');
+});
 
     document.addEventListener('click', (e) => {
         if (!picker.contains(e.target) && !triggerBtn.contains(e.target)) {
@@ -2820,11 +2837,11 @@ triggerBtn.addEventListener('click', (e) => {
       e.stopPropagation();
     }, { passive: true });
 
-  document.addEventListener('click', (e) => {
-      if (!picker.contains(e.target) && !triggerBtn.contains(e.target)) {
-        picker.classList.remove('visible');
-      }
-    });
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.reaction-picker') && !e.target.closest('.react-trigger-btn')) {
+    document.querySelectorAll('.reaction-picker.visible').forEach(p => p.classList.remove('visible'));
+  }
+});
 
     // Reaction picker buttons
     msgEl.querySelectorAll('.reaction-picker-btn').forEach(btn => {
