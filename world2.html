@@ -1648,8 +1648,8 @@ body.loaded::before {
   left: 22%;
   width: 52px;
   height: 110px;
-  z-index: 500;
-  cursor: default;
+  z-index: 390;
+  cursor: grab;
 }
 
 #aquarium {
@@ -1664,6 +1664,12 @@ body.loaded::before {
   overflow: hidden;
   cursor: pointer;
   box-shadow: 4px 4px 16px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.08);
+}
+
+#aquarium canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 #rainBtn {
@@ -3837,7 +3843,7 @@ function updateWindowAtmosphere(tod) {
   }
 }
 
-updateWindowAtmosphere('night');
+updateWindowAtmosphere(getTimeOfDay());
 updateSky();
 setInterval(updateSky, 60000);
 
@@ -4337,6 +4343,34 @@ function stopFireflies() {
   });
   activeFireflies.length = 0;
 }
+
+// Lava Lamp drag
+(function() {
+  const lc = document.getElementById('lavaLamp');
+  if (!lc) return;
+  let llDragOffX, llDragOffY, isLLDragging = false, llHasMoved = false;
+  let llStartX, llStartY;
+  lc.addEventListener('mousedown', (e) => {
+    isLLDragging = true; llHasMoved = false;
+    const rect = lc.getBoundingClientRect();
+    llDragOffX = e.clientX - rect.left; llDragOffY = e.clientY - rect.top;
+    llStartX = e.clientX; llStartY = e.clientY;
+    lc.style.transition = 'none'; lc.style.cursor = 'grabbing';
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', (e) => {
+    if (!isLLDragging) return;
+    if (Math.abs(e.clientX - llStartX) > 3 || Math.abs(e.clientY - llStartY) > 3) llHasMoved = true;
+    lc.style.left = (e.clientX - llDragOffX) + 'px';
+    lc.style.top = (e.clientY - llDragOffY) + 'px';
+    lc.style.bottom = 'auto';
+  });
+  document.addEventListener('mouseup', () => {
+    if (!isLLDragging) return;
+    isLLDragging = false;
+    lc.style.cursor = 'grab';
+  });
+})();
 
 // Lava Lamp
 (function() {
