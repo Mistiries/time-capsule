@@ -2816,8 +2816,10 @@ triggerBtn.addEventListener('click', (e) => {
       e.stopPropagation();
     }, { passive: true });
 
-    document.addEventListener('click', () => {
-      picker.classList.remove('visible');
+  document.addEventListener('click', (e) => {
+      if (!picker.contains(e.target) && !triggerBtn.contains(e.target)) {
+        picker.classList.remove('visible');
+      }
     });
 
     // Reaction picker buttons
