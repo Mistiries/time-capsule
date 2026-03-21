@@ -2225,6 +2225,8 @@ guestbookBook.addEventListener('mousedown', (e) => {
   bookDragOffsetY = e.clientY - rect.top;
   bookStartX = e.clientX;
   bookStartY = e.clientY;
+  lastBookX = e.clientX;         
+  bookSwing = 0;
   guestbookBook.style.transition = 'none';
   guestbookBook.style.cursor = 'grabbing';
   e.preventDefault();
@@ -2251,13 +2253,17 @@ document.addEventListener('mousemove', (e) => {
   const dx = e.clientX - bookStartX;
   const dy = e.clientY - bookStartY;
   if (Math.abs(dx) > 4 || Math.abs(dy) > 4) bookHasMoved = true;
- 
 
-const moveDx = e.clientX - lastBookX;
-lastBookX = e.clientX;
-const targetSwing = Math.max(-12, Math.min(12, moveDx * 0.4));
-bookSwing += (targetSwing - bookSwing) * 0.35;
-guestbookBook.style.transform = `rotate(${bookSwing}deg)`;
+  const moveDx = e.clientX - lastBookX;
+  lastBookX = e.clientX;
+  const targetSwing = Math.max(-12, Math.min(12, moveDx * 0.4));
+  bookSwing += (targetSwing - bookSwing) * 0.35;
+
+  guestbookBook.style.position = 'fixed';
+  guestbookBook.style.left = (e.clientX - bookDragOffsetX) + 'px';
+  guestbookBook.style.top = (e.clientY - bookDragOffsetY) + 'px';
+  guestbookBook.style.bottom = 'auto';
+  guestbookBook.style.transform = `rotate(${bookSwing}deg)`;
 });
 
 document.addEventListener('touchmove', (e) => {
@@ -2266,10 +2272,12 @@ document.addEventListener('touchmove', (e) => {
   const dx = touch.clientX - bookStartX;
   const dy = touch.clientY - bookStartY;
   if (Math.abs(dx) > 4 || Math.abs(dy) > 4) bookHasMoved = true;
+
   const moveDx = touch.clientX - lastBookX;
   lastBookX = touch.clientX;
   const targetSwing = Math.max(-12, Math.min(12, moveDx * 0.4));
   bookSwing += (targetSwing - bookSwing) * 0.35;
+
   guestbookBook.style.position = 'fixed';
   guestbookBook.style.left = (touch.clientX - bookDragOffsetX) + 'px';
   guestbookBook.style.top = (touch.clientY - bookDragOffsetY) + 'px';
