@@ -1649,11 +1649,12 @@ body.loaded::before {
   box-shadow: 0 0 8px rgba(120,180,255,0.7), 2px 2px 6px rgba(0,0,0,0.3);
 }
 
-  #yugiohLogo {
+#yugiohLogo {
   position: fixed;
-  left: 5%;
-  width: 90px;
-  cursor: pointer;
+  top: 22%;
+  left: 8%;
+  width: 63px;
+  cursor: grab;
   z-index: 402;
   filter: drop-shadow(0 0 8px rgba(255,200,50,0.5));
   animation: yugiohBob 3s ease-in-out infinite;
@@ -1800,6 +1801,24 @@ body.loaded::before {
   animation: cardRumble 0.5s ease forwards;
   box-shadow: 0 0 20px rgba(240,192,64,0.8), 0 8px 20px rgba(0,0,0,0.6);
   border-color: rgba(240,192,64,0.9);
+}
+
+  #yugiohGrid::-webkit-scrollbar {
+  width: 8px;
+}
+
+#yugiohGrid::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.3);
+  border-radius: 4px;
+}
+
+#yugiohGrid::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #7b4fd4, #f0c040);
+  border-radius: 4px;
+}
+
+#yugiohGrid::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #9b6ff4, #f8d060);
 }
   
 </style>
@@ -3749,14 +3768,6 @@ rainBtn.addEventListener('click', (e) => {
   else startRain();
 });
 
-  // Yugioh logo positioning — below window, above cupboard
-(function positionYugiohLogo() {
-  const logo = document.getElementById('yugiohLogo');
-  const winRect = document.getElementById('windowFrame').getBoundingClientRect();
-  const cupRect = document.getElementById('cupboard').getBoundingClientRect();
-  const midY = winRect.bottom + (cupRect.top - winRect.bottom) * 0.4;
-  logo.style.top = midY + 'px';
-})();
 
 const yugiohLogo = document.getElementById('yugiohLogo');
 const yugiohOverlay = document.getElementById('yugiohOverlay');
@@ -3764,6 +3775,71 @@ const yugiohPanel = document.getElementById('yugiohPanel');
 const yugiohCloseBtn = document.getElementById('yugiohCloseBtn');
 
 setupTooltip(yugiohLogo, 'Yu-Gi-Oh!');
+
+let yugiohDragOffX, yugiohDragOffY, isYugiohDragging = false, yugiohHasMoved = false;
+let yugiohStartX, yugiohStartY;
+
+yugiohLogo.addEventListener('mousedown', (e) => {
+  isYugiohDragging = true;
+  yugiohHasMoved = false;
+  const rect = yugiohLogo.getBoundingClientRect();
+  yugiohDragOffX = e.clientX - rect.left;
+  yugiohDragOffY = e.clientY - rect.top;
+  yugiohStartX = e.clientX;
+  yugiohStartY = e.clientY;
+  yugiohLogo.style.animation = 'none';
+  yugiohLogo.style.cursor = 'grabbing';
+  yugiohLogo.style.transition = 'none';
+  e.preventDefault();
+});
+
+yugiohLogo.addEventListener('touchstart', (e) => {
+  const touch = e.touches[0];
+  isYugiohDragging = true;
+  yugiohHasMoved = false;
+  const rect = yugiohLogo.getBoundingClientRect();
+  yugiohDragOffX = touch.clientX - rect.left;
+  yugiohDragOffY = touch.clientY - rect.top;
+  yugiohStartX = touch.clientX;
+  yugiohStartY = touch.clientY;
+  yugiohLogo.style.animation = 'none';
+  yugiohLogo.style.transition = 'none';
+  e.preventDefault();
+}, { passive: false });
+
+document.addEventListener('mousemove', (e) => {
+  if (!isYugiohDragging) return;
+  const dx = e.clientX - yugiohStartX;
+  const dy = e.clientY - yugiohStartY;
+  if (Math.abs(dx) > 4 || Math.abs(dy) > 4) yugiohHasMoved = true;
+  yugiohLogo.style.left = (e.clientX - yugiohDragOffX) + 'px';
+  yugiohLogo.style.top = (e.clientY - yugiohDragOffY) + 'px';
+});
+
+document.addEventListener('touchmove', (e) => {
+  if (!isYugiohDragging) return;
+  const touch = e.touches[0];
+  const dx = touch.clientX - yugiohStartX;
+  const dy = touch.clientY - yugiohStartY;
+  if (Math.abs(dx) > 4 || Math.abs(dy) > 4) yugiohHasMoved = true;
+  yugiohLogo.style.left = (touch.clientX - yugiohDragOffX) + 'px';
+  yugiohLogo.style.top = (touch.clientY - yugiohDragOffY) + 'px';
+}, { passive: false });
+
+document.addEventListener('mouseup', (e) => {
+  if (!isYugiohDragging) return;
+  isYugiohDragging = false;
+  yugiohLogo.style.cursor = 'grab';
+  yugiohLogo.style.animation = 'yugiohBob 3s ease-in-out infinite';
+  if (!yugiohHasMoved) openYugioh();
+});
+
+document.addEventListener('touchend', (e) => {
+  if (!isYugiohDragging) return;
+  isYugiohDragging = false;
+  yugiohLogo.style.animation = 'yugiohBob 3s ease-in-out infinite';
+  if (!yugiohHasMoved) openYugioh();
+});
 
 function openYugioh() {
   yugiohOverlay.classList.add('active');
@@ -3775,8 +3851,6 @@ function closeYugioh() {
   yugiohPanel.classList.remove('visible');
 }
 
-yugiohLogo.addEventListener('click', openYugioh);
-yugiohLogo.addEventListener('touchend', (e) => { e.preventDefault(); openYugioh(); });
 yugiohCloseBtn.addEventListener('click', (e) => { e.stopPropagation(); closeYugioh(); });
 yugiohOverlay.addEventListener('click', closeYugioh);
 yugiohPanel.addEventListener('click', (e) => e.stopPropagation());
@@ -3784,9 +3858,25 @@ yugiohPanel.addEventListener('click', (e) => e.stopPropagation());
 // Card tooltips and rumble
 document.querySelectorAll('.yugioh-card').forEach(card => {
   const name = card.dataset.name;
-  setupTooltip(card, name);
 
-  card.addEventListener('click', () => {
+  let tooltipTimeout;
+  card.addEventListener('mouseenter', () => {
+    tooltipTimeout = setTimeout(() => {
+      tooltip.textContent = name;
+      tooltip.style.opacity = '1';
+    }, 250);
+  });
+  card.addEventListener('mouseleave', () => {
+    clearTimeout(tooltipTimeout);
+    tooltip.style.opacity = '0';
+  });
+  card.addEventListener('mousemove', (e) => {
+    tooltip.style.left = (e.clientX + 15) + 'px';
+    tooltip.style.top = (e.clientY + 15) + 'px';
+  });
+
+  card.addEventListener('click', (e) => {
+    e.stopPropagation();
     if (card.classList.contains('rumbling')) return;
     card.classList.add('rumbling');
     setTimeout(() => card.classList.remove('rumbling'), 500);
@@ -3794,6 +3884,7 @@ document.querySelectorAll('.yugioh-card').forEach(card => {
 
   card.addEventListener('touchend', (e) => {
     e.preventDefault();
+    e.stopPropagation();
     if (card.classList.contains('rumbling')) return;
     card.classList.add('rumbling');
     setTimeout(() => card.classList.remove('rumbling'), 500);
