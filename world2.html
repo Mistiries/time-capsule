@@ -3941,7 +3941,7 @@ function createWindowBird() {
 function startBirds() {
   if (birdInterval) return;
   birdInterval = setInterval(() => {
-    if (Math.random() < 0.4) createWindowBird();
+    if (!document.hidden && Math.random() < 0.4) createWindowBird();
   }, 2200);
 }
 
@@ -4362,8 +4362,8 @@ function startPetals() {
   petalsActive = true;
   petalBtn.style.background = '#ffd6e8';
   for (let i = 0; i < 4; i++) createPetal();
-  petalInterval = setInterval(() => {
-    if (petalsActive) {
+petalInterval = setInterval(() => {
+    if (petalsActive && !document.hidden) {
       const count = Math.random() < 0.4 ? 3 : 2;
       for (let i = 0; i < count; i++) createPetal();
     }
@@ -4704,10 +4704,7 @@ requestAnimationFrame(() => {
       }, 1800);
     }, 7000);
 
-    lavaThoughtInterval = setTimeout(spawnThought, 9000);
-  }
-
-    lavaThoughtInterval = setTimeout(spawnThought, 4000);
+lavaThoughtInterval = setTimeout(spawnThought, 9000);
   }
 
   spawnThought();
