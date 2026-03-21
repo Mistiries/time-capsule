@@ -3620,10 +3620,14 @@ function loadNotebookState() {
   try {
     const s = JSON.parse(localStorage.getItem('nb_pos'));
     if (!s) return false;
-    guestbookPanel.style.left = s.left + 'px';
-    guestbookPanel.style.top = s.top + 'px';
-    guestbookPanel.style.width = s.w + 'px';
-    guestbookPanel.style.height = s.h + 'px';
+    const w = Math.min(Math.max(320, s.w), window.innerWidth - 20);
+    const h = Math.min(Math.max(300, s.h), window.innerHeight - 20);
+    const left = Math.min(Math.max(0, s.left), window.innerWidth - w);
+    const top = Math.min(Math.max(0, s.top), window.innerHeight - h);
+    guestbookPanel.style.width = w + 'px';
+    guestbookPanel.style.height = h + 'px';
+    guestbookPanel.style.left = left + 'px';
+    guestbookPanel.style.top = top + 'px';
     return true;
   } catch(e) { return false; }
 }
@@ -3643,10 +3647,14 @@ function loadGalleryState() {
   try {
     const s = JSON.parse(localStorage.getItem('gallery_pos'));
     if (!s) return false;
-    galleryTab.style.left = s.left + 'px';
-    galleryTab.style.top = s.top + 'px';
-    galleryTab.style.width = s.w + 'px';
-    galleryTab.style.height = s.h + 'px';
+    const w = Math.min(Math.max(300, s.w), window.innerWidth - 20);
+    const h = Math.min(Math.max(200, s.h), window.innerHeight - 20);
+    const left = Math.min(Math.max(0, s.left), window.innerWidth - w);
+    const top = Math.min(Math.max(0, s.top), window.innerHeight - h);
+    galleryTab.style.width = w + 'px';
+    galleryTab.style.height = h + 'px';
+    galleryTab.style.left = left + 'px';
+    galleryTab.style.top = top + 'px';
     return true;
   } catch(e) { return false; }
 }
