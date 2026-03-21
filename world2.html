@@ -4585,35 +4585,10 @@ function shuffleArray(arr) {
   return a;
 }
 
-function openLavaThoughts() {
-  if (lavaThoughtsActive) return;
-  lavaThoughtsActive = true;
-  let thoughtIndex = 0;
-
-  // Dark overlay
-  lavaThoughtOverlay = document.createElement('div');
-  lavaThoughtOverlay.style.cssText = `
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0);
-    z-index: 8000;
-    transition: background 1s ease;
-    pointer-events: auto;
-  `;
-  document.body.appendChild(lavaThoughtOverlay);
-
-  requestAnimationFrame(() => {
-    lavaThoughtOverlay.style.background = 'rgba(0,0,0,0.55)';
-  });
-
-  lavaThoughtOverlay.addEventListener('click', closeLavaThoughts);
-
-function spawnThought() {
+function spawnThought(thoughtIndex) {
     if (!lavaThoughtsActive) return;
 
-   const text = lavaThoughts[thoughtIndex % lavaThoughts.length];
-    thoughtIndex++;
+const text = lavaThoughts[thoughtIndex % lavaThoughts.length];
 
     const lampRect = document.getElementById('lavaLamp').getBoundingClientRect();
     const startX = lampRect.left + lampRect.width / 2;
@@ -4704,10 +4679,32 @@ requestAnimationFrame(() => {
       }, 1800);
     }, 7000);
 
-lavaThoughtInterval = setTimeout(spawnThought, 9000);
-  }
+lavaThoughtInterval = setTimeout(() => spawnThought(thoughtIndex + 1), 9000);
+}
 
-  spawnThought();
+function openLavaThoughts() {
+  if (lavaThoughtsActive) return;
+  lavaThoughtsActive = true;
+
+  lavaThoughtOverlay = document.createElement('div');
+  lavaThoughtOverlay.style.cssText = `
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0);
+    z-index: 8000;
+    transition: background 1s ease;
+    pointer-events: auto;
+  `;
+  document.body.appendChild(lavaThoughtOverlay);
+
+  requestAnimationFrame(() => {
+    lavaThoughtOverlay.style.background = 'rgba(0,0,0,0.55)';
+  });
+
+  lavaThoughtOverlay.addEventListener('click', closeLavaThoughts);
+
+  spawnThought(0);
 }
 
 function closeLavaThoughts() {
