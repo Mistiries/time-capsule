@@ -4622,11 +4622,14 @@ function spawnThought() {
 
     const bubble = document.createElement('div');
 
-    // Wide random spread — across the whole screen
-    const angle = (Math.random() * 260 + 50) * (Math.PI / 180);
-    const dist = 180 + Math.random() * 220;
-    const driftX = Math.cos(angle) * dist;
-    const driftY = Math.sin(angle) * dist - 80;
+// Clamped drift — stays within screen bounds
+    const bubbleW = 280;
+    const bubbleH = 160;
+    const margin = 30;
+    const targetX = margin + Math.random() * (window.innerWidth - bubbleW - margin * 2);
+    const targetY = margin + Math.random() * (window.innerHeight - bubbleH - margin * 2);
+    const driftX = targetX - startX + bubbleW / 2;
+    const driftY = targetY - startY + bubbleH / 2;
 
     // Unique wobble id for CSS animation
     const wobbleId = 'wobble_' + Math.random().toString(36).substr(2, 6);
@@ -4653,12 +4656,12 @@ function spawnThought() {
       border: 1px solid rgba(255,140,40,0.35);
       border-radius: 60% 40% 55% 45% / 50% 55% 45% 50%;
       animation: ${wobbleId} ${wobbleSpeed}s ease-in-out infinite;
-      padding: 22px 28px;
-      max-width: 260px;
-      min-width: 160px;
+      padding: 26px 32px;
+      max-width: 280px;
+      min-width: 180px;
       text-align: center;
       font-family: 'Georgia', serif;
-      font-size: 14px;
+      font-size: 16px;
       font-weight: 400;
       font-style: italic;
       color: rgba(255,235,200,0.92);
