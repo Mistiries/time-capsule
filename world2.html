@@ -3637,7 +3637,7 @@ const perfumeOverlay = document.getElementById('perfumeOverlay');
 const perfumeBook = document.getElementById('perfumeBook');
 const perfumeBookClose = document.getElementById('perfumeBookClose');
 const click2Sound = new Audio('sounds/click2.wav');
-click2Sound.volume = 0.5;
+click2Sound.volume = 0.3;
 let perfumeDragOffX, perfumeDragOffY, isPerfumeDragging = false;
 let perfumeHasMoved = false, perfumeStartX, perfumeStartY;
 let perfumeSwing = 0;
@@ -4212,6 +4212,7 @@ document.addEventListener('touchend', (e) => {
 
 function openYugioh() {
   const eyeSound = document.getElementById('millenniumEyeSound');
+  eyeSound.volume = 0.6;
   eyeSound.currentTime = 0;
   eyeSound.play();
   yugiohOverlay.classList.add('active');
@@ -4746,6 +4747,7 @@ const fishDefs = [
 aq.addEventListener('click', () => {
     if (scared) return;
     const glassTap = document.getElementById('glassTapSound');
+    glassTap.volume = 0.6;
     glassTap.currentTime = 0;
     glassTap.play();
     scared = true;
