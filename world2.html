@@ -2190,6 +2190,7 @@ function openGuestbookFlow() {
   startMusic();
   pickupSound.currentTime = 0;
   pickupSound.play();
+  pickup.volume = 1;
   guestbookBook.style.transition = 'transform 0.1s ease, filter 0.15s ease';
   guestbookBook.style.transform = 'scale(0.92)';
   setTimeout(() => {
