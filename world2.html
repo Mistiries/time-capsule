@@ -1666,6 +1666,34 @@ z-index: 9999;
   cursor: grab;
 }
 
+.lava-thought {
+  position: fixed;
+  color: white;
+  font-size: 14px;
+  pointer-events: none;
+  z-index: 1000;
+  white-space: nowrap;
+  animation: floatUpFade 4s linear forwards;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+@keyframes floatUpFade {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0);
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -80px);
+  }
+}
+
 #aquarium {
   position: fixed;
   top: 20%;
