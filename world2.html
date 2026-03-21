@@ -4534,7 +4534,7 @@ function stopFireflies() {
     lc.style.transform = `rotate(${lavaSwing}deg)`;
   });
 
-  document.addEventListener('mouseup', () => {
+document.addEventListener('mouseup', () => {
     if (!isLLDragging) return;
     isLLDragging = false;
     lavaSwing = 0;
@@ -4542,8 +4542,169 @@ function stopFireflies() {
     lc.style.transform = 'rotate(0deg)';
     lc.style.cursor = 'grab';
     setTimeout(() => { lc.style.transition = 'none'; }, 450);
+    if (!llHasMoved) openLavaThoughts();
   });
 })();
+
+  // Lava lamp thoughts
+const lavaThoughts = [
+  "Sharing your movie website and helping me build it on my laptop",
+  "The funny way you tell your stories",
+  "Your sarcasm",
+  "Explaining things in detail and not just surface level",
+  "Telling me you wanted to reply the day before",
+  "Telling me I'm in the back of your mind, floating",
+  "Reassuring my fear without me even saying it",
+  "Asking for my opinion",
+  "Finding the things I send you cool and not boring",
+  "Giving me advice",
+  "Telling me I'm prettyyy and sexxyyyyy",
+  "Telling me you don't want to lose me",
+  "Trying your best to find the vocabulary to explain things, even when it's hard",
+  "Sending me long voice notes with lots of stories",
+  "The amazingly creative compliments you give me",
+  "Sending me your mom's reaction to my letter",
+  "Being my sticker supplier",
+  "Seeing all my Sims things I make",
+  "Being scared of disappointing me because you care",
+  "Telling me about your bad days through audio",
+];
+
+let lavaThoughtsActive = false;
+let lavaThoughtInterval = null;
+let lavaThoughtOverlay = null;
+let currentThoughtEl = null;
+let lavaThoughtShuffled = [];
+
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function openLavaThoughts() {
+  if (lavaThoughtsActive) return;
+  lavaThoughtsActive = true;
+  lavaThoughtShuffled = shuffleArray(lavaThoughts);
+  let thoughtIndex = 0;
+
+  // Dark overlay
+  lavaThoughtOverlay = document.createElement('div');
+  lavaThoughtOverlay.style.cssText = `
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0);
+    z-index: 8000;
+    transition: background 1s ease;
+    pointer-events: auto;
+  `;
+  document.body.appendChild(lavaThoughtOverlay);
+
+  requestAnimationFrame(() => {
+    lavaThoughtOverlay.style.background = 'rgba(0,0,0,0.55)';
+  });
+
+  lavaThoughtOverlay.addEventListener('click', closeLavaThoughts);
+
+  function spawnThought() {
+    if (!lavaThoughtsActive) return;
+
+    const text = lavaThoughtShuffled[thoughtIndex % lavaThoughtShuffled.length];
+    thoughtIndex++;
+
+    const lampRect = document.getElementById('lavaLamp').getBoundingClientRect();
+    const startX = lampRect.left + lampRect.width / 2;
+    const startY = lampRect.top;
+
+    const bubble = document.createElement('div');
+
+    // Random gentle drift direction
+    const angle = (Math.random() * 160 + 100) * (Math.PI / 180); // mostly upward spread
+    const driftX = Math.cos(angle) * (60 + Math.random() * 80);
+    const driftY = -(120 + Math.random() * 180);
+
+    bubble.style.cssText = `
+      position: fixed;
+      left: ${startX}px;
+      top: ${startY}px;
+      transform: translate(-50%, -50%) scale(0.6);
+      background: radial-gradient(ellipse at 40% 35%, rgba(255,160,60,0.22), rgba(255,90,10,0.1));
+      border: 1px solid rgba(255,140,40,0.35);
+      border-radius: 50%;
+      padding: 18px 22px;
+      max-width: 220px;
+      text-align: center;
+      font-family: 'Georgia', serif;
+      font-size: 13px;
+      font-weight: 400;
+      font-style: italic;
+      color: rgba(255,235,200,0.92);
+      line-height: 1.6;
+      pointer-events: none;
+      z-index: 8001;
+      opacity: 0;
+      box-shadow: 0 0 18px rgba(255,100,20,0.25), inset 0 0 12px rgba(255,140,40,0.1);
+      transition: opacity 1s ease, transform 3s ease, left 3s ease, top 3s ease;
+      white-space: normal;
+      backdrop-filter: blur(2px);
+    `;
+    bubble.textContent = text;
+    document.body.appendChild(bubble);
+    currentThoughtEl = bubble;
+
+    // Shimmer animation
+    let shimmerPhase = 0;
+    let shimmerRaf;
+    function shimmer() {
+      if (!lavaThoughtsActive) return;
+      shimmerPhase += 0.04;
+      const glow = 0.25 + Math.sin(shimmerPhase) * 0.12;
+      bubble.style.boxShadow = `0 0 ${18 + Math.sin(shimmerPhase) * 8}px rgba(255,100,20,${glow}), inset 0 0 12px rgba(255,140,40,0.1)`;
+      shimmerRaf = requestAnimationFrame(shimmer);
+    }
+
+    requestAnimationFrame(() => {
+      bubble.style.opacity = '1';
+      bubble.style.transform = `translate(calc(-50% + ${driftX}px), calc(-50% + ${driftY}px)) scale(1)`;
+      bubble.style.left = startX + 'px';
+      bubble.style.top = startY + 'px';
+      shimmer();
+    });
+
+    // Fade out after 2.5s
+    setTimeout(() => {
+      cancelAnimationFrame(shimmerRaf);
+      bubble.style.transition = 'opacity 0.8s ease, transform 3s ease, left 3s ease, top 3s ease';
+      bubble.style.opacity = '0';
+      setTimeout(() => { bubble.remove(); if (currentThoughtEl === bubble) currentThoughtEl = null; }, 800);
+    }, 2500);
+
+    lavaThoughtInterval = setTimeout(spawnThought, 3200);
+  }
+
+  spawnThought();
+}
+
+function closeLavaThoughts() {
+  if (!lavaThoughtsActive) return;
+  lavaThoughtsActive = false;
+  clearTimeout(lavaThoughtInterval);
+
+  if (currentThoughtEl) {
+    currentThoughtEl.style.transition = 'opacity 0.6s ease';
+    currentThoughtEl.style.opacity = '0';
+    setTimeout(() => { if (currentThoughtEl) { currentThoughtEl.remove(); currentThoughtEl = null; } }, 600);
+  }
+
+  if (lavaThoughtOverlay) {
+    lavaThoughtOverlay.style.background = 'rgba(0,0,0,0)';
+    setTimeout(() => { if (lavaThoughtOverlay) { lavaThoughtOverlay.remove(); lavaThoughtOverlay = null; } }, 1000);
+  }
+}
   
 // Lava Lamp
 (function() {
