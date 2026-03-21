@@ -4286,7 +4286,7 @@ const fishDefs = [
       ctx.fill();
     });
 
-    // Octopus timer
+// Octopus timer
     if (!octopus.active) {
       octopus.timer--;
       if (octopus.timer <= 0) {
@@ -4295,106 +4295,101 @@ const fishDefs = [
         octopus.x = octopus.dir > 0 ? -80 : w + 80;
         octopus.y = (0.45 + Math.random() * 0.3) * h;
         octopus.timer = 400 + Math.floor(Math.random() * 400);
+        octopus.eyeTargetX = 0;
+        octopus.eyeTargetY = 0;
+        octopus.eyeX = 0;
+        octopus.eyeY = 0;
+        octopus.eyeChangeTimer = 0;
       }
     }
 
     if (octopus.active) {
-      octopus.wobble += 0.04;
-      octopus.tentaclePhase += 0.06;
-      octopus.x += octopus.speed * octopus.dir;
+      octopus.wobble += 0.03;
+      octopus.tentaclePhase += 0.07;
+
+      // bob up and down
+      const bobAmt = Math.sin(octopus.wobble) * 6;
+      const tiltAmt = Math.sin(octopus.wobble * 0.7) * 0.18;
+
+      // move faster when scared
+      const octoSpeed = scared ? octopus.speed * 6 : octopus.speed;
+      octopus.x += octoSpeed * octopus.dir;
+      octopus.y = octopus.y + (bobAmt - Math.sin(octopus.wobble - 0.03) * 6) * 0.4;
 
       if ((octopus.dir > 0 && octopus.x > w + 100) || (octopus.dir < 0 && octopus.x < -100)) {
         octopus.active = false;
       }
 
+      // roaming eyes
+      octopus.eyeChangeTimer = (octopus.eyeChangeTimer || 0) - 1;
+      if (octopus.eyeChangeTimer <= 0) {
+        octopus.eyeTargetX = (Math.random() - 0.5) * 4;
+        octopus.eyeTargetY = (Math.random() - 0.5) * 3;
+        octopus.eyeChangeTimer = 40 + Math.floor(Math.random() * 80);
+      }
+      octopus.eyeX = (octopus.eyeX || 0) + (octopus.eyeTargetX - (octopus.eyeX || 0)) * 0.05;
+      octopus.eyeY = (octopus.eyeY || 0) + (octopus.eyeTargetY - (octopus.eyeY || 0)) * 0.05;
+
       ctx.save();
-      ctx.translate(octopus.x, octopus.y);
+      ctx.translate(octopus.x, octopus.y + bobAmt);
       if (octopus.dir < 0) ctx.scale(-1, 1);
+      ctx.rotate(tiltAmt);
 
       const os = 22;
 
-      // tentacles
+      // tentacles — anchored at bottom of body
       const tentacleColors = ['#7b2d8b','#6a1f7a','#8b3d9b','#5a1a6a','#7a2a8a','#693080','#7c3590','#612070'];
       for (let t = 0; t < 8; t++) {
-        const angle = (t / 8) * Math.PI;
-        const baseX = (t - 3.5) * os * 0.28;
-        const tentLen = os * (1.1 + Math.sin(octopus.tentaclePhase + t * 0.8) * 0.2);
+        const baseX = (t / 7 - 0.5) * os * 1.1;
+        const baseY = os * 0.55;
+        const sway = Math.sin(octopus.tentaclePhase + t * 0.9) * os * 0.5;
+        const sway2 = Math.sin(octopus.tentaclePhase * 1.3 + t * 0.7 + 1) * os * 0.35;
+        const tentLen = os * (1.4 + Math.sin(octopus.tentaclePhase + t * 1.1) * 0.15);
+
         ctx.strokeStyle = tentacleColors[t];
-        ctx.lineWidth = os * 0.18;
+        ctx.lineWidth = os * 0.16;
         ctx.lineCap = 'round';
         ctx.beginPath();
-        ctx.moveTo(baseX, os * 0.3);
-        const cp1x = baseX + Math.sin(octopus.tentaclePhase + t) * os * 0.4;
-        const cp1y = os * 0.6 + tentLen * 0.4;
-        const cp2x = baseX + Math.sin(octopus.tentaclePhase + t + 1) * os * 0.5;
-        const cp2y = os * 0.6 + tentLen * 0.8;
-        const endX = baseX + Math.sin(octopus.tentaclePhase + t + 2) * os * 0.3;
-        const endY = os * 0.6 + tentLen;
-        ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, endX, endY);
+        ctx.moveTo(baseX, baseY);
+        ctx.bezierCurveTo(
+          baseX + sway * 0.4, baseY + tentLen * 0.35,
+          baseX + sway * 0.8 + sway2 * 0.4, baseY + tentLen * 0.7,
+          baseX + sway + sway2, baseY + tentLen
+        );
         ctx.stroke();
 
-        // sucker dots
-        ctx.fillStyle = 'rgba(200,150,220,0.5)';
-        ctx.beginPath();
-        ctx.arc(cp1x * 0.7 + endX * 0.3, cp1y * 0.5 + cp2y * 0.5, os * 0.05, 0, Math.PI * 2);
-        ctx.fill();
+        // sucker dots along tentacle
+        ctx.fillStyle = 'rgba(210,160,230,0.55)';
+        for (let d = 0; d < 3; d++) {
+          const frac = (d + 1) / 4;
+          const sx = baseX + (sway * 0.4) * frac + (sway * 0.8 + sway2 * 0.4) * frac * 0.5;
+          const sy = baseY + tentLen * frac * 0.85;
+          ctx.beginPath();
+          ctx.arc(sx, sy, os * 0.055, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
 
       // body
-      ctx.fillStyle = '#7b2d8b';
+      ctx.fillStyle = '#6a2080';
       ctx.beginPath();
-      ctx.ellipse(0, 0, os * 0.7, os * 0.85, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, os * 0.15, os * 0.72, os * 0.55, 0, 0, Math.PI * 2);
       ctx.fill();
 
       // head dome
-      ctx.fillStyle = '#8b3d9b';
+      ctx.fillStyle = '#7b2d8b';
       ctx.beginPath();
-      ctx.ellipse(0, -os * 0.4, os * 0.55, os * 0.65, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, -os * 0.28, os * 0.58, os * 0.72, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // subtle bob
-      const bobY = Math.sin(octopus.wobble) * 3;
-      ctx.translate(0, bobY);
-
-      // left eye
-      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      // sheen on dome
+      ctx.fillStyle = 'rgba(180,120,210,0.18)';
       ctx.beginPath();
-      ctx.ellipse(-os * 0.26, -os * 0.35, os * 0.16, os * 0.18, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#1a0a2a';
-      ctx.beginPath();
-      ctx.ellipse(-os * 0.26, -os * 0.35, os * 0.09, os * 0.11, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = 'rgba(255,255,255,0.8)';
-      ctx.beginPath();
-      ctx.arc(-os * 0.22, -os * 0.39, os * 0.04, 0, Math.PI * 2);
+      ctx.ellipse(-os * 0.15, -os * 0.55, os * 0.22, os * 0.28, -0.4, 0, Math.PI * 2);
       ctx.fill();
 
-      // right eye
-      ctx.fillStyle = 'rgba(255,255,255,0.9)';
-      ctx.beginPath();
-      ctx.ellipse(os * 0.26, -os * 0.35, os * 0.16, os * 0.18, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#1a0a2a';
-      ctx.beginPath();
-      ctx.ellipse(os * 0.26, -os * 0.35, os * 0.09, os * 0.11, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = 'rgba(255,255,255,0.8)';
-      ctx.beginPath();
-      ctx.arc(os * 0.3, -os * 0.39, os * 0.04, 0, Math.PI * 2);
-      ctx.fill();
-
-      // ink cloud when scared
-      if (scared) {
-        ctx.fillStyle = 'rgba(60,10,80,0.25)';
-        ctx.beginPath();
-        ctx.ellipse(-octopus.dir * os * 0.8, 0, os * 0.9, os * 0.6, 0, 0, Math.PI * 2);
-        ctx.fill();
-        octopus.x += octopus.dir * 2;
-      }
-
-      ctx.restore();
-    }
+      // left eye white
+      ctx.fillStyle = 'rgba(255,255,25
 
     // fish
     if (scareTimer > 0) scareTimer--;
