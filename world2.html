@@ -1642,13 +1642,13 @@ body.loaded::before {
   z-index: 2;
 }
 
-  #lavaLamp {
+#lavaLamp {
   position: fixed;
   bottom: 8%;
-  left: 19%;
+  left: 22%;
   width: 52px;
   height: 110px;
-  z-index: 400;
+  z-index: 500;
   cursor: default;
 }
 
@@ -1897,10 +1897,6 @@ body.loaded::before {
     <button id="portalBackBtn">🌀</button>
   </div>
 
-  <div id="aquarium">
-  <canvas id="aqCanvas"></canvas>
-</div>
-
 <div id="windowFrame">
   <div id="windowSky"></div>
   <div id="windowCloudsLayer"></div>
@@ -2082,8 +2078,10 @@ body.loaded::before {
     <button id="prevImg">←</button>
     <span id="imageCounter">1 / 30</span>
     <button id="nextImg">→</button>
-  </div>
+</div>
 
+<div id="aquarium">
+  <canvas id="aqCanvas"></canvas>
 </div>
 
 <!-- Firebase -->
@@ -3685,9 +3683,6 @@ function updateSky() {
   updateWindowAtmosphere(tod);
 }
 
-updateSky();
-setInterval(updateSky, 60000);
-
 // Moon
 const moonEl = document.createElement('canvas');
 moonEl.id = 'windowMoon';
@@ -3843,6 +3838,8 @@ function updateWindowAtmosphere(tod) {
 }
 
 updateWindowAtmosphere('night');
+updateSky();
+setInterval(updateSky, 60000);
 
 // Clouds
 function createCloud() {
