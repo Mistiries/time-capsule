@@ -1553,9 +1553,7 @@ body.loaded::before {
 
 .window-cloud {
   position: absolute;
-  background: rgba(255,255,255,0.85);
-  border-radius: 50px;
-  filter: blur(3px);
+  pointer-events: none;
 }
 
 #windowRainLayer {
@@ -3844,29 +3842,54 @@ setInterval(updateSky, 60000);
 
 // Clouds
 function createCloud() {
-  const cloud = document.createElement('div');
-  cloud.className = 'window-cloud';
-  const w = Math.random() * 60 + 30;
-  const h = w * 0.45;
+  const size = Math.random() * 18 + 14;
   const top = Math.random() * 55;
   const duration = Math.random() * 25 + 20;
-  const opacity = Math.random() * 0.4 + 0.3;
-  cloud.style.cssText = `
-    width: ${w}px;
-    height: ${h}px;
+  const opacity = Math.random() * 0.35 + 0.25;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = size * 4;
+  canvas.height = size * 2.2;
+  canvas.style.cssText = `
+    position: absolute;
     top: ${top}%;
-    left: -${w + 60}px;
+    left: -${size * 4 + 60}px;
     opacity: ${opacity};
     animation: cloudMove ${duration}s linear infinite;
     animation-delay: -${Math.random() * duration}s;
+    pointer-events: none;
   `;
+
+  const cc = canvas.getContext('2d');
+  cc.fillStyle = 'rgba(255,255,255,0.92)';
+
+  const cx = size * 2;
+  const cy = size * 1.5;
+
+  // Draw overlapping circles to make a fluffy cloud shape
+  const bumps = [
+    { x: cx, y: cy, r: size * 0.75 },
+    { x: cx - size * 0.85, y: cy + size * 0.15, r: size * 0.55 },
+    { x: cx + size * 0.85, y: cy + size * 0.15, r: size * 0.55 },
+    { x: cx - size * 0.45, y: cy - size * 0.35, r: size * 0.6 },
+    { x: cx + size * 0.45, y: cy - size * 0.35, r: size * 0.6 },
+    { x: cx, y: cy - size * 0.5, r: size * 0.5 },
+  ];
+
+  bumps.forEach(b => {
+    cc.beginPath();
+    cc.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+    cc.fill();
+  });
+
   if (!document.getElementById('cloudMoveStyle')) {
     const s = document.createElement('style');
     s.id = 'cloudMoveStyle';
-   s.textContent = `@keyframes cloudMove { from { transform: translateX(0); } to { transform: translateX(480px); } }`;
+    s.textContent = `@keyframes cloudMove { from { transform: translateX(0); } to { transform: translateX(480px); } }`;
     document.head.appendChild(s);
   }
-  windowCloudsLayer.appendChild(cloud);
+
+  windowCloudsLayer.appendChild(canvas);
 }
 
 for (let i = 0; i < 5; i++) createCloud();
