@@ -1649,6 +1649,159 @@ body.loaded::before {
   box-shadow: 0 0 8px rgba(120,180,255,0.7), 2px 2px 6px rgba(0,0,0,0.3);
 }
 
+  #yugiohLogo {
+  position: fixed;
+  left: 5%;
+  width: 90px;
+  cursor: pointer;
+  z-index: 402;
+  filter: drop-shadow(0 0 8px rgba(255,200,50,0.5));
+  animation: yugiohBob 3s ease-in-out infinite;
+}
+
+@keyframes yugiohBob {
+  0%   { transform: translateY(0px) translateX(0px) rotate(0deg); }
+  25%  { transform: translateY(-6px) translateX(3px) rotate(1deg); }
+  50%  { transform: translateY(-3px) translateX(5px) rotate(0deg); }
+  75%  { transform: translateY(-8px) translateX(2px) rotate(-1deg); }
+  100% { transform: translateY(0px) translateX(0px) rotate(0deg); }
+}
+
+#yugiohLogo:hover {
+  filter: drop-shadow(0 0 14px rgba(255,200,50,0.9)) brightness(1.15);
+}
+
+#yugiohOverlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.55);
+  z-index: 4700;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+#yugiohOverlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#yugiohPanel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.95);
+  width: 600px;
+  max-width: 92vw;
+  max-height: 75vh;
+  background: linear-gradient(to bottom, #1a0a2e, #0d0620);
+  border: 2px solid #7b4fd4;
+  border-radius: 14px;
+  box-shadow: 0 0 30px rgba(120,60,220,0.5), 0 8px 40px rgba(0,0,0,0.6);
+  z-index: 4701;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  overflow: hidden;
+}
+
+#yugiohPanel.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+#yugiohPanelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 22px;
+  border-bottom: 1px solid rgba(123,79,212,0.4);
+  flex-shrink: 0;
+  background: rgba(0,0,0,0.3);
+}
+
+#yugiohPanelTitle {
+  font-size: 20px;
+  font-family: 'Georgia', serif;
+  color: #f0c040;
+  text-shadow: 0 0 10px rgba(240,192,64,0.6);
+  letter-spacing: 1px;
+}
+
+#yugiohCloseBtn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #aaa;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.1s ease, background 0.1s ease;
+  box-shadow: none;
+  margin: 0;
+}
+
+#yugiohCloseBtn:hover {
+  background: rgba(255,255,255,0.1);
+  color: white;
+}
+
+#yugiohGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 20px;
+  overflow-y: auto;
+  justify-content: center;
+}
+
+.yugioh-card {
+  width: 120px;
+  flex-shrink: 0;
+  cursor: pointer;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5), 0 0 6px rgba(123,79,212,0.3);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  border: 1.5px solid rgba(123,79,212,0.4);
+}
+
+.yugioh-card:hover {
+  transform: scale(1.06) translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.6), 0 0 14px rgba(240,192,64,0.4);
+  border-color: rgba(240,192,64,0.6);
+}
+
+.yugioh-card img {
+  width: 100%;
+  display: block;
+  pointer-events: none;
+}
+
+@keyframes cardRumble {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  10%  { transform: translate(-3px, -2px) rotate(-1.5deg); }
+  20%  { transform: translate(3px, 2px) rotate(1.5deg); }
+  30%  { transform: translate(-3px, 1px) rotate(-1deg); }
+  40%  { transform: translate(3px, -2px) rotate(1deg); }
+  50%  { transform: translate(-2px, 2px) rotate(-0.5deg); }
+  60%  { transform: translate(2px, -1px) rotate(0.5deg); }
+  70%  { transform: translate(-2px, 1px) rotate(-1deg); }
+  80%  { transform: translate(2px, -2px) rotate(1deg); }
+  90%  { transform: translate(-1px, 1px) rotate(0deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+.yugioh-card.rumbling {
+  animation: cardRumble 0.5s ease forwards;
+  box-shadow: 0 0 20px rgba(240,192,64,0.8), 0 8px 20px rgba(0,0,0,0.6);
+  border-color: rgba(240,192,64,0.9);
+}
+  
 </style>
 </head>
 <body>
@@ -1688,6 +1841,21 @@ body.loaded::before {
   </div>
 </div>
 <button id="rainBtn" title="Toggle rain">🌧️</button>
+<img src="images/Yugioh/logo.png" id="yugiohLogo">
+<div id="yugiohOverlay"></div>
+<div id="yugiohPanel">
+  <div id="yugiohPanelHeader">
+    <span id="yugiohPanelTitle">Yu-Gi-Oh Cards</span>
+    <button id="yugiohCloseBtn">✕</button>
+  </div>
+  <div id="yugiohGrid">
+    <div class="yugioh-card" data-name="Blue Eyes White Dragon"><img src="images/Yugioh/blueeyeswhitedragon.jpg"></div>
+    <div class="yugioh-card" data-name="Dark Magician"><img src="images/Yugioh/darkmagician.png"></div>
+    <div class="yugioh-card" data-name="Dark Magicians Girl"><img src="images/Yugioh/darkmagiciansgirl.jpg"></div>
+    <div class="yugioh-card" data-name="Pot Of Greed"><img src="images/Yugioh/potofgreed.jpg"></div>
+    <div class="yugioh-card" data-name="Red Eyes Black Dragon"><img src="images/Yugioh/redeyesblackdragon.png"></div>
+  </div>
+</div>
 <img src="images/cupboard.png" id="cupboard">
 <img src="images/perfume.png" id="perfumeBottle">
 
@@ -3579,6 +3747,57 @@ rainBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   if (rainActive) stopRain();
   else startRain();
+});
+
+  // Yugioh logo positioning — below window, above cupboard
+(function positionYugiohLogo() {
+  const logo = document.getElementById('yugiohLogo');
+  const winRect = document.getElementById('windowFrame').getBoundingClientRect();
+  const cupRect = document.getElementById('cupboard').getBoundingClientRect();
+  const midY = winRect.bottom + (cupRect.top - winRect.bottom) * 0.4;
+  logo.style.top = midY + 'px';
+})();
+
+const yugiohLogo = document.getElementById('yugiohLogo');
+const yugiohOverlay = document.getElementById('yugiohOverlay');
+const yugiohPanel = document.getElementById('yugiohPanel');
+const yugiohCloseBtn = document.getElementById('yugiohCloseBtn');
+
+setupTooltip(yugiohLogo, 'Yu-Gi-Oh!');
+
+function openYugioh() {
+  yugiohOverlay.classList.add('active');
+  yugiohPanel.classList.add('visible');
+}
+
+function closeYugioh() {
+  yugiohOverlay.classList.remove('active');
+  yugiohPanel.classList.remove('visible');
+}
+
+yugiohLogo.addEventListener('click', openYugioh);
+yugiohLogo.addEventListener('touchend', (e) => { e.preventDefault(); openYugioh(); });
+yugiohCloseBtn.addEventListener('click', (e) => { e.stopPropagation(); closeYugioh(); });
+yugiohOverlay.addEventListener('click', closeYugioh);
+yugiohPanel.addEventListener('click', (e) => e.stopPropagation());
+
+// Card tooltips and rumble
+document.querySelectorAll('.yugioh-card').forEach(card => {
+  const name = card.dataset.name;
+  setupTooltip(card, name);
+
+  card.addEventListener('click', () => {
+    if (card.classList.contains('rumbling')) return;
+    card.classList.add('rumbling');
+    setTimeout(() => card.classList.remove('rumbling'), 500);
+  });
+
+  card.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    if (card.classList.contains('rumbling')) return;
+    card.classList.add('rumbling');
+    setTimeout(() => card.classList.remove('rumbling'), 500);
+  });
 });
   
 // Petal effect
