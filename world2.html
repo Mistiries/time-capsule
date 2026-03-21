@@ -3837,7 +3837,7 @@ function updateWindowAtmosphere(tod) {
   }
 }
 
-updateWindowAtmosphere(getTimeOfDay());
+updateWindowAtmosphere('night');
 
 // Clouds
 function createCloud() {
@@ -3860,7 +3860,7 @@ function createCloud() {
   if (!document.getElementById('cloudMoveStyle')) {
     const s = document.createElement('style');
     s.id = 'cloudMoveStyle';
-    s.textContent = `@keyframes cloudMove { from { transform: translateX(0); } to { transform: translateX(${160 * 3 + 100}px); } }`;
+   s.textContent = `@keyframes cloudMove { from { transform: translateX(0); } to { transform: translateX(480px); } }`;
     document.head.appendChild(s);
   }
   windowCloudsLayer.appendChild(cloud);
@@ -4473,11 +4473,12 @@ function stopFireflies() {
   const canvas = document.getElementById('aqCanvas');
   const ctx = canvas.getContext('2d');
   const aq = document.getElementById('aquarium');
-  function resize() {
-    canvas.width = aq.clientWidth;
-    canvas.height = aq.clientHeight;
+function resize() {
+    canvas.width = aq.clientWidth || 264;
+    canvas.height = aq.clientHeight || 204;
   }
   resize();
+  setTimeout(resize, 500);
   window.addEventListener('resize', resize);
 
   const W = () => canvas.width, H = () => canvas.height;
