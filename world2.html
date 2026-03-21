@@ -2807,21 +2807,6 @@ msgEl.innerHTML = `
     const picker = msgEl.querySelector('.reaction-picker');
     const triggerBtn = msgEl.querySelector('.react-trigger-btn');
 
-triggerBtn.addEventListener('click', (e) => {
-  e.stopPropagation();
-  e.preventDefault();
-  const isVisible = picker.classList.contains('visible');
-  document.querySelectorAll('.reaction-picker.visible').forEach(p => p.classList.remove('visible'));
-  if (!isVisible) {
-    const btnRect = triggerBtn.getBoundingClientRect();
-    const pickerW = reactionEmojis.length * 38 + 16;
-    let left = btnRect.left;
-    if (left + pickerW > window.innerWidth - 10) left = window.innerWidth - pickerW - 10;
-    picker.style.left = left + 'px';
-    picker.style.top = (btnRect.top - 52) + 'px';
-    picker.classList.add('visible');
-  }
-});
 
     triggerBtn.addEventListener('mousedown', (e) => {
       e.stopPropagation();
