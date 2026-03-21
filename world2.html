@@ -4610,7 +4610,7 @@ function openLavaThoughts() {
 
   lavaThoughtOverlay.addEventListener('click', closeLavaThoughts);
 
-  function spawnThought() {
+function spawnThought() {
     if (!lavaThoughtsActive) return;
 
     const text = lavaThoughtShuffled[thoughtIndex % lavaThoughtShuffled.length];
@@ -4618,37 +4618,56 @@ function openLavaThoughts() {
 
     const lampRect = document.getElementById('lavaLamp').getBoundingClientRect();
     const startX = lampRect.left + lampRect.width / 2;
-    const startY = lampRect.top;
+    const startY = lampRect.top + lampRect.height * 0.3;
 
     const bubble = document.createElement('div');
 
-    // Random gentle drift direction
-    const angle = (Math.random() * 160 + 100) * (Math.PI / 180); // mostly upward spread
-    const driftX = Math.cos(angle) * (60 + Math.random() * 80);
-    const driftY = -(120 + Math.random() * 180);
+    // Wide random spread — across the whole screen
+    const angle = (Math.random() * 260 + 50) * (Math.PI / 180);
+    const dist = 180 + Math.random() * 220;
+    const driftX = Math.cos(angle) * dist;
+    const driftY = Math.sin(angle) * dist - 80;
+
+    // Unique wobble id for CSS animation
+    const wobbleId = 'wobble_' + Math.random().toString(36).substr(2, 6);
+    const wobbleAmt = 6 + Math.random() * 6;
+    const wobbleSpeed = 2.5 + Math.random() * 2;
+    const styleEl = document.createElement('style');
+    styleEl.textContent = `
+      @keyframes ${wobbleId} {
+        0%   { border-radius: 60% 40% 55% 45% / 50% 55% 45% 50%; }
+        25%  { border-radius: 45% 55% 40% 60% / 55% 45% 60% 40%; }
+        50%  { border-radius: 55% 45% 60% 40% / 40% 60% 45% 55%; }
+        75%  { border-radius: 40% 60% 45% 55% / 60% 40% 55% 45%; }
+        100% { border-radius: 60% 40% 55% 45% / 50% 55% 45% 50%; }
+      }
+    `;
+    document.head.appendChild(styleEl);
 
     bubble.style.cssText = `
       position: fixed;
       left: ${startX}px;
       top: ${startY}px;
-      transform: translate(-50%, -50%) scale(0.6);
+      transform: translate(-50%, -50%) scale(0.5);
       background: radial-gradient(ellipse at 40% 35%, rgba(255,160,60,0.22), rgba(255,90,10,0.1));
       border: 1px solid rgba(255,140,40,0.35);
-      border-radius: 50%;
-      padding: 18px 22px;
-      max-width: 220px;
+      border-radius: 60% 40% 55% 45% / 50% 55% 45% 50%;
+      animation: ${wobbleId} ${wobbleSpeed}s ease-in-out infinite;
+      padding: 22px 28px;
+      max-width: 260px;
+      min-width: 160px;
       text-align: center;
       font-family: 'Georgia', serif;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 400;
       font-style: italic;
       color: rgba(255,235,200,0.92);
-      line-height: 1.6;
+      line-height: 1.7;
       pointer-events: none;
       z-index: 8001;
       opacity: 0;
       box-shadow: 0 0 18px rgba(255,100,20,0.25), inset 0 0 12px rgba(255,140,40,0.1);
-      transition: opacity 1s ease, transform 3s ease, left 3s ease, top 3s ease;
+      transition: opacity 1.4s ease, transform 7s cubic-bezier(0.2,0,0.4,1), left 7s cubic-bezier(0.2,0,0.4,1), top 7s cubic-bezier(0.2,0,0.4,1);
       white-space: normal;
       backdrop-filter: blur(2px);
     `;
@@ -4656,34 +4675,37 @@ function openLavaThoughts() {
     document.body.appendChild(bubble);
     currentThoughtEl = bubble;
 
-    // Shimmer animation
+    // Shimmer/glow animation
     let shimmerPhase = 0;
     let shimmerRaf;
     function shimmer() {
       if (!lavaThoughtsActive) return;
-      shimmerPhase += 0.04;
-      const glow = 0.25 + Math.sin(shimmerPhase) * 0.12;
-      bubble.style.boxShadow = `0 0 ${18 + Math.sin(shimmerPhase) * 8}px rgba(255,100,20,${glow}), inset 0 0 12px rgba(255,140,40,0.1)`;
+      shimmerPhase += 0.025;
+      const glow = 0.25 + Math.sin(shimmerPhase) * 0.13;
+      const size = 18 + Math.sin(shimmerPhase) * 10;
+      bubble.style.boxShadow = `0 0 ${size}px rgba(255,100,20,${glow}), inset 0 0 14px rgba(255,140,40,0.12)`;
       shimmerRaf = requestAnimationFrame(shimmer);
     }
 
     requestAnimationFrame(() => {
       bubble.style.opacity = '1';
       bubble.style.transform = `translate(calc(-50% + ${driftX}px), calc(-50% + ${driftY}px)) scale(1)`;
-      bubble.style.left = startX + 'px';
-      bubble.style.top = startY + 'px';
       shimmer();
     });
 
-    // Fade out after 2.5s
+    // Fade out after 5.5s — long enough to enjoy the full drift
     setTimeout(() => {
       cancelAnimationFrame(shimmerRaf);
-      bubble.style.transition = 'opacity 0.8s ease, transform 3s ease, left 3s ease, top 3s ease';
+      bubble.style.transition = 'opacity 1.4s ease';
       bubble.style.opacity = '0';
-      setTimeout(() => { bubble.remove(); if (currentThoughtEl === bubble) currentThoughtEl = null; }, 800);
-    }, 2500);
+      setTimeout(() => {
+        bubble.remove();
+        styleEl.remove();
+        if (currentThoughtEl === bubble) currentThoughtEl = null;
+      }, 1400);
+    }, 5500);
 
-    lavaThoughtInterval = setTimeout(spawnThought, 3200);
+    lavaThoughtInterval = setTimeout(spawnThought, 4000);
   }
 
   spawnThought();
