@@ -4588,7 +4588,6 @@ function shuffleArray(arr) {
 function openLavaThoughts() {
   if (lavaThoughtsActive) return;
   lavaThoughtsActive = true;
-  lavaThoughtShuffled = shuffleArray(lavaThoughts);
   let thoughtIndex = 0;
 
   // Dark overlay
@@ -4613,7 +4612,7 @@ function openLavaThoughts() {
 function spawnThought() {
     if (!lavaThoughtsActive) return;
 
-    const text = lavaThoughtShuffled[thoughtIndex % lavaThoughtShuffled.length];
+   const text = lavaThoughts[thoughtIndex % lavaThoughts.length];
     thoughtIndex++;
 
     const lampRect = document.getElementById('lavaLamp').getBoundingClientRect();
@@ -4647,11 +4646,10 @@ function spawnThought() {
     `;
     document.head.appendChild(styleEl);
 
-    bubble.style.cssText = `
+bubble.style.cssText = `
       position: fixed;
-      left: ${startX}px;
-      top: ${startY}px;
-      transform: translate(-50%, -50%) scale(0.5);
+      left: ${targetX}px;
+      top: ${targetY}px;
       background: radial-gradient(ellipse at 40% 35%, rgba(255,160,60,0.22), rgba(255,90,10,0.1));
       border: 1px solid rgba(255,140,40,0.35);
       border-radius: 60% 40% 55% 45% / 50% 55% 45% 50%;
@@ -4669,10 +4667,9 @@ function spawnThought() {
       pointer-events: none;
       z-index: 8001;
       opacity: 0;
-      box-shadow: 0 0 18px rgba(255,100,20,0.25), inset 0 0 12px rgba(255,140,40,0.1);
-      transition: opacity 1.4s ease, transform 7s cubic-bezier(0.2,0,0.4,1), left 7s cubic-bezier(0.2,0,0.4,1), top 7s cubic-bezier(0.2,0,0.4,1);
       white-space: normal;
       backdrop-filter: blur(2px);
+      transition: opacity 1.8s ease;
     `;
     bubble.textContent = text;
     document.body.appendChild(bubble);
@@ -4690,23 +4687,25 @@ function spawnThought() {
       shimmerRaf = requestAnimationFrame(shimmer);
     }
 
-    requestAnimationFrame(() => {
+requestAnimationFrame(() => {
       bubble.style.opacity = '1';
-      bubble.style.transform = `translate(calc(-50% + ${driftX}px), calc(-50% + ${driftY}px)) scale(1)`;
       shimmer();
     });
 
-    // Fade out after 5.5s — long enough to enjoy the full drift
+// Fade out after 7s — slow enough to read comfortably
     setTimeout(() => {
+      if (!lavaThoughtsActive) return;
       cancelAnimationFrame(shimmerRaf);
-      bubble.style.transition = 'opacity 1.4s ease';
       bubble.style.opacity = '0';
       setTimeout(() => {
         bubble.remove();
         styleEl.remove();
         if (currentThoughtEl === bubble) currentThoughtEl = null;
-      }, 1400);
-    }, 5500);
+      }, 1800);
+    }, 7000);
+
+    lavaThoughtInterval = setTimeout(spawnThought, 9000);
+  }
 
     lavaThoughtInterval = setTimeout(spawnThought, 4000);
   }
@@ -4720,14 +4719,19 @@ function closeLavaThoughts() {
   clearTimeout(lavaThoughtInterval);
 
   if (currentThoughtEl) {
-    currentThoughtEl.style.transition = 'opacity 0.6s ease';
+    currentThoughtEl.style.transition = 'opacity 1s ease';
     currentThoughtEl.style.opacity = '0';
-    setTimeout(() => { if (currentThoughtEl) { currentThoughtEl.remove(); currentThoughtEl = null; } }, 600);
+    const t = currentThoughtEl;
+    setTimeout(() => { t.remove(); }, 1000);
+    currentThoughtEl = null;
   }
 
   if (lavaThoughtOverlay) {
+    lavaThoughtOverlay.style.transition = 'background 1s ease';
     lavaThoughtOverlay.style.background = 'rgba(0,0,0,0)';
-    setTimeout(() => { if (lavaThoughtOverlay) { lavaThoughtOverlay.remove(); lavaThoughtOverlay = null; } }, 1000);
+    const o = lavaThoughtOverlay;
+    setTimeout(() => { o.remove(); }, 1000);
+    lavaThoughtOverlay = null;
   }
 }
   
