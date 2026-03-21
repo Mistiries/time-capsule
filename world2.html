@@ -153,8 +153,8 @@ body.loaded::before {
   color: white;
   border-radius: 4px;
   opacity: 0;
-  transition: opacity 0.2s ease;
- z-index: 9999;
+transition: opacity 0.2s ease;
+z-index: 9999;
 }
 
 /* Guestbook book object */
@@ -2246,7 +2246,6 @@ guestbookBook.addEventListener('touchstart', (e) => {
 }, { passive: false });
 
 
-let lastBookX = 0, bookSwing = 0;
 
 document.addEventListener('mousemove', (e) => {
   if (!isBookDragging) return;
