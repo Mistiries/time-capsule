@@ -2709,12 +2709,6 @@ triggerBtn.addEventListener('click', (e) => {
   picker.classList.toggle('visible');
 });
 
-    document.addEventListener('click', (e) => {
-        if (!picker.contains(e.target) && !triggerBtn.contains(e.target)) {
-          picker.classList.remove('visible');
-        }
-      });
-
       msgEl.querySelectorAll('.reaction-picker-btn').forEach(btn => {
         btn.addEventListener('click', async (e) => {
           e.stopPropagation();
@@ -2837,11 +2831,6 @@ triggerBtn.addEventListener('click', (e) => {
       e.stopPropagation();
     }, { passive: true });
 
-document.addEventListener('click', (e) => {
-  if (!e.target.closest('.reaction-picker') && !e.target.closest('.react-trigger-btn')) {
-    document.querySelectorAll('.reaction-picker.visible').forEach(p => p.classList.remove('visible'));
-  }
-});
 
     // Reaction picker buttons
     msgEl.querySelectorAll('.reaction-picker-btn').forEach(btn => {
