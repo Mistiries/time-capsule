@@ -1623,12 +1623,12 @@ body.loaded::before {
   pointer-events: none;
 }
 
-  #aquarium {
+#aquarium {
   position: fixed;
-  top: 6%;
-  left: 22%;
-  width: 200px;
-  height: 160px;
+  top: 20%;
+  left: 45%;
+  width: 280px;
+  height: 220px;
   z-index: 350;
   border: 8px solid #1a1a2e;
   border-radius: 4px;
@@ -4166,7 +4166,7 @@ function stopFireflies() {
 
   const W = () => canvas.width, H = () => canvas.height;
 
-  const fishDefs = [
+const fishDefs = [
     {color:'#f4a261',tail:'#e76f51',size:18,speed:0.55,startY:0.28,dir:1},
     {color:'#e9c46a',tail:'#f4a261',size:12,speed:0.85,startY:0.48,dir:-1},
     {color:'#a8dadc',tail:'#457b9d',size:22,speed:0.38,startY:0.38,dir:1},
@@ -4177,6 +4177,8 @@ function stopFireflies() {
     {color:'#ffb703',tail:'#fb8500',size:16,speed:0.6,startY:0.42,dir:1},
     {color:'#ff6b6b',tail:'#c0392b',size:13,speed:0.95,startY:0.32,dir:-1},
     {color:'#74c69d',tail:'#2d6a4f',size:19,speed:0.5,startY:0.65,dir:1},
+    {color:'#2d2d2d',tail:'#1a1a1a',size:28,speed:0.28,startY:0.75,dir:1,angler:true},
+    {color:'#3a2a3a',tail:'#1a1a2a',size:24,speed:0.22,startY:0.82,dir:-1,angler:true},
   ];
 
   let scared = false, scareTimer = 0;
@@ -4311,25 +4313,75 @@ function stopFireflies() {
       ctx.beginPath();
       ctx.ellipse(0, 0, s * 0.7, s * 0.35, 0, 0, Math.PI * 2);
       ctx.fill();
-      // dorsal fin
-      ctx.fillStyle = f.tail;
-      ctx.beginPath();
-      ctx.moveTo(0, -s * 0.32);
-      ctx.lineTo(s * 0.22, -s * 0.58);
-      ctx.lineTo(-s * 0.18, -s * 0.32);
-      ctx.closePath();
-      ctx.fill();
-      // eye
-      ctx.fillStyle = 'rgba(0,0,0,0.65)';
-      ctx.beginPath();
-      ctx.arc(s * 0.38, -s * 0.04, s * 0.11, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = 'rgba(255,255,255,0.75)';
-      ctx.beginPath();
-      ctx.arc(s * 0.4, -s * 0.07, s * 0.04, 0, Math.PI * 2);
-      ctx.fill();
+if (f.angler) {
+        // angler lure rod
+        ctx.strokeStyle = '#555';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(s * 0.4, -s * 0.35);
+        ctx.quadraticCurveTo(s * 0.8, -s * 0.9, s * 0.5, -s * 1.1);
+        ctx.stroke();
+        // lure glow
+        const lureGlow = (Math.sin(f.wobble * 1.5) + 1) / 2;
+        ctx.fillStyle = `rgba(120,255,180,${0.5 + lureGlow * 0.5})`;
+        ctx.beginPath();
+        ctx.arc(s * 0.5, -s * 1.15, s * 0.12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = `rgba(200,255,220,${0.3 + lureGlow * 0.4})`;
+        ctx.beginPath();
+        ctx.arc(s * 0.5, -s * 1.15, s * 0.22, 0, Math.PI * 2);
+        ctx.fill();
+        // big jagged mouth
+        ctx.fillStyle = '#111';
+        ctx.beginPath();
+        ctx.moveTo(s * 0.65, s * 0.1);
+        ctx.lineTo(s * 0.45, s * 0.28);
+        ctx.lineTo(s * 0.25, s * 0.12);
+        ctx.lineTo(s * 0.05, s * 0.3);
+        ctx.lineTo(-s * 0.15, s * 0.12);
+        ctx.lineTo(-s * 0.3, s * 0.25);
+        ctx.lineTo(-s * 0.45, s * 0.1);
+        ctx.closePath();
+        ctx.fill();
+        // teeth
+        ctx.fillStyle = 'rgba(220,220,200,0.9)';
+        for (let t = 0; t < 5; t++) {
+          ctx.beginPath();
+          ctx.moveTo(s * (0.55 - t * 0.22), s * 0.1);
+          ctx.lineTo(s * (0.48 - t * 0.22), s * 0.22);
+          ctx.lineTo(s * (0.41 - t * 0.22), s * 0.1);
+          ctx.closePath();
+          ctx.fill();
+        }
+        // angry eye
+        ctx.fillStyle = 'rgba(255,80,80,0.9)';
+        ctx.beginPath();
+        ctx.arc(s * 0.38, -s * 0.08, s * 0.13, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(s * 0.38, -s * 0.08, s * 0.07, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        // dorsal fin
+        ctx.fillStyle = f.tail;
+        ctx.beginPath();
+        ctx.moveTo(0, -s * 0.32);
+        ctx.lineTo(s * 0.22, -s * 0.58);
+        ctx.lineTo(-s * 0.18, -s * 0.32);
+        ctx.closePath();
+        ctx.fill();
+        // eye
+        ctx.fillStyle = 'rgba(0,0,0,0.65)';
+        ctx.beginPath();
+        ctx.arc(s * 0.38, -s * 0.04, s * 0.11, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,0.75)';
+        ctx.beginPath();
+        ctx.arc(s * 0.4, -s * 0.07, s * 0.04, 0, Math.PI * 2);
+        ctx.fill();
+      }
       ctx.restore();
-    });
 
     // bubbles
     bubbles.forEach(b => {
