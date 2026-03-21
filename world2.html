@@ -4388,8 +4388,44 @@ const fishDefs = [
       ctx.ellipse(-os * 0.15, -os * 0.55, os * 0.22, os * 0.28, -0.4, 0, Math.PI * 2);
       ctx.fill();
 
-      // left eye white
-      ctx.fillStyle = 'rgba(255,255,25
+    // left eye white
+      ctx.fillStyle = 'rgba(255,255,255,0.92)';
+      ctx.beginPath();
+      ctx.ellipse(-os * 0.27, -os * 0.3, os * 0.17, os * 0.19, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#1a0a2a';
+      ctx.beginPath();
+      ctx.ellipse(-os * 0.27 + octopus.eyeX, -os * 0.3 + octopus.eyeY, os * 0.09, os * 0.11, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.85)';
+      ctx.beginPath();
+      ctx.arc(-os * 0.23 + octopus.eyeX * 0.5, -os * 0.34 + octopus.eyeY * 0.5, os * 0.04, 0, Math.PI * 2);
+      ctx.fill();
+
+      // right eye white
+      ctx.fillStyle = 'rgba(255,255,255,0.92)';
+      ctx.beginPath();
+      ctx.ellipse(os * 0.27, -os * 0.3, os * 0.17, os * 0.19, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#1a0a2a';
+      ctx.beginPath();
+      ctx.ellipse(os * 0.27 + octopus.eyeX, -os * 0.3 + octopus.eyeY, os * 0.09, os * 0.11, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.85)';
+      ctx.beginPath();
+      ctx.arc(os * 0.31 + octopus.eyeX * 0.5, -os * 0.34 + octopus.eyeY * 0.5, os * 0.04, 0, Math.PI * 2);
+      ctx.fill();
+
+      // ink puff when scared
+      if (scared) {
+        ctx.fillStyle = 'rgba(50,5,70,0.22)';
+        ctx.beginPath();
+        ctx.ellipse(-octopus.dir * os * 1.1, os * 0.1, os * 1.1, os * 0.7, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.restore();
+    }
 
     // fish
     if (scareTimer > 0) scareTimer--;
