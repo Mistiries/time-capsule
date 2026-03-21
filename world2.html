@@ -1901,6 +1901,8 @@ z-index: 9999;
   <audio id="pickup" src="sounds/pickup.mp3"></audio>
   <audio id="creakSound" src="sounds/doorcreak.mp3"></audio>
   <audio id="rainSound" src="sounds/rain.mp3" loop></audio>
+  <audio id="glassTapSound" src="sounds/glasstap.wav"></audio>
+  <audio id="millenniumEyeSound" src="sounds/milleniumeye.wav"></audio>
 
   <button id="muteBtn">Mute Music</button>
 
@@ -4209,6 +4211,9 @@ document.addEventListener('touchend', (e) => {
 });
 
 function openYugioh() {
+  const eyeSound = document.getElementById('millenniumEyeSound');
+  eyeSound.currentTime = 0;
+  eyeSound.play();
   yugiohOverlay.classList.add('active');
   yugiohPanel.classList.add('visible');
 }
@@ -4738,8 +4743,11 @@ const fishDefs = [
     phase: Math.random() * Math.PI * 2,
   }));
 
-  aq.addEventListener('click', () => {
+aq.addEventListener('click', () => {
     if (scared) return;
+    const glassTap = document.getElementById('glassTapSound');
+    glassTap.currentTime = 0;
+    glassTap.play();
     scared = true;
     scareTimer = 90;
     fish.forEach(f => {
