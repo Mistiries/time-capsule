@@ -2075,14 +2075,24 @@ z-index: 9999;
   </div>
 
   <div id="galleryOverlay"></div>
-  <div id="galleryTab">
+<div id="galleryTab">
     <div id="galleryHeader">
       <span id="galleryTitle">Gallery</span>
       <button id="galleryClose">✕</button>
     </div>
+    <div id="galleryTabBar" style="display:flex;gap:0;border-bottom:1px solid #eee;background:white;flex-shrink:0;">
+      <button class="gallery-tab-btn active" data-tab="gallery" style="padding:8px 18px;border:none;border-bottom:2px solid #222;background:white;font-size:14px;cursor:pointer;font-weight:600;color:#222;border-radius:0;">Gallery</button>
+      <button class="gallery-tab-btn" data-tab="more" style="padding:8px 18px;border:none;border-bottom:2px solid transparent;background:white;font-size:14px;cursor:pointer;font-weight:400;color:#999;border-radius:0;">More</button>
+    </div>
     <div id="galleryContent">
-      <div id="galleryGridTitle">All the art from Eleni's letters, 2025–2026</div>
-      <div id="galleryGrid"></div>
+      <div id="galleryPane-gallery">
+        <div id="galleryGridTitle">All the art from Eleni's letters, 2025–2026</div>
+        <div id="galleryGrid"></div>
+      </div>
+      <div id="galleryPane-more" style="display:none;">
+        <div id="galleryGridTitle2" style="font-family:'Brush Script MT',cursive;font-style:italic;font-size:20px;color:#555;margin-bottom:14px;">More</div>
+        <div id="galleryGrid2" style="display:flex;flex-wrap:wrap;gap:10px;"></div>
+      </div>
     </div>
     <div id="galleryResizeHandle">⇲</div>
   </div>
@@ -3240,6 +3250,32 @@ const galleryImages = [
   'images/Letter images/Untitled119_20251025184237~2.png',
 ];
 
+  const tab2Images = [
+  'images/Tab2/Untitled176_20260216150358.png',
+  'images/Tab2/IMG_20260215_123513.jpg',
+  'images/Tab2/IMG_20260215_124700.jpg',
+  'images/Tab2/IMG_20260215_125428.jpg',
+  'images/Tab2/Untitled232_20260406203619.png',
+  'images/Tab2/IMG-20260404-WA0024.jpg',
+  'images/Tab2/IMG_20260407_204042.png',
+  'images/Tab2/Untitled244.png',
+  'images/Tab2/Snapchat-333381280.jpg',
+  'images/Tab2/Snapchat-1903188005.jpg',
+];
+
+const tab2Thumbs = [
+  'images/Tab2/thumbs/Untitled176_20260216150358.jpg',
+  'images/Tab2/thumbs/IMG_20260215_123513.jpg',
+  'images/Tab2/thumbs/IMG_20260215_124700.jpg',
+  'images/Tab2/thumbs/IMG_20260215_125428.jpg',
+  'images/Tab2/thumbs/Untitled232_20260406203619.jpg',
+  'images/Tab2/thumbs/IMG-20260404-WA0024.jpg',
+  'images/Tab2/thumbs/IMG_20260407_204042.jpg',
+  'images/Tab2/thumbs/Untitled244.jpg',
+  'images/Tab2/thumbs/Snapchat-333381280.jpg',
+  'images/Tab2/thumbs/Snapchat-1903188005.jpg',
+];
+  
 const galleryThumbs = [
   'images/Letter images/thumbs/Thumbs/IMG_20250906_194806.jpg',
   'images/Letter images/thumbs/Thumbs/IMG_20250907_143058~2.jpg',
@@ -3273,8 +3309,29 @@ const galleryThumbs = [
   'images/Letter images/thumbs/Thumbs/Untitled119_20251025184237~2.jpg',
 ];
 
+  tab2Images.forEach((src, i) => {
+  const item = document.createElement('div');
+  item.className = 'gallery-item';
+  const img = document.createElement('img');
+  img.loading = 'lazy';
+  img.src = tab2Thumbs[i];
+  img.addEventListener('click', () => openImageViewerForSet(tab2Images, i));
+  img.addEventListener('touchend', (e) => { e.preventDefault(); openImageViewerForSet(tab2Images, i); });
+  const dlBtn = document.createElement('a');
+  dlBtn.className = 'gallery-download';
+  dlBtn.href = src;
+  dlBtn.download = src.split('/').pop();
+  dlBtn.title = 'Download';
+  dlBtn.textContent = '⬇';
+  dlBtn.addEventListener('click', (e) => e.stopPropagation());
+  item.appendChild(img);
+  item.appendChild(dlBtn);
+  document.getElementById('galleryGrid2').appendChild(item);
+});
+  
 let currentImageIndex = 0;
 let isViewerOpen = false;
+let activeImageSet = galleryImages;
 let zoomLevel = 1;
 let isAnimating = false;
 let panX = 0, panY = 0;
@@ -3285,8 +3342,8 @@ galleryImages.forEach((src, i) => {
   const img = document.createElement('img');
   img.loading = 'lazy';
   img.src = galleryThumbs[i];
-  img.addEventListener('click', () => openImageViewer(i));
-  img.addEventListener('touchend', (e) => { e.preventDefault(); openImageViewer(i); });
+ img.addEventListener('click', () => openImageViewerForSet(galleryImages, i));
+  img.addEventListener('touchend', (e) => { e.preventDefault(); openImageViewerForSet(galleryImages, i); });
   const dlBtn = document.createElement('a');
   dlBtn.className = 'gallery-download';
   dlBtn.href = src;
@@ -3300,7 +3357,7 @@ galleryImages.forEach((src, i) => {
 });
 
 function updateCounter() {
-  imageCounter.textContent = `${currentImageIndex + 1} / ${galleryImages.length}`;
+  imageCounter.textContent = `${currentImageIndex + 1} / ${activeImageSet.length}`;
 }
 
 function slideToImage(index, direction) {
@@ -3315,11 +3372,11 @@ function slideToImage(index, direction) {
   imageViewerImg.style.transform = `translateX(${outX}) scale(1)`;
   imageViewerImg.style.opacity = '0';
   setTimeout(() => {
-    currentImageIndex = ((index % galleryImages.length) + galleryImages.length) % galleryImages.length;
+    currentImageIndex = ((index % activeImageSet.length) + activeImageSet.length) % activeImageSet.length;
     imageViewerImg.style.transition = 'none';
     imageViewerImg.style.transform = `translateX(${inX}) scale(1)`;
     imageViewerImg.style.opacity = '0';
-    imageViewerImg.src = galleryImages[currentImageIndex];
+    imageViewerImg.src = activeImageSet[currentImageIndex];
     updateCounter();
     imageViewerImg.onload = () => {
       requestAnimationFrame(() => {
@@ -3332,6 +3389,11 @@ function slideToImage(index, direction) {
   }, 350);
 }
 
+function openImageViewerForSet(set, index) {
+  activeImageSet = set;
+  openImageViewer(index);
+}
+
 function openImageViewer(index) {
   currentImageIndex = index;
   zoomLevel = 1;
@@ -3340,7 +3402,7 @@ function openImageViewer(index) {
   imageViewerImg.style.transform = 'translateX(0) scale(1)';
   imageViewerImg.style.opacity = '0';
   imageViewerImg.src = '';
-  imageViewerImg.src = galleryImages[currentImageIndex];
+  imageViewerImg.src = activeImageSet[currentImageIndex];
   imageViewerImg.onload = () => { imageViewerImg.style.opacity = '1'; };
   updateCounter();
   imageViewerOverlay.classList.add('active');
@@ -3553,6 +3615,22 @@ function openGallery() {
   galleryOverlay.classList.add('active');
 }
 
+  document.querySelectorAll('.gallery-tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.gallery-tab-btn').forEach(b => {
+      b.style.borderBottom = '2px solid transparent';
+      b.style.fontWeight = '400';
+      b.style.color = '#999';
+    });
+    btn.style.borderBottom = '2px solid #222';
+    btn.style.fontWeight = '600';
+    btn.style.color = '#222';
+    const target = btn.dataset.tab;
+    document.getElementById('galleryPane-gallery').style.display = target === 'gallery' ? '' : 'none';
+    document.getElementById('galleryPane-more').style.display = target === 'more' ? '' : 'none';
+  });
+});
+  
 galleryClose.addEventListener('click', (e) => { e.stopPropagation(); pickupSound.currentTime = 0; pickupSound.play(); closeGallery(); });
 galleryClose.addEventListener('touchend', (e) => { e.preventDefault(); e.stopPropagation(); pickupSound.currentTime = 0; pickupSound.play(); closeGallery(); });
 
